@@ -1,0 +1,57 @@
+@page
+@model PresentationLayer.Pages.Auth.ProfileModel
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    ViewBag.ActiveMenu = "";
+}
+
+<div class="main-wrapper" style="padding: 30px;">
+    <div style="max-width: 600px; margin: 0 auto; background: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 30px;">
+        <h2 style="font-weight: 900; margin-bottom: 20px; font-size: 24px;"><i class="fa-solid fa-address-card" style="color: var(--pink);"></i> THÔNG TIN TÀI KHOẢN</h2>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight: 800; font-size: 14px; margin-bottom: 5px; display: block;">Tên đăng nhập</label>
+            <input type="text" value="@Model.Username" disabled style="width: 100%; border: 3px solid #ccc; padding: 10px; font-weight: 700; outline: none; background: #eee; font-size: 14px; cursor: not-allowed;" />
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight: 800; font-size: 14px; margin-bottom: 5px; display: block;">Email</label>
+            <input type="text" value="@Model.Email" disabled style="width: 100%; border: 3px solid #ccc; padding: 10px; font-weight: 700; outline: none; background: #eee; font-size: 14px; cursor: not-allowed;" />
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <label style="font-weight: 800; font-size: 14px; margin-bottom: 5px; display: block;">Vai trò</label>
+            <input type="text" value="@(Model.Role == "Admin" ? "Quản trị viên" : (Model.Role == "Lecturer" ? "Giảng viên" : "Sinh viên"))" disabled style="width: 100%; border: 3px solid #ccc; padding: 10px; font-weight: 700; outline: none; background: #eee; font-size: 14px; cursor: not-allowed;" />
+        </div>
+
+        <hr style="border: none; border-top: 3px dashed var(--black); margin-bottom: 30px;" />
+
+        <h2 style="font-weight: 900; margin-bottom: 20px; font-size: 24px;"><i class="fa-solid fa-key" style="color: var(--blue);"></i> ĐỔI MẬT KHẨU</h2>
+
+        @if (!string.IsNullOrEmpty(Model.Message))
+        {
+            <div style="padding: 15px; margin-bottom: 20px; border: 3px solid var(--black); font-weight: 800; background-color: @(Model.IsSuccess ? "var(--green)" : "var(--pink)"); color: white;">
+                @Model.Message
+            </div>
+        }
+
+        <form method="post">
+            <div style="margin-bottom: 15px;">
+                <label style="font-weight: 800; font-size: 14px; margin-bottom: 5px; display: block;">Mật khẩu hiện tại</label>
+                <input type="password" asp-for="PasswordChangeModel.CurrentPassword" required style="width: 100%; border: 3px solid var(--black); padding: 10px; font-weight: 700; outline: none; font-size: 14px;" placeholder="Nhập mật khẩu hiện tại..." />
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="font-weight: 800; font-size: 14px; margin-bottom: 5px; display: block;">Mật khẩu mới</label>
+                <input type="password" asp-for="PasswordChangeModel.NewPassword" required style="width: 100%; border: 3px solid var(--black); padding: 10px; font-weight: 700; outline: none; font-size: 14px;" placeholder="Nhập mật khẩu mới..." />
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <label style="font-weight: 800; font-size: 14px; margin-bottom: 5px; display: block;">Xác nhận mật khẩu mới</label>
+                <input type="password" asp-for="PasswordChangeModel.ConfirmPassword" required style="width: 100%; border: 3px solid var(--black); padding: 10px; font-weight: 700; outline: none; font-size: 14px;" placeholder="Nhập lại mật khẩu mới..." />
+            </div>
+
+            <button type="submit" class="brutal-btn" style="width: 100%; background: var(--blue); color: white; border: 3px solid var(--black); padding: 12px; font-size: 16px; font-weight: 900; box-shadow: 4px 4px 0px 0px var(--black);">ĐỔI MẬT KHẨU</button>
+        </form>
+    </div>
+</div>
