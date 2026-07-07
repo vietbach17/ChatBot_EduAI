@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -30,9 +30,12 @@ namespace DataAccessLayer.Entities
 
         public DateTime? SubscriptionExpiry { get; set; } // null = chÆ°a mua / háº¿t háº¡n
 
-        public int MonthlyQuestionCount { get; set; } = 0; // sá»‘ cÃ¢u Ä‘Ã£ há»i trong thÃ¡ng
+        public int MonthlyQuestionCount { get; set; } = 0; // sá»‘ cÃ¢u Ä‘Ã£ há» i trong thÃ¡ng
 
-        public DateTime? QuotaResetDate { get; set; } // ngÃ y reset quota (Ä‘áº§u thÃ¡ng tiáº¿p theo)
+        public DateTime? QuotaResetDate { get; set; } // ngày reset quota (đầu tháng tiếp theo)
         // ========================
+        
+        public ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
+        public ICollection<Subject> AssignedSubjects { get; set; } = new List<Subject>();
     }
 }
