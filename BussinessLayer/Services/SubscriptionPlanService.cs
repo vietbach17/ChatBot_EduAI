@@ -1,0 +1,92 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using BussinessLayer.DTOs;
+using DataAccessLayer.Entities;
+using DataAccessLayer.Repositories;
+using DataAccessLayer.IRepositories;
+
+namespace BussinessLayer.Services
+{
+    public class SubscriptionPlanService : ISubscriptionPlanService
+    {
+        private readonly ISubscriptionPlanRepository _repo;
+
+        public SubscriptionPlanService(ISubscriptionPlanRepository repo)
+        {
+            _repo = repo;
+        }
+
+        public async Task<IEnumerable<SubscriptionPlanDto>> GetAllAsync()
+        {
+            var plans = await _repo.GetAllAsync();
+            return plans.Select(ToDto).ToList();
+        }
+
+        public async Task<SubscriptionPlanDto?> GetByIdAsync(int id)
+        {
+            var p = await _repo.GetByIdAsync(id);
+            return p == null ? null : ToDto(p);
+        }
+
+        public async Task<(bool Success, string Error)> CreateAsync(SubscriptionPlanDto dto)
+        {
+            // Kiểm tra tên trùng
+            var existing = await _repo.GetByNameAsync(dto.Name.Trim());
+            if (existing != null)
+                return (false, $"Tên gói '{dto.Name}' đã tồn tại.");
+
+            await _repo.AddAsync(new SubscriptionPlan
+            {
+                Name                 = dto.Name.Trim(),
+                Description          = dto.Description.Trim(),
+                Price                = dto.Price,
+                MonthlyQuestionLimit = dto.MonthlyQuestionLimit,
+                IsActive             = dto.IsActive,
+                SortOrder            = dto.SortOrder
+            });
+            return (true, string.Empty);
+        }
+
+        public async Task<(bool Success, string Error)> UpdateAsync(SubscriptionPlanDto dto)
+        {
+            var plan = await _repo.GetByIdAsync(dto.Id);
+            if (plan == null) return (false, "Không tìm thấy gói.");
+
+            // Kiểm tra tên trùng với gói khác
+            var dup = await _repo.GetByNameAsync(dto.Name.Trim());
+            if (dup != null && dup.Id != dto.Id)
+                return (false, $"Tên gói '{dto.Name}' đã được sử dụng.");
+
+            plan.Name                 = dto.Name.Trim();
+            plan.Description          = dto.Description.Trim();
+            plan.Price                = dto.Price;
+            plan.MonthlyQuestionLimit = dto.MonthlyQuestionLimit;
+            plan.IsActive             = dto.IsActive;
+            plan.SortOrder            = dto.SortOrder;
+
+            await _repo.UpdateAsync(plan);
+            return (true, string.Empty);
+        }
+
+        public async Task<(bool Success, string Error)> DeleteAsync(int id)
+        {
+            var plan = await _repo.GetByIdAsync(id);
+            if (plan == null) return (false, "Không tìm thấy gói.");
+
+            await _repo.DeleteAsync(id);
+            return (true, string.Empty);
+        }
+
+        private static SubscriptionPlanDto ToDto(SubscriptionPlan p) => new()
+        {
+            Id                   = p.Id,
+            Name                 = p.Name,
+            Description          = p.Description,
+            Price                = p.Price,
+            MonthlyQuestionLimit = p.MonthlyQuestionLimit,
+            IsActive             = p.IsActive,
+            SortOrder            = p.SortOrder
+        };
+    }
+}
