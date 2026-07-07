@@ -1,0 +1,232 @@
+@page
+@model PresentationLayer.Pages.Admin.SubscriptionsModel
+@{
+    ViewData["Title"] = "Quản lý Người Đăng Ký";
+    ViewBag.ActiveMenu = "AdminSubscriptions";
+
+    var vnZone = TimeZoneInfo.FindSystemTimeZoneById(
+        System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+            ? "SE Asia Standard Time" : "Asia/Ho_Chi_Minh");
+    string FmtDate(DateTime? dt) => dt == null ? "-" : TimeZoneInfo.ConvertTimeFromUtc(dt.Value, vnZone).ToString("dd/MM/yyyy");
+}
+
+@section Styles {
+<style>
+    .modal {
+        display: none; position: fixed; z-index: 9999; left: 0; top: 0;
+        width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+        align-items: center; justify-content: center;
+    }
+    .modal-content {
+        background: var(--white); border: var(--border);
+        box-shadow: 8px 8px 0px var(--black);
+        padding: 30px; width: 420px; position: relative;
+    }
+    .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: 900; cursor: pointer; }
+    .form-group { margin-bottom: 14px; display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-weight: 800; font-size: 12px; }
+    .form-group input, .form-group select {
+        border: 2px solid var(--black); padding: 10px; font-weight: 700; outline: none;
+    }
+    .plan-badge {
+        display: inline-block; padding: 3px 10px; font-size: 11px;
+        font-weight: 900; border: 2px solid var(--black); letter-spacing: .5px;
+    }
+    .plan-free    { background: #f3f4f6; color: #6b7280; }
+    .plan-basic   { background: #dbeafe; color: #1d4ed8; }
+    .plan-premium { background: #fef3c7; color: #92400e; }
+    .plan-expired { background: #fee2e2; color: #b91c1c; }
+</style>
+}
+
+<div class="main-wrapper">
+<div style="padding: 30px;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1 style="color:var(--pink); font-weight:900; font-size:28px; text-transform:uppercase;">
+            <i class="fa-solid fa-users"></i> QUẢN LÝ NGƯỜI ĐĂNG KÝ
+        </h1>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div style="background:#d4edda; border:2px solid #28a745; color:#155724; padding:12px 16px; font-weight:800; margin-bottom:16px; font-size:13px;">
+            <i class="fa-solid fa-circle-check"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <!-- Thống kê nhanh -->
+    @{
+        var students     = Model.Subscriptions.Where(s => s.Role == "Student").ToList();
+        var totalUsers   = students.Count;
+        var freeCount    = students.Count(s => s.SubscriptionPlan == "Free");
+        var basicCount   = students.Count(s => s.SubscriptionPlan == "Basic");
+        var premiumCount = students.Count(s => s.SubscriptionPlan == "Premium");
+    }
+    <div style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+        <div style="background:var(--white); border:3px solid var(--black); box-shadow:4px 4px 0 var(--black); padding:16px 24px; flex:1; min-width:120px; text-align:center;">
+            <div style="font-size:28px; font-weight:900;">@totalUsers</div>
+            <div style="font-size:12px; font-weight:800; color:#555;">TỔNG SINH VIÊN</div>
+        </div>
+        <div style="background:#f3f4f6; border:3px solid var(--black); box-shadow:4px 4px 0 var(--black); padding:16px 24px; flex:1; min-width:120px; text-align:center;">
+            <div style="font-size:28px; font-weight:900; color:#6b7280;">@freeCount</div>
+            <div style="font-size:12px; font-weight:800; color:#555;">FREE</div>
+        </div>
+        <div style="background:#dbeafe; border:3px solid var(--black); box-shadow:4px 4px 0 var(--black); padding:16px 24px; flex:1; min-width:120px; text-align:center;">
+            <div style="font-size:28px; font-weight:900; color:#1d4ed8;">@basicCount</div>
+            <div style="font-size:12px; font-weight:800; color:#555;">BASIC</div>
+        </div>
+        <div style="background:#fef3c7; border:3px solid var(--black); box-shadow:4px 4px 0 var(--black); padding:16px 24px; flex:1; min-width:120px; text-align:center;">
+            <div style="font-size:28px; font-weight:900; color:#92400e;">@premiumCount</div>
+            <div style="font-size:12px; font-weight:800; color:#555;">PREMIUM</div>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách -->
+    <div style="background:var(--white); border:var(--border); box-shadow:var(--shadow); padding:20px;">
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="border-bottom:3px solid var(--black);">
+                    <th style="padding:10px; text-align:left; font-weight:900;">NGƯỜI DÙNG</th>
+                    <th style="padding:10px; text-align:left; font-weight:900;">EMAIL</th>
+                    <th style="padding:10px; text-align:center; font-weight:900;">GÓI</th>
+                    <th style="padding:10px; text-align:center; font-weight:900;">HẾT HẠN</th>
+                    <th style="padding:10px; text-align:center; font-weight:900;">LƯỢT HỎI</th>
+                    <th style="padding:10px; text-align:center; font-weight:900;">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var sub in Model.Subscriptions.Where(s => s.Role == "Student"))
+                {
+                    var isExpired = sub.SubscriptionPlan != "Free" && !sub.IsActive;
+                    var badgeClass = isExpired ? "plan-expired" : sub.SubscriptionPlan switch {
+                        "Basic"   => "plan-basic",
+                        "Premium" => "plan-premium",
+                        _         => "plan-free"
+                    };
+                    var limitLabel = sub.MonthlyLimit == int.MaxValue ? "∞" : sub.MonthlyLimit.ToString();
+                    var remaining = sub.MonthlyLimit == int.MaxValue ? int.MaxValue : Math.Max(0, sub.MonthlyLimit - sub.MonthlyQuestionCount);
+                    var pctRemaining = sub.MonthlyLimit == int.MaxValue ? 100.0 : (sub.MonthlyLimit == 0 ? 0.0 : Math.Min(100.0, remaining * 100.0 / sub.MonthlyLimit));
+                    var barColor = pctRemaining <= 10 ? "var(--pink)" : pctRemaining <= 40 ? "#f59e0b" : "var(--green)";
+
+                    <tr style="border-bottom:1px dashed #ccc;">
+                        <td style="padding:10px; font-weight:800;">@sub.Username</td>
+                        <td style="padding:10px; font-weight:700; color:#555;">@(sub.Email ?? "-")</td>
+                        <td style="padding:10px; text-align:center;">
+                            <span class="plan-badge @badgeClass">
+                                @if(sub.SubscriptionPlan == "Premium") { <i class="fa-solid fa-crown"></i> }
+                                else if(sub.SubscriptionPlan == "Basic") { <i class="fa-solid fa-star"></i> }
+                                @sub.SubscriptionPlan.ToUpper()
+                                @if(isExpired) { <text> (HẾT HẠN)</text> }
+                            </span>
+                        </td>
+                        <td style="padding:10px; text-align:center; font-weight:700; font-size:13px;">@FmtDate(sub.SubscriptionExpiry)</td>
+                        <td style="padding:10px; text-align:center; min-width:120px;">
+                            <div style="font-size:12px; font-weight:800; margin-bottom:4px;">
+                                @(sub.MonthlyLimit == int.MaxValue ? "Không giới hạn" : $"Còn {remaining} / {limitLabel}")
+                            </div>
+                            @if(sub.MonthlyLimit != int.MaxValue)
+                            {
+                                <div style="height:8px; background:#e5e7eb; border:1px solid #000; overflow:hidden;">
+                                    <div style="height:100%; width:@(pctRemaining.ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%; background:@barColor;"></div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div style="font-size:11px; color:var(--green); font-weight:800;">KHÔNG GIỚI HẠN</div>
+                            }
+                        </td>
+                        <td style="padding:10px; text-align:center;">
+                            <div style="display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
+                                <!-- Nút sửa gói -->
+                                <button type="button" class="brutal-btn"
+                                        style="background:var(--blue); color:white; border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);"
+                                        onclick="openSetPlanModal(@sub.UserId, '@sub.Username', '@sub.SubscriptionPlan', '@(sub.SubscriptionExpiry?.ToString("yyyy-MM-dd") ?? "")')">
+                                    <i class="fa-solid fa-pen"></i> SỬA GÓI
+                                </button>
+                                <!-- Khôi phục lượt -->
+                                <form method="post" asp-page-handler="ResetQuota" style="display:inline;">
+                                    <input type="hidden" name="userId" value="@sub.UserId" />
+                                    <button type="submit" class="brutal-btn"
+                                            style="background:var(--yellow); color:var(--black); border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);"
+                                            onclick="return confirm('Khôi phục lại toàn bộ lượt hỏi cho @sub.Username?')">
+                                        <i class="fa-solid fa-rotate-left"></i> RESET
+                                    </button>
+                                </form>
+                                <!-- Thu hồi về Free -->
+                                @if(sub.SubscriptionPlan != "Free")
+                                {
+                                    <form method="post" asp-page-handler="Revoke" style="display:inline;">
+                                        <input type="hidden" name="userId" value="@sub.UserId" />
+                                        <button type="submit" class="brutal-btn"
+                                                style="background:#ff4d4f; color:white; border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);"
+                                                onclick="return confirm('Thu hồi gói của @sub.Username về Free?')">
+                                            <i class="fa-solid fa-ban"></i> THU HỒI
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (!Model.Subscriptions.Any())
+        {
+            <div style="padding:20px; text-align:center; font-style:italic; color:#777;">Chưa có người dùng nào.</div>
+        }
+    </div>
+
+</div>
+</div>
+
+<!-- Modal Sửa Gói -->
+<div id="setPlanModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('setPlanModal').style.display='none'">&times;</span>
+        <h2 style="font-weight:900; margin-bottom:20px; color:var(--blue);">CẬP NHẬT GÓI ĐĂNG KÝ</h2>
+        <p id="setPlanUserLabel" style="font-weight:800; font-size:13px; margin-bottom:16px; color:#555;"></p>
+        <form method="post" asp-page-handler="SetPlan">
+            <input type="hidden" id="setPlanUserId" asp-for="UpdateModel.UserId" />
+            <div class="form-group">
+                <label>Gói</label>
+                <select id="setPlanValue" asp-for="UpdateModel.PlanValue" onchange="toggleExpiryField()">
+                    <option value="Free">Free (Miễn phí)</option>
+                    <option value="Basic">Basic (50.000đ/tháng)</option>
+                    <option value="Premium">Premium (150.000đ/tháng)</option>
+                </select>
+            </div>
+            <div class="form-group" id="expiryGroup">
+                <label>Ngày hết hạn</label>
+                <input type="date" id="setPlanExpiry" asp-for="UpdateModel.Expiry" />
+                <span style="font-size:11px; color:#888; font-weight:700;">Để trống = tự động +1 tháng từ hôm nay</span>
+            </div>
+            <button type="submit" class="brutal-btn"
+                    style="width:100%; background:var(--blue); color:white; border:2px solid var(--black); padding:10px; font-weight:900; box-shadow:2px 2px 0 var(--black); margin-top:10px;">
+                <i class="fa-solid fa-save"></i> LƯU THAY ĐỔI
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function openSetPlanModal(userId, username, plan, expiry) {
+        document.getElementById('setPlanUserId').value = userId;
+        document.getElementById('setPlanUserLabel').textContent = 'Người dùng: ' + username;
+        document.getElementById('setPlanValue').value = plan;
+        document.getElementById('setPlanExpiry').value = expiry;
+        toggleExpiryField();
+        document.getElementById('setPlanModal').style.display = 'flex';
+    }
+
+    function toggleExpiryField() {
+        const plan = document.getElementById('setPlanValue').value;
+        document.getElementById('expiryGroup').style.display = plan === 'Free' ? 'none' : 'flex';
+    }
+
+    // Ẩn expiry mặc định khi load
+    toggleExpiryField();
+</script>
+}

@@ -1,0 +1,17 @@
+using System.Threading.Tasks;
+using BussinessLayer.DTOs;
+
+namespace BussinessLayer.Services
+{
+    public interface ISubscriptionService
+    {
+        Task<SubscriptionInfoDto> GetSubscriptionInfoAsync(int userId);
+        Task<bool> UpgradePlanAsync(int userId, string plan);
+
+        // Admin operations
+        Task<IEnumerable<UserSubscriptionDto>> GetAllSubscriptionsAsync();
+        Task<bool> AdminSetPlanAsync(int userId, string plan, DateTime? expiry);
+        Task<bool> AdminResetQuotaAsync(int userId);
+        Task<bool> AdminRevokePlanAsync(int userId);
+    }
+}

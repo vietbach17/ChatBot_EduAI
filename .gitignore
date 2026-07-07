@@ -483,3 +483,6 @@ $RECYCLE.BIN/
  
 # Env variables
 .env
+
+# tv5_tasks folder
+tv5_tasks/
