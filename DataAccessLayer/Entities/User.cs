@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -28,11 +28,11 @@ namespace DataAccessLayer.Entities
         [MaxLength(20)]
         public string SubscriptionPlan { get; set; } = "Free"; // "Free", "Basic", "Premium"
 
-        public DateTime? SubscriptionExpiry { get; set; } // null = chÆ°a mua / háº¿t háº¡n
+        public DateTime? SubscriptionExpiry { get; set; } // null = chưa mua / hết hạn
 
-        public int MonthlyQuestionCount { get; set; } = 0; // sá»‘ cÃ¢u Ä‘Ã£ há»i trong thÃ¡ng
+        public int MonthlyQuestionCount { get; set; } = 0; // số câu đã hỏi trong tháng
 
-        public DateTime? QuotaResetDate { get; set; } // ngÃ y reset quota (Ä‘áº§u thÃ¡ng tiáº¿p theo)
+        public DateTime? QuotaResetDate { get; set; } // ngày reset quota (đầu tháng tiếp theo)
         // ========================
     }
 }
