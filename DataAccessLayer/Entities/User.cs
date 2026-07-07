@@ -34,5 +34,8 @@ namespace DataAccessLayer.Entities
 
         public DateTime? QuotaResetDate { get; set; } // ngày reset quota (đầu tháng tiếp theo)
         // ========================
+        
+        public ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
+        public ICollection<Subject> AssignedSubjects { get; set; } = new List<Subject>();
     }
 }
