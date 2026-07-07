@@ -1,0 +1,316 @@
+@page
+@model PresentationLayer.Pages.Admin.PlansModel
+@{
+    ViewData["Title"] = "Quản lý Loại Gói";
+    ViewBag.ActiveMenu = "AdminPlans";
+}
+
+@section Styles {
+<style>
+    .modal {
+        display: none; position: fixed; z-index: 9999; left: 0; top: 0;
+        width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+        align-items: center; justify-content: center;
+    }
+    .modal-content {
+        background: var(--white); border: var(--border);
+        box-shadow: 8px 8px 0px var(--black);
+        padding: 30px; width: 460px; position: relative; max-height: 90vh; overflow-y: auto;
+    }
+    .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: 900; cursor: pointer; color: var(--black); }
+    .form-group { margin-bottom: 14px; display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-weight: 800; font-size: 12px; text-transform: uppercase; }
+    .form-group input, .form-group select, .form-group textarea {
+        border: 2px solid var(--black); padding: 10px; font-weight: 700;
+        outline: none; font-family: inherit;
+    }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .toggle-active {
+        display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 13px;
+    }
+    .toggle-active input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--pink); }
+    .plan-row:hover { background: #fafafa; }
+</style>
+}
+
+<div class="main-wrapper">
+<div style="padding: 30px;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1 style="color:var(--pink); font-weight:900; font-size:28px; text-transform:uppercase;">
+            <i class="fa-solid fa-tags"></i> QUẢN LÝ LOẠI GÓI
+        </h1>
+        <button onclick="document.getElementById('createModal').style.display='flex'"
+                class="brutal-btn"
+                style="background:var(--pink); color:var(--white); border:2px solid var(--black); padding:10px 20px; font-weight:900; box-shadow:2px 2px 0 var(--black);">
+            <i class="fa-solid fa-plus"></i> THÊM GÓI MỚI
+        </button>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div style="background:#d4edda; border:2px solid #28a745; color:#155724; padding:12px 16px; font-weight:800; margin-bottom:16px; font-size:13px;">
+            <i class="fa-solid fa-circle-check"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div style="background:#f8d7da; border:2px solid var(--pink); color:#721c24; padding:12px 16px; font-weight:800; margin-bottom:16px; font-size:13px;">
+            <i class="fa-solid fa-circle-xmark"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <!-- Bảng danh sách gói -->
+    <div style="background:var(--white); border:var(--border); box-shadow:var(--shadow); padding:20px;">
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="border-bottom:3px solid var(--black);">
+                    <th style="padding:10px; text-align:left; font-weight:900;">TÊN GÓI</th>
+                    <th style="padding:10px; text-align:left; font-weight:900;">MÔ TẢ</th>
+                    <th style="padding:10px; text-align:center; font-weight:900;">GIÁ (VNĐ/tháng)</th>
+                    <th style="padding:10px; text-align:center; font-weight:900;">LƯỢT HỎI/THÁNG</th>
+                    <th style="padding:10px; text-align:center; font-weight:900;">TRẠNG THÁI</th>
+                    <th style="padding:10px; text-align:center; font-weight:900;">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var plan in Model.Plans)
+                {
+                    <tr class="plan-row" style="border-bottom:1px dashed #ccc;">
+                        <td style="padding:10px; font-weight:900; font-size:15px;">
+                            @if (plan.Name == "Premium") { <i class="fa-solid fa-crown" style="color:#f59e0b;"></i> }
+                            else if (plan.Name == "Basic") { <i class="fa-solid fa-star" style="color:var(--blue);"></i> }
+                            else { <i class="fa-regular fa-circle" style="color:#6b7280;"></i> }
+                            @plan.Name
+                        </td>
+                        <td style="padding:10px; font-weight:700; color:#555; font-size:13px;">@plan.Description</td>
+                        <td style="padding:10px; text-align:center; font-weight:800;">
+                            @(plan.Price == 0 ? "Miễn phí" : plan.Price.ToString("N0") + "đ")
+                        </td>
+                        <td style="padding:10px; text-align:center; font-weight:800;">
+                            @if (plan.MonthlyQuestionLimit == -1)
+                            {
+                                <span style="color:var(--green); font-weight:900;"><i class="fa-solid fa-infinity"></i> Không giới hạn</span>
+                            }
+                            else
+                            {
+                                <span>@plan.MonthlyQuestionLimit câu</span>
+                            }
+                        </td>
+                        <td style="padding:10px; text-align:center;">
+                            @if (plan.IsActive)
+                            {
+                                <span style="background:#d4edda; border:2px solid #28a745; color:#155724; padding:3px 10px; font-weight:900; font-size:11px;">
+                                    <i class="fa-solid fa-circle-check"></i> HOẠT ĐỘNG
+                                </span>
+                            }
+                            else
+                            {
+                                <span style="background:#f8d7da; border:2px solid #dc3545; color:#721c24; padding:3px 10px; font-weight:900; font-size:11px;">
+                                    <i class="fa-solid fa-circle-xmark"></i> TẮT
+                                </span>
+                            }
+                        </td>
+                        <td style="padding:10px; text-align:center;">
+                            <div style="display:flex; gap:5px; justify-content:center;">
+                                <button type="button" class="brutal-btn"
+                                        style="background:var(--blue); color:white; border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);"
+                                        onclick="openEditModal(@plan.Id, '@plan.Name.Replace("'", "\\'")', '@plan.Description.Replace("'", "\\'")', @plan.Price.ToString(System.Globalization.CultureInfo.InvariantCulture), @plan.MonthlyQuestionLimit, @plan.SortOrder, @plan.IsActive.ToString().ToLower())">
+                                    <i class="fa-solid fa-pen"></i> SỬA
+                                </button>
+                                <form method="post" asp-page-handler="Delete" style="display:inline;">
+                                    <input type="hidden" name="id" value="@plan.Id" />
+                                    <button type="submit" class="brutal-btn"
+                                            style="background:#ff4d4f; color:white; border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);"
+                                            onclick="return confirm('Xóa gói \'@plan.Name\'? Người dùng đang dùng gói này sẽ không bị ảnh hưởng ngay.')">
+                                        <i class="fa-solid fa-trash"></i> XÓA
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (!Model.Plans.Any())
+        {
+            <div style="padding:20px; text-align:center; font-style:italic; color:#777;">Chưa có gói nào.</div>
+        }
+    </div>
+
+    <!-- Ghi chú -->
+    <div style="margin-top:20px; background:var(--white); border:2px dashed var(--black); padding:14px 18px; font-size:13px; font-weight:700; color:#555;">
+        <i class="fa-solid fa-circle-info" style="color:var(--blue);"></i>
+        <strong>Lưu ý:</strong> Tên gói được dùng để gán cho tài khoản người dùng — không nên đổi tên gói đang sử dụng.
+    </div>
+
+</div>
+</div>
+
+<!-- ══ MODAL TẠO MỚI ══ -->
+<div id="createModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('createModal').style.display='none'">&times;</span>
+        <h2 style="font-weight:900; margin-bottom:20px; color:var(--pink);">THÊM GÓI MỚI</h2>
+        <form method="post" asp-page-handler="Create">
+            <div class="form-group">
+                <label>Tên gói *</label>
+                <input type="text" asp-for="CreateModel.Name" required placeholder="VD: Gold, Enterprise..." />
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea asp-for="CreateModel.Description" placeholder="Mô tả ngắn về gói..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Giá (VNĐ/tháng)</label>
+                <div class="toggle-active" style="margin-bottom:6px;">
+                    <input type="checkbox" id="newIsFree" onchange="toggleFreePrice('new')" />
+                    <label for="newIsFree" style="cursor:pointer; font-weight:800; font-size:13px;">Miễn phí (0đ)</label>
+                </div>
+                <input type="number" id="newPriceInput" asp-for="CreateModel.Price" min="0" step="1000" placeholder="50000" />
+            </div>
+            <div class="form-group">
+                <label>Lượt hỏi/tháng</label>
+                <div class="toggle-active" style="margin-bottom:6px;">
+                    <input type="checkbox" id="newIsUnlimited" onchange="toggleUnlimited('new')" />
+                    <label for="newIsUnlimited" style="cursor:pointer; font-weight:800; font-size:13px;">Không giới hạn</label>
+                </div>
+                <input type="number" id="newLimitInput" asp-for="CreateModel.Limit" placeholder="5" min="1" />
+            </div>
+            <div class="form-group">
+                <label>Thứ tự hiển thị</label>
+                <input type="number" asp-for="CreateModel.SortOrder" min="0" placeholder="0" />
+            </div>
+            <div class="form-group">
+                <div class="toggle-active">
+                    <input type="checkbox" asp-for="CreateModel.IsActive" checked />
+                    <label asp-for="CreateModel.IsActive" style="cursor:pointer;">Kích hoạt ngay</label>
+                </div>
+            </div>
+            <button type="submit" class="brutal-btn"
+                    style="width:100%; background:var(--pink); color:white; border:2px solid var(--black); padding:12px; font-weight:900; box-shadow:2px 2px 0 var(--black); margin-top:8px;">
+                <i class="fa-solid fa-plus"></i> THÊM GÓI
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ══ MODAL SỬA ══ -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('editModal').style.display='none'">&times;</span>
+        <h2 style="font-weight:900; margin-bottom:20px; color:var(--blue);">CẬP NHẬT GÓI</h2>
+        <form method="post" asp-page-handler="Update">
+            <input type="hidden" id="editId" asp-for="UpdateModel.Id" />
+            <div class="form-group">
+                <label>Tên gói *</label>
+                <input type="text" id="editName" asp-for="UpdateModel.Name" required />
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea id="editDescription" asp-for="UpdateModel.Description"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Giá (VNĐ/tháng)</label>
+                <div class="toggle-active" style="margin-bottom:6px;">
+                    <input type="checkbox" id="editIsFree" onchange="toggleFreePrice('edit')" />
+                    <label for="editIsFree" style="cursor:pointer; font-weight:800; font-size:13px;">Miễn phí (0đ)</label>
+                </div>
+                <input type="number" id="editPrice" asp-for="UpdateModel.Price" min="0" step="1000" />
+            </div>
+            <div class="form-group">
+                <label>Lượt hỏi/tháng</label>
+                <div class="toggle-active" style="margin-bottom:6px;">
+                    <input type="checkbox" id="editIsUnlimited" onchange="toggleUnlimited('edit')" />
+                    <label for="editIsUnlimited" style="cursor:pointer; font-weight:800; font-size:13px;">Không giới hạn</label>
+                </div>
+                <input type="number" id="editLimit" asp-for="UpdateModel.Limit" min="1" />
+            </div>
+            <div class="form-group">
+                <label>Thứ tự hiển thị</label>
+                <input type="number" id="editSortOrder" asp-for="UpdateModel.SortOrder" min="0" />
+            </div>
+            <div class="form-group">
+                <div class="toggle-active">
+                    <input type="checkbox" id="editIsActive" asp-for="UpdateModel.IsActive" />
+                    <label for="UpdateModel.IsActive" style="cursor:pointer;">Kích hoạt</label>
+                </div>
+            </div>
+            <button type="submit" class="brutal-btn"
+                    style="width:100%; background:var(--blue); color:white; border:2px solid var(--black); padding:12px; font-weight:900; box-shadow:2px 2px 0 var(--black); margin-top:8px;">
+                <i class="fa-solid fa-save"></i> LƯU THAY ĐỔI
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Toggle ô giá khi tick "Miễn phí"
+    function toggleFreePrice(prefix) {
+        const cb    = document.getElementById(prefix + 'IsFree');
+        const input = document.getElementById(prefix === 'new' ? 'newPriceInput' : 'editPrice');
+        if (cb.checked) {
+            input.value    = 0;
+            input.disabled = true;
+            input.style.background = '#f3f4f6';
+            input.style.color = '#aaa';
+        } else {
+            input.disabled = false;
+            input.style.background = '';
+            input.style.color = '';
+        }
+    }
+
+    // Toggle ô lượt hỏi khi tick "Không giới hạn"
+    function toggleUnlimited(prefix) {
+        const cb    = document.getElementById(prefix + 'IsUnlimited');
+        const input = document.getElementById(prefix === 'new' ? 'newLimitInput' : 'editLimit');
+        if (cb.checked) {
+            input.value    = -1;
+            input.disabled = true;
+            input.style.background = '#f3f4f6';
+            input.style.color = '#aaa';
+        } else {
+            input.disabled = false;
+            input.value    = input.value === '-1' ? 5 : input.value;
+            input.style.background = '';
+            input.style.color = '';
+        }
+    }
+
+    function openEditModal(id, name, description, price, limit, sortOrder, isActive) {
+        document.getElementById('editId').value          = id;
+        document.getElementById('editName').value        = name;
+        document.getElementById('editDescription').value = description;
+        document.getElementById('editSortOrder').value   = sortOrder;
+        document.getElementById('editIsActive').checked  = isActive;
+
+        // Xử lý checkbox miễn phí
+        const isFree = price === 0;
+        document.getElementById('editIsFree').checked = isFree;
+        document.getElementById('editPrice').value    = price;
+        toggleFreePrice('edit');
+        if (!isFree) {
+            // Restore bình thường nếu không miễn phí
+            document.getElementById('editPrice').disabled = false;
+            document.getElementById('editPrice').style.background = '';
+            document.getElementById('editPrice').style.color = '';
+        }
+
+        // Xử lý checkbox không giới hạn
+        const isUnlimited = limit === -1;
+        document.getElementById('editIsUnlimited').checked = isUnlimited;
+        document.getElementById('editLimit').value         = limit;
+        toggleUnlimited('edit');
+        if (!isUnlimited) {
+            document.getElementById('editLimit').disabled = false;
+            document.getElementById('editLimit').style.background = '';
+            document.getElementById('editLimit').style.color = '';
+        }
+
+        document.getElementById('editModal').style.display = 'flex';
+    }
+</script>
+}

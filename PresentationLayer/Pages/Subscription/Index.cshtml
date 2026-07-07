@@ -1,0 +1,220 @@
+@page
+@model PresentationLayer.Pages.Subscription.IndexModel
+@{
+    ViewData["Title"] = "Gói hội viên";
+    ViewBag.ActiveMenu = "Subscription";
+
+    var info = Model.Info;
+    bool isFree    = info.CurrentPlan == "Free";
+    bool isBasic   = info.CurrentPlan == "Basic"   && info.IsActive;
+    bool isPremium = info.CurrentPlan == "Premium"  && info.IsActive;
+
+    // Thanh tiến trình quota
+    double pct = info.MonthlyLimit == int.MaxValue ? 0 : (info.MonthlyLimit == 0 ? 100 : Math.Min(100.0, info.UsedCount * 100.0 / info.MonthlyLimit));
+    string barColor = pct >= 90 ? "var(--pink)" : pct >= 60 ? "#f59e0b" : "var(--green)";
+
+    var vnZone = TimeZoneInfo.FindSystemTimeZoneById(
+        System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+            ? "SE Asia Standard Time" : "Asia/Ho_Chi_Minh");
+    string FmtDate(DateTime? dt) => dt == null ? "-" : TimeZoneInfo.ConvertTimeFromUtc(dt.Value, vnZone).ToString("dd/MM/yyyy");
+}
+
+@section Styles {
+<style>
+    .plan-card {
+        background: var(--white);
+        border: 3px solid var(--black);
+        box-shadow: 6px 6px 0px var(--black);
+        padding: 28px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        position: relative;
+        transition: transform .1s;
+        flex: 1;
+        min-width: 200px;
+    }
+    .plan-card.active-plan {
+        border-color: var(--pink);
+        box-shadow: 6px 6px 0px var(--pink);
+    }
+    .plan-card:hover { transform: translate(-3px,-3px); }
+    .plan-badge {
+        position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+        background: var(--pink); color: var(--white);
+        border: 2px solid var(--black); padding: 3px 14px;
+        font-size: 11px; font-weight: 900; white-space: nowrap; letter-spacing:.5px;
+    }
+    .plan-name  { font-size: 22px; font-weight: 900; text-align: center; }
+    .plan-price { font-size: 28px; font-weight: 900; text-align: center; color: var(--pink); }
+    .plan-price span { font-size: 14px; font-weight: 700; color: #555; }
+    .plan-feature { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
+    .plan-feature i { width: 16px; text-align: center; }
+    .quota-bar-bg {
+        height: 14px; background: #e5e7eb;
+        border: 2px solid var(--black); position: relative; overflow: hidden;
+    }
+    .quota-bar-fill {
+        height: 100%; transition: width .4s;
+    }
+    .upgrade-btn {
+        width: 100%; padding: 11px; font-weight: 900; font-size: 14px;
+        border: 3px solid var(--black); cursor: pointer;
+        box-shadow: 3px 3px 0px var(--black); transition: .1s;
+        text-transform: uppercase;
+    }
+    .upgrade-btn:active { transform: translate(3px,3px); box-shadow: 0 0 0 var(--black); }
+    .info-box {
+        background: var(--white); border: 3px solid var(--black);
+        box-shadow: 5px 5px 0px var(--black); padding: 20px 24px;
+    }
+</style>
+}
+
+<div class="main-wrapper">
+<div style="padding: 30px;">
+
+    <h1 style="color:var(--pink); font-weight:900; font-size:28px; text-transform:uppercase; margin-bottom:6px;">
+        <i class="fa-solid fa-crown"></i> GÓI HỘI VIÊN
+    </h1>
+    <p style="font-weight:700; color:#555; margin-bottom:24px;">Nâng cấp để tăng số lượt hỏi AI mỗi tháng.</p>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div style="background:#d4edda; border:2px solid #28a745; color:#155724; padding:12px 16px; font-weight:800; margin-bottom:20px; font-size:13px;">
+            <i class="fa-solid fa-circle-check"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <!-- ── TRẠNG THÁI HIỆN TẠI ── -->
+    <div class="info-box" style="margin-bottom:28px;">
+        <div style="font-weight:900; font-size:16px; margin-bottom:14px; border-bottom:2px dashed #ccc; padding-bottom:8px;">
+            <i class="fa-solid fa-circle-info" style="color:var(--blue);"></i> TRẠNG THÁI GÓI CỦA BẠN
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start;">
+            <div style="flex:1; min-width:200px;">
+                <div style="font-size:13px; font-weight:700; color:#555; margin-bottom:4px;">GÓI HIỆN TẠI</div>
+                <div style="font-size:20px; font-weight:900; color:@(isPremium ? "#f59e0b" : isBasic ? "var(--blue)" : "#555");">
+                    @if (isPremium) { <i class="fa-solid fa-crown"></i> } 
+                    else if (isBasic) { <i class="fa-solid fa-star"></i> }
+                    else { <i class="fa-regular fa-circle"></i> }
+                    @info.CurrentPlan.ToUpper()
+                </div>
+                @if (!isFree && info.Expiry != null)
+                {
+                    <div style="font-size:12px; font-weight:700; color:#888; margin-top:4px;">
+                        Hết hạn: @FmtDate(info.Expiry)
+                    </div>
+                }
+            </div>
+            <div style="flex:2; min-width:220px;">
+                <div style="font-size:13px; font-weight:700; color:#555; margin-bottom:6px;">
+                    LƯỢT HỎI THÁNG NÀY
+                    <span style="float:right; color:var(--black);">
+                        @info.UsedCount / @(info.MonthlyLimit == int.MaxValue ? "∞" : info.MonthlyLimit.ToString())
+                    </span>
+                </div>
+                <div class="quota-bar-bg">
+                    <div class="quota-bar-fill" style="width:@(pct.ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%; background:@barColor;"></div>
+                </div>
+                <div style="font-size:12px; font-weight:700; margin-top:6px; color:#555;">
+                    @if (info.MonthlyLimit == int.MaxValue)
+                    { <span style="color:var(--green);">Không giới hạn <i class="fa-solid fa-infinity"></i></span> }
+                    else if (info.Remaining == 0)
+                    { <span style="color:var(--pink);">Đã hết lượt — reset vào @FmtDate(info.ResetDate)</span> }
+                    else
+                    { <span>Còn <strong>@info.Remaining</strong> lượt — reset @FmtDate(info.ResetDate)</span> }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CÁC GÓI ── -->
+    <div style="display:flex; flex-wrap:wrap; gap:24px; margin-bottom:32px; align-items:stretch;">
+
+        <!-- FREE -->
+        <div class="plan-card @(isFree ? "active-plan" : "")" style="flex:1; min-width:200px; max-width:none;">
+            @if (isFree) { <div class="plan-badge">GÓI HIỆN TẠI</div> }
+            <div class="plan-name"><i class="fa-regular fa-circle" style="color:#6b7280;"></i> FREE</div>
+            <div class="plan-price">0đ <span>/tháng</span></div>
+            <hr style="border:1px dashed #ccc; margin:4px 0;">
+            <div class="plan-feature"><i class="fa-solid fa-check" style="color:var(--green);"></i> 5 câu hỏi / tháng</div>
+            <div class="plan-feature"><i class="fa-solid fa-check" style="color:var(--green);"></i> Truy cập tài liệu</div>
+            <div class="plan-feature"><i class="fa-solid fa-xmark" style="color:#ccc;"></i> Không ưu tiên phản hồi</div>
+            <div style="margin-top:auto; padding-top:8px;">
+                <div style="width:100%; padding:11px; font-weight:900; font-size:14px; border:3px solid #ccc; text-align:center; color:#aaa; background:#f9f9f9; cursor:default;">
+                    @(isFree ? "ĐANG SỬ DỤNG" : "GÓI CƠ BẢN")
+                </div>
+            </div>
+        </div>
+
+        <!-- BASIC -->
+        <div class="plan-card @(isBasic ? "active-plan" : "")" style="flex:1; min-width:200px; max-width:none;">
+            @if (isBasic) { <div class="plan-badge">GÓI HIỆN TẠI</div> }
+            <div class="plan-name"><i class="fa-solid fa-star" style="color:var(--blue);"></i> BASIC</div>
+            <div class="plan-price">50.000đ <span>/tháng</span></div>
+            <hr style="border:1px dashed #ccc; margin:4px 0;">
+            <div class="plan-feature"><i class="fa-solid fa-check" style="color:var(--green);"></i> 100 câu hỏi / tháng</div>
+            <div class="plan-feature"><i class="fa-solid fa-check" style="color:var(--green);"></i> Truy cập tài liệu</div>
+            <div class="plan-feature"><i class="fa-solid fa-check" style="color:var(--green);"></i> Lịch sử chat</div>
+            <div style="margin-top:auto; padding-top:8px;">
+                @if (isBasic)
+                {
+                    <div style="width:100%; padding:11px; font-weight:900; font-size:14px; border:3px solid var(--blue); text-align:center; color:var(--blue); background:#eff6ff; cursor:default;">
+                        ĐANG SỬ DỤNG
+                    </div>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Upgrade">
+                        <input type="hidden" name="plan" value="Basic" />
+                        <button type="submit" class="upgrade-btn" style="background:var(--blue); color:var(--white);"
+                                onclick="return confirm('Xác nhận thanh toán gói Basic (50.000đ/tháng)?')">
+                            <i class="fa-solid fa-arrow-up"></i> NÂNG CẤP BASIC
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <!-- PREMIUM -->
+        <div class="plan-card @(isPremium ? "active-plan" : "")" style="flex:1; min-width:200px; max-width:none; @(!isPremium ? "border-color:var(--yellow);" : "")">
+            @if (isPremium) { <div class="plan-badge">GÓI HIỆN TẠI</div> }
+            @if (!isPremium) { <div class="plan-badge" style="background:var(--yellow); color:var(--black);">PHỔ BIẾN NHẤT</div> }
+            <div class="plan-name"><i class="fa-solid fa-crown" style="color:#f59e0b;"></i> PREMIUM</div>
+            <div class="plan-price">150.000đ <span>/tháng</span></div>
+            <hr style="border:1px dashed #ccc; margin:4px 0;">
+            <div class="plan-feature"><i class="fa-solid fa-infinity" style="color:var(--green);"></i> Không giới hạn câu hỏi</div>
+            <div class="plan-feature"><i class="fa-solid fa-check" style="color:var(--green);"></i> Truy cập tài liệu</div>
+            <div class="plan-feature"><i class="fa-solid fa-check" style="color:var(--green);"></i> Ưu tiên phản hồi nhanh</div>
+            <div class="plan-feature"><i class="fa-solid fa-check" style="color:var(--green);"></i> Lịch sử chat không giới hạn</div>
+            <div style="margin-top:auto; padding-top:8px;">
+                @if (isPremium)
+                {
+                    <div style="width:100%; padding:11px; font-weight:900; font-size:14px; border:3px solid #f59e0b; text-align:center; color:#f59e0b; background:#fffbeb; cursor:default;">
+                        ĐANG SỬ DỤNG
+                    </div>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Upgrade">
+                        <input type="hidden" name="plan" value="Premium" />
+                        <button type="submit" class="upgrade-btn" style="background:var(--yellow); color:var(--black);"
+                                onclick="return confirm('Xác nhận thanh toán gói Premium (150.000đ/tháng)?')">
+                            <i class="fa-solid fa-crown"></i> NÂNG CẤP PREMIUM
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── GHI CHÚ ── -->
+    <div style="background:var(--white); border:2px dashed var(--black); padding:16px 20px; font-size:13px; font-weight:700; color:#555;">
+        <i class="fa-solid fa-triangle-exclamation" style="color:var(--yellow);"></i>
+        <strong>Lưu ý:</strong> Lượt hỏi được <strong>reset vào đầu mỗi tháng</strong>.
+    </div>
+
+</div>
+</div>

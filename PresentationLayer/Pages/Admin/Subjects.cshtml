@@ -1,0 +1,205 @@
+@page
+@model PresentationLayer.Pages.Admin.SubjectsModel
+@{
+    ViewData["Title"] = "Quản lý Môn học";
+    ViewBag.ActiveMenu = "AdminSubjects";
+}
+
+@section Styles {
+    <style>
+        .modal {
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background-color: var(--white); border: var(--border); box-shadow: 8px 8px 0px var(--black);
+            padding: 30px; width: 450px; position: relative;
+        }
+        .close-btn {
+            position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: 900; cursor: pointer; color: var(--black);
+        }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-weight: 800; font-size: 12px; }
+        .form-group input, .form-group select {
+            border: 2px solid var(--black); padding: 10px; font-weight: 700; outline: none;
+        }
+    </style>
+}
+
+<div class="main-wrapper">
+    <div style="padding: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="color: var(--pink); font-weight: 900; font-size: 28px; text-transform: uppercase;">
+                QUẢN LÝ MÔN HỌC
+            </h1>
+            <button onclick="document.getElementById('createSubjectModal').style.display='flex'" class="brutal-btn" style="background-color: var(--pink); color: var(--white); border: 2px solid var(--black); padding: 10px 20px; font-weight: 900; box-shadow: 2px 2px 0px var(--black);">
+                <i class="fa-solid fa-plus"></i> THÊM MÔN HỌC
+            </button>
+        </div>
+
+        <!-- Danh sách Môn học -->
+        <div id="subjects-container" style="background-color: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 20px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 3px solid var(--black);">
+                        <th style="padding: 10px; text-align: left; font-weight: 900;">MÃ</th>
+                        <th style="padding: 10px; text-align: left; font-weight: 900;">TÊN MÔN</th>
+                        <th style="padding: 10px; text-align: left; font-weight: 900;">GIẢNG VIÊN</th>
+                        <th style="padding: 10px; text-align: center; font-weight: 900;">TRẠNG THÁI</th>
+                        <th style="padding: 10px; text-align: center; font-weight: 900;">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var subject in Model.Subjects)
+                    {
+                        <tr style="border-bottom: 1px dashed #ccc; background-color: @(subject.IsDeleted ? "#fbeaea" : "transparent");">
+                            <td style="padding: 10px; font-weight: 900;">@subject.Code</td>
+                            <td style="padding: 10px; font-weight: 700;">@subject.Name</td>
+                            <td style="padding: 10px; font-weight: 700;">
+                                @if(string.IsNullOrEmpty(subject.LecturerName))
+                                {
+                                    <span style="color: #999; font-style: italic;">Chưa phân công</span>
+                                }
+                                else
+                                {
+                                    <span style="color: var(--blue); font-weight: 800;">@subject.LecturerName</span>
+                                }
+                            </td>
+                            <td style="padding: 10px; text-align: center; font-weight: 800;">
+                                @if(subject.IsDeleted)
+                                {
+                                    <span style="color: red;">Đã Xóa</span>
+                                }
+                                else
+                                {
+                                    <span style="color: var(--green);">Hoạt động</span>
+                                }
+                            </td>
+                            <td style="padding: 10px; text-align: center;">
+                                <div style="display: flex; gap: 5px; justify-content: center;">
+                                    <a href="/Lecturer/ManageSubject/@subject.Id" class="brutal-btn" style="background-color: var(--green); color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black); text-decoration: none;">
+                                        <i class="fa-solid fa-folder-open"></i> CHI TIẾT
+                                    </a>
+                                    <button type="button" class="brutal-btn" style="background-color: var(--blue); color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black);" 
+                                            onclick="openUpdateSubjectModal(@subject.Id, '@subject.Code', '@subject.Name', '@(subject.LecturerId?.ToString() ?? "")')">
+                                        <i class="fa-solid fa-pen"></i> SỬA
+                                    </button>
+                                    @if(!subject.IsDeleted)
+                                    {
+                                        <form method="post" asp-page-handler="DeleteSubject">
+                                            <input type="hidden" name="id" value="@subject.Id" />
+                                            <button type="submit" class="brutal-btn" style="background-color: #ff4d4f; color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black);">
+                                                <i class="fa-solid fa-trash"></i> XÓA
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form method="post" asp-page-handler="RestoreSubject">
+                                            <input type="hidden" name="id" value="@subject.Id" />
+                                            <button type="submit" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black);">
+                                                <i class="fa-solid fa-rotate-left"></i> KHÔI PHỤC
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            
+            @if(!Model.Subjects.Any())
+            {
+                <div style="padding: 20px; text-align: center; font-style: italic; color: #777;">Chưa có môn học nào.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create -->
+<div id="createSubjectModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('createSubjectModal').style.display='none'">&times;</span>
+        <h2 style="font-weight: 900; margin-bottom: 20px; color: var(--pink);">THÊM MÔN HỌC</h2>
+        <form method="post" asp-page-handler="AddSubject">
+            <div class="form-group">
+                <label>Mã Môn</label>
+                <input type="text" asp-for="CreateModel.Code" required placeholder="VD: PRN222" />
+            </div>
+            <div class="form-group">
+                <label>Tên Môn</label>
+                <input type="text" asp-for="CreateModel.Name" required placeholder="VD: C# Nâng cao" />
+            </div>
+            <div class="form-group">
+                <label>Giảng viên phụ trách</label>
+                <select asp-for="CreateModel.LecturerId" asp-items="Model.Lecturers">
+                    <option value="">-- Chưa phân công --</option>
+                </select>
+            </div>
+            <button type="submit" class="brutal-btn" style="width: 100%; background-color: var(--pink); color: var(--white); border: 2px solid var(--black); padding: 10px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); margin-top: 10px;">
+                <i class="fa-solid fa-plus"></i> THÊM MỚI
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Update -->
+<div id="updateSubjectModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('updateSubjectModal').style.display='none'">&times;</span>
+        <h2 style="font-weight: 900; margin-bottom: 20px; color: var(--blue);">CẬP NHẬT MÔN HỌC</h2>
+        <form method="post" asp-page-handler="UpdateSubject">
+            <input type="hidden" id="updateSubId" asp-for="UpdateModel.Id" />
+            <div class="form-group">
+                <label>Mã Môn</label>
+                <input type="text" id="updateSubCode" asp-for="UpdateModel.Code" required />
+            </div>
+            <div class="form-group">
+                <label>Tên Môn</label>
+                <input type="text" id="updateSubName" asp-for="UpdateModel.Name" required />
+            </div>
+            <div class="form-group">
+                <label>Giảng viên phụ trách</label>
+                <select id="updateSubLecturer" asp-for="UpdateModel.LecturerId" asp-items="Model.Lecturers">
+                    <option value="">-- Chưa phân công --</option>
+                </select>
+            </div>
+            <button type="submit" class="brutal-btn" style="width: 100%; background-color: var(--blue); color: var(--white); border: 2px solid var(--black); padding: 10px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); margin-top: 10px;">
+                <i class="fa-solid fa-save"></i> LƯU THAY ĐỔI
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openUpdateSubjectModal(id, code, name, lecturerId) {
+            document.getElementById('updateSubId').value = id;
+            document.getElementById('updateSubCode').value = code;
+            document.getElementById('updateSubName').value = name;
+            document.getElementById('updateSubLecturer').value = lecturerId;
+            document.getElementById('updateSubjectModal').style.display = 'flex';
+        }
+
+        // SignalR realtime update
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/courseHub")
+            .build();
+
+        connection.on("CourseChanged", function () {
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('subjects-container').innerHTML;
+                    document.getElementById('subjects-container').innerHTML = newContent;
+                });
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+    </script>
+}
