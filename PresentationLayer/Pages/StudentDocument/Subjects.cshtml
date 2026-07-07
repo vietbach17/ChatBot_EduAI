@@ -1,0 +1,63 @@
+@page
+@model PresentationLayer.Pages.StudentDocument.SubjectsModel
+@{
+    ViewBag.ActiveMenu = "Subjects";
+    ViewData["Title"] = "Môn học";
+}
+
+<div class="main-wrapper">
+    <div style="padding: 30px;">
+        <h1 style="color: var(--pink); font-weight: 900; margin-bottom: 20px; font-size: 28px; text-transform: uppercase;">
+            Danh sách Môn học
+        </h1>
+        
+        <div id="subjects-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+            @foreach (var subject in Model.Subjects)
+            {
+                <div style="background-color: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 20px; display: flex; flex-direction: column; transition: 0.1s;">
+                    <div style="font-weight: 900; font-size: 22px; color: var(--black); margin-bottom: 10px;">@subject.Code</div>
+                    <div style="font-weight: 700; font-size: 14px; color: #555; margin-bottom: 20px; flex: 1;">@subject.Name</div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; font-weight: 800; color: #888;">
+                            <i class="fa-solid fa-layer-group"></i> @subject.Chapters.Count Chương
+                        </span>
+                        <a asp-page="/StudentDocument/SubjectDetail" asp-route-id="@subject.Id" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 2px solid var(--black); padding: 6px 12px; font-weight: 800; font-size: 12px; text-decoration: none; box-shadow: 2px 2px 0px var(--black); display: inline-block;">
+                            XEM CHI TIẾT
+                        </a>
+                    </div>
+                </div>
+            }
+            
+            @if (!Model.Subjects.Any())
+            {
+                <div style="grid-column: 1 / -1; padding: 40px; text-align: center; border: 3px dashed #000; background: #fff; font-weight: 800; font-style: italic;">
+                    Chưa có môn học nào trong hệ thống.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/courseHub")
+            .build();
+
+        connection.on("CourseChanged", function () {
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('subjects-container').innerHTML;
+                    document.getElementById('subjects-container').innerHTML = newContent;
+                });
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+    </script>
+}

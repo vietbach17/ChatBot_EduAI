@@ -1,0 +1,84 @@
+@page
+@model PresentationLayer.Pages.Lecturer.AllSubjectsModel
+@{
+    ViewData["Title"] = "Tất cả môn học";
+    ViewBag.ActiveMenu = "LecturerAllSubjects";
+}
+
+@section Styles {
+    <style>
+        .modal {
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background-color: var(--white); border: var(--border); box-shadow: 8px 8px 0px var(--black);
+            padding: 30px; width: 450px; position: relative;
+        }
+        .close-btn {
+            position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: 900; cursor: pointer; color: var(--black);
+        }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-weight: 800; font-size: 12px; }
+        .form-group input, .form-group select {
+            border: 2px solid var(--black); padding: 10px; font-weight: 700; outline: none;
+        }
+    </style>
+}
+
+<div class="main-wrapper" style="padding: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="color: var(--pink); font-weight: 900; font-size: 28px; text-transform: uppercase; margin: 0;">
+            TẤT CẢ MÔN HỌC TRONG HỆ THỐNG
+        </h1>
+    </div>
+    <p style="margin-bottom: 20px; font-weight: 600;">Danh sách toàn bộ môn học. Bạn có quyền xem tài liệu của tất cả các môn.</p>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px;" id="subjects-container">
+        @foreach (var subject in Model.Subjects)
+        {
+            <div style="background-color: var(--white); border: 3px solid var(--black); box-shadow: 6px 6px 0px 0px var(--black); padding: 20px; width: 300px; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                    <h2 style="font-weight: 900; color: var(--pink); margin: 0;">@subject.Code</h2>
+                </div>
+                <h3 style="font-weight: 800; font-size: 16px; margin-bottom: 10px;">@subject.Name</h3>
+                <p style="font-weight: 600; font-size: 14px; margin-bottom: 15px; flex-grow: 1;">
+                    Giảng viên: <span style="color: var(--blue);">@(string.IsNullOrEmpty(subject.LecturerName) ? "Chưa có" : subject.LecturerName)</span>
+                </p>
+                <a asp-page="/Lecturer/ManageSubject" asp-route-id="@subject.Id" class="brutal-btn" style="text-align: center; text-decoration: none; background-color: var(--yellow); color: var(--black); border: 2px solid var(--black); padding: 10px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); display: block;">
+                    XEM CHI TIẾT
+                </a>
+            </div>
+        }
+
+        @if (!Model.Subjects.Any())
+        {
+            <div style="font-style: italic; color: #666;" id="no-subjects-msg">Hiện chưa có môn học nào trên hệ thống.</div>
+        }
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/courseHub")
+            .build();
+
+        connection.on("CourseChanged", function () {
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('subjects-container').innerHTML;
+                    document.getElementById('subjects-container').innerHTML = newContent;
+                });
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+    </script>
+}
