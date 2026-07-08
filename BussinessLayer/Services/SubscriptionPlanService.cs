@@ -43,7 +43,9 @@ namespace BussinessLayer.Services
                 Price                = dto.Price,
                 MonthlyQuestionLimit = dto.MonthlyQuestionLimit,
                 IsActive             = dto.IsActive,
-                SortOrder            = dto.SortOrder
+                SortOrder            = dto.SortOrder,
+                Features             = dto.Features,
+                DurationDays         = dto.DurationDays
             });
             return (true, string.Empty);
         }
@@ -64,6 +66,8 @@ namespace BussinessLayer.Services
             plan.MonthlyQuestionLimit = dto.MonthlyQuestionLimit;
             plan.IsActive             = dto.IsActive;
             plan.SortOrder            = dto.SortOrder;
+            plan.Features             = dto.Features;
+            plan.DurationDays         = dto.DurationDays;
 
             await _repo.UpdateAsync(plan);
             return (true, string.Empty);
@@ -86,7 +90,9 @@ namespace BussinessLayer.Services
             Price                = p.Price,
             MonthlyQuestionLimit = p.MonthlyQuestionLimit,
             IsActive             = p.IsActive,
-            SortOrder            = p.SortOrder
+            SortOrder            = p.SortOrder,
+            Features             = p.Features,
+            DurationDays         = p.DurationDays
         };
     }
 }

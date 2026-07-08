@@ -1,4 +1,4 @@
-﻿using BussinessLayer.Services;
+using BussinessLayer.Services;
 using BussinessLayer.IServices;
 using DataAccessLayer;
 using DataAccessLayer.Repositories;
@@ -24,6 +24,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
+builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
+builder.Services.AddScoped<IDocumentActivityLogRepository, DocumentActivityLogRepository>();
+builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
 
 // Services
 builder.Services.AddHttpClient();
@@ -36,6 +40,13 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
 builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddSingleton<IFileTextExtractorService, FileTextExtractorService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<IDocumentActivityLogService, DocumentActivityLogService>();
+builder.Services.AddScoped<IPaymentGateway, VNPayGateway>();
+builder.Services.AddScoped<PaymentGatewayFactory>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddHostedService<QuotaResetBackgroundService>();
 
 // Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

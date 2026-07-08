@@ -1,87 +1,106 @@
+using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using BussinessLayer.DTOs;
+using BussinessLayer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using BussinessLayer.Services;
-using BussinessLayer.DTOs;
-using BussinessLayer.Helpers;
 
 namespace PresentationLayer.Pages.Payment
 {
     [Authorize]
     public class CreateModel : PageModel
     {
-        private readonly IVNPayService _vnPayService;
+        private readonly ISubscriptionPlanService _planService;
+        private readonly IPaymentService _paymentService;
+        private readonly PaymentGatewayFactory _gatewayFactory;
 
-        public CreateModel(IVNPayService vnPayService)
+        public CreateModel(
+            ISubscriptionPlanService planService,
+            IPaymentService paymentService,
+            PaymentGatewayFactory gatewayFactory)
         {
-            _vnPayService = vnPayService;
+            _planService = planService;
+            _paymentService = paymentService;
+            _gatewayFactory = gatewayFactory;
         }
 
-        public IActionResult OnGet(string plan)
+        public SubscriptionPlanDto Plan { get; set; } = default!;
+
+        public async Task<IActionResult> OnGetAsync(string plan)
         {
             if (string.IsNullOrEmpty(plan))
             {
                 return RedirectToPage("/Subscription/Index");
             }
 
-            var val = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value
-                   ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(val, out var userId))
+            var allPlans = await _planService.GetAllAsync();
+            var targetPlan = allPlans.FirstOrDefault(p => p.Name.Equals(plan, StringComparison.OrdinalIgnoreCase));
+
+            if (targetPlan == null || targetPlan.Price <= 0)
+            {
+                return RedirectToPage("/Subscription/Index");
+            }
+
+            Plan = targetPlan;
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync(int planId, string paymentMethod)
+        {
+            var userId = GetUserId();
+            if (userId <= 0)
             {
                 return RedirectToPage("/Auth/Login");
             }
 
-            // Determine amount based on plan (can also be queried from DB if we fetch from SubscriptionPlanService)
-            decimal amount = 0;
-            if (plan == "Basic") amount = 50000;
-            else if (plan == "Premium") amount = 150000;
-            else return RedirectToPage("/Subscription/Index");
-
-            var requestDto = new VNPayRequestDto
+            var plan = await _planService.GetByIdAsync(planId);
+            if (plan == null || plan.Price <= 0)
             {
-                UserId = userId,
-                Amount = amount,
-                PlanName = plan,
-                OrderDescription = $"Thanh toan nang cap goi {plan}",
-                IpAddress = GetIpAddress(),
-                ReturnUrl = Url.Page("/Payment/Callback", null, null, Request.Scheme) ?? string.Empty
-            };
+                TempData["ErrorMessage"] = "Gói cước không hợp lệ.";
+                return RedirectToPage("/Subscription/Index");
+            }
 
-            string paymentUrl = _vnPayService.CreatePaymentUrl(requestDto);
-            return Redirect(paymentUrl);
-        }
-
-        private string GetIpAddress()
-        {
-            var ipAddress = string.Empty;
             try
             {
-                var remoteIpAddress = HttpContext.Connection.RemoteIpAddress;
+                // Call PaymentService instead of calling repository directly
+                var transaction = await _paymentService.CreateTransactionAsync(userId, planId, paymentMethod);
+
+                var gateway = _gatewayFactory.GetGateway(paymentMethod);
                 
-                if (remoteIpAddress != null)
+                // Dynamically construct return callback URL based on selected gateway
+                string callbackPage = paymentMethod.Equals("VNPay", StringComparison.OrdinalIgnoreCase) 
+                    ? "/Payment/VNPayCallback" 
+                    : "/Payment/VNPayCallback"; // Fallback/Default
+
+                var returnUrl = $"{Request.Scheme}://{Request.Host}{callbackPage}";
+
+                var paymentRequest = new PaymentRequest
                 {
-                    if (remoteIpAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-                    {
-                        remoteIpAddress = System.Net.Dns.GetHostEntry(remoteIpAddress).AddressList
-                            .FirstOrDefault(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-                    }
+                    TransactionId = transaction.Id,
+                    Amount = transaction.Amount,
+                    OrderDescription = $"Thanh toan mua goi {plan.Name} cho account {User.Identity?.Name}",
+                    ReturnUrl = returnUrl,
+                    IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1"
+                };
 
-                    if (remoteIpAddress != null) ipAddress = remoteIpAddress.ToString();
-
-                    if (ipAddress == "127.0.0.1" || ipAddress == "::1")
-                    {
-                        ipAddress = "127.0.0.1";
-                    }
-                }
+                var paymentUrl = await gateway.CreatePaymentUrl(paymentRequest);
+                return Redirect(paymentUrl);
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-                ipAddress = "127.0.0.1";
+                TempData["ErrorMessage"] = $"Lỗi khi khởi tạo thanh toán: {ex.Message}";
+                return RedirectToPage("/Subscription/Index");
             }
+        }
 
-            return string.IsNullOrEmpty(ipAddress) ? "127.0.0.1" : ipAddress;
+        private int GetUserId()
+        {
+            var val = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value
+                   ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(val, out var id) ? id : 0;
         }
     }
 }

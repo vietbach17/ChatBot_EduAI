@@ -26,7 +26,7 @@ namespace DataAccessLayer.Entities
 
         // ===== SUBSCRIPTION =====
         [MaxLength(20)]
-        public string SubscriptionPlan { get; set; } = "Free"; // "Free", "Basic", "Premium"
+        public string SubscriptionPlan { get; set; } = "Basic"; // Mặc định là Basic (Miễn phí)
 
         public DateTime? SubscriptionExpiry { get; set; } // null = chưa mua / hết hạn
 
@@ -37,5 +37,6 @@ namespace DataAccessLayer.Entities
         
         public ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
         public ICollection<Subject> AssignedSubjects { get; set; } = new List<Subject>();
+        public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
     }
 }

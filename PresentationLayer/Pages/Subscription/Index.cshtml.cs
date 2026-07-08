@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -13,19 +14,27 @@ namespace PresentationLayer.Pages.Subscription
     public class IndexModel : PageModel
     {
         private readonly ISubscriptionService _subscriptionService;
+        private readonly ISubscriptionPlanService _planService;
 
-        public IndexModel(ISubscriptionService subscriptionService)
+        public IndexModel(ISubscriptionService subscriptionService, ISubscriptionPlanService planService)
         {
             _subscriptionService = subscriptionService;
+            _planService = planService;
         }
 
         public SubscriptionInfoDto Info { get; set; } = new();
+        public List<SubscriptionPlanDto> Plans { get; set; } = new();
 
         public async Task OnGetAsync()
         {
             var userId = GetUserId();
             if (userId > 0)
+            {
                 Info = await _subscriptionService.GetSubscriptionInfoAsync(userId);
+            }
+
+            var activePlans = await _planService.GetAllAsync();
+            Plans = activePlans.Where(p => p.IsActive).OrderBy(p => p.SortOrder).ToList();
         }
 
         public IActionResult OnPostUpgrade(string plan)
