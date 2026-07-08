@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.IRepositories
 {
-    internal interface IDocumentActivityLogRepository
+    public interface IDocumentActivityLogRepository
     {
         Task AddLogAsync(DocumentActivityLog log);
         Task<IEnumerable<DocumentActivityLog>> GetLogsBySubjectIdAsync(int subjectId);

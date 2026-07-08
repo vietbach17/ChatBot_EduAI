@@ -10,7 +10,7 @@ namespace BussinessLayer.Services
 {
     public class DocumentService : IDocumentService
     {
-        private readonly IDocumentRepository _documentRepository;
+         private readonly IDocumentRepository _documentRepository;
         private readonly IGeminiService _geminiService;
 
         public DocumentService(IDocumentRepository documentRepository, IGeminiService geminiService)
@@ -59,7 +59,7 @@ namespace BussinessLayer.Services
 
         public async Task<IEnumerable<DocumentDto>> GetDocumentsByChapterAsync(int chapterId)
         {
-            var documents = await _documentRepository.GetAllDocumentsAsync();
+            var documents = await _documentRepository.GetAllDocumentsAsync(); 
             return documents.Where(d => d.ChapterId == chapterId).Select(d => new DocumentDto
             {
                 Id = d.Id,
@@ -176,7 +176,7 @@ namespace BussinessLayer.Services
 
             // Context-Aware Chunking Strategy: split by semantics and maintain overlap
             var textChunks = SplitTextByContext(doc.Content, maxWords: 300, overlapWords: 50);
-
+            
             var chunks = new List<DataAccessLayer.Entities.DocumentChunk>();
             int orderIndex = 1;
             int totalChunks = textChunks.Count;
@@ -193,7 +193,7 @@ namespace BussinessLayer.Services
                     Embedding = new Pgvector.Vector(vector),
                     OrderIndex = orderIndex++
                 });
-
+                
                 if (progressCallback != null)
                 {
                     await progressCallback(chunks.Count, totalChunks);
@@ -204,12 +204,12 @@ namespace BussinessLayer.Services
             {
                 await _documentRepository.AddDocumentChunksAsync(chunks);
             }
-
+            
             if (progressCallback != null)
             {
                 await progressCallback(1, 1); // Đảm bảo lên 100% khi hoàn thành
             }
-
+            
             return true;
         }
 
@@ -220,27 +220,27 @@ namespace BussinessLayer.Services
 
             // Bước 1: Tách đoạn văn
             var paragraphs = System.Text.RegularExpressions.Regex.Split(content, @"\n\s*\n");
-
+            
             var currentChunkWords = new List<string>();
-
+            
             foreach (var para in paragraphs)
             {
                 if (string.IsNullOrWhiteSpace(para)) continue;
 
                 var paraWords = para.Split(new[] { ' ', '\r', '\n', '\t' }, System.StringSplitOptions.RemoveEmptyEntries);
-
+                
                 // Nếu đoạn văn dài hơn giới hạn, ta chia nhỏ nó thành các câu
                 if (paraWords.Length > maxWords)
                 {
                     // Tách câu giữ nguyên dấu kết thúc câu
                     var sentences = System.Text.RegularExpressions.Regex.Split(para, @"(?<=[.!?])\s+");
-
+                    
                     foreach (var sentence in sentences)
                     {
                         if (string.IsNullOrWhiteSpace(sentence)) continue;
-
+                        
                         var sentenceWords = sentence.Split(new[] { ' ', '\r', '\n', '\t' }, System.StringSplitOptions.RemoveEmptyEntries);
-
+                        
                         // Nếu 1 câu dài hơn maxWords (hiếm nhưng có thể xảy ra ở PDF lỗi), tách ép theo số từ
                         if (sentenceWords.Length > maxWords)
                         {

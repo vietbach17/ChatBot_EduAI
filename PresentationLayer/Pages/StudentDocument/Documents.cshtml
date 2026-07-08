@@ -1,0 +1,370 @@
+﻿@page
+@model PresentationLayer.Pages.StudentDocument.DocumentsModel
+@{
+    ViewBag.ActiveMenu = "Docs";
+    ViewData["Title"] = "Tài liệu";
+
+    var groupedDocs = Model.Documents
+        .GroupBy(d => string.IsNullOrWhiteSpace(d.SubjectName) ? "Không phân loại" : d.SubjectName!.Trim())
+        .OrderBy(g => g.Key)
+        .ToList();
+}
+
+<div class="main-wrapper">
+    <style>
+            .doc-page-hero {
+                background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+                border: 3px solid var(--black);
+                box-shadow: var(--shadow);
+                padding: 24px;
+                margin: 30px;
+            }
+
+            .folder-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            .subject-folder {
+                border: 3px solid var(--black);
+                background: var(--white);
+                box-shadow: 4px 4px 0px var(--black);
+                overflow: hidden;
+                position: relative;
+            }
+
+                .subject-folder summary {
+                    list-style: none;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    padding: 14px 16px;
+                    font-weight: 900;
+                    font-size: 15px;
+                    position: relative;
+                    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.96));
+                }
+
+                    .subject-folder summary:hover {
+                        background: linear-gradient(180deg, rgba(255,255,255,1), rgba(243,244,246,1));
+                    }
+
+                    .subject-folder summary::-webkit-details-marker {
+                        display: none;
+                    }
+
+            .folder-title {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                min-width: 0;
+            }
+
+            .folder-count {
+                flex-shrink: 0;
+                font-size: 11px;
+                font-weight: 800;
+                color: var(--black);
+                padding-left: 10px;
+            }
+
+            .folder-accent {
+                display: none;
+            }
+
+            .folder-name {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+            }
+
+            .folder-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 0;
+                font-size: 11px;
+                font-weight: 900;
+                letter-spacing: 0.2px;
+                white-space: nowrap;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            .folder-docs {
+                border-top: 1px solid #d1d5db;
+                padding: 14px 16px 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                background: #fff;
+            }
+
+            .folder-doc {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 16px;
+                background: var(--white);
+                border: 2px solid var(--black);
+                padding: 12px 14px;
+                box-shadow: 2px 2px 0px var(--black);
+                transition: transform 0.12s ease, box-shadow 0.12s ease;
+            }
+
+                .folder-doc:hover {
+                    transform: translate(-1px, -1px);
+                    box-shadow: 3px 3px 0px var(--black);
+                }
+
+            .folder-doc-meta {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                min-width: 0;
+            }
+
+            .folder-doc-title {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 800;
+                font-size: 14px;
+                min-width: 0;
+            }
+
+                .folder-doc-title span:last-child {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+
+            .folder-doc-subtitle {
+                font-size: 12px;
+                font-weight: 700;
+                color: #666;
+            }
+
+            .subject-folder[open] .folder-chevron {
+                transform: rotate(180deg);
+            }
+
+            .folder-chevron {
+                transition: transform 0.15s ease;
+                color: rgba(0,0,0,0.75);
+            }
+    </style>
+
+    <div class="doc-page-hero">
+        <h1 style="color: var(--pink); font-weight: 900; margin-bottom: 12px; font-size: 28px; text-transform: uppercase;">
+            Thư viện Tài liệu
+        </h1>
+        <p style="margin: 0; font-size: 14px; font-weight: 700; color: #555;">
+            Tài liệu được gom theo từng môn để bạn mở nhanh như một thư mục.
+        </p>
+    </div>
+
+    <div style="padding: 0 30px 30px;">
+        <div class="folder-grid">
+            @if (groupedDocs.Any())
+            {
+                @foreach (var subjectGroup in groupedDocs)
+                {
+                    var visual = GetSubjectVisual(subjectGroup.Key);
+                    if (subjectGroup.Key == "Không phân loại")
+                    {
+                        <details class="subject-folder">
+                            <summary>
+                                <span class="folder-accent" style="background:@visual.Accent;"></span>
+                                <span class="folder-title">
+                                    <span class="folder-pill" style="background:@visual.Soft;">
+                                        <i class="@visual.Icon"></i>
+                                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@subjectGroup.Key</span>
+                                    </span>
+                                </span>
+                                <span class="folder-count">@subjectGroup.Count() tài liệu <i class="fa-solid fa-chevron-down folder-chevron"></i></span>
+                            </summary>
+
+                            <div class="folder-docs">
+                                @foreach (var doc in subjectGroup.OrderBy(d => d.ChapterTitle ?? string.Empty).ThenBy(d => d.Title))
+                                {
+                                    <div class="folder-doc">
+                                        <div class="folder-doc-meta">
+                                            <div class="folder-doc-title">
+                                                <span style="color: @(doc.FileType.ToLower() == "pdf" ? "#d93856" : (doc.FileType.ToLower() == "docx" ? "#2b579a" : (doc.FileType.ToLower() == "pptx" ? "#d04423" : "#6b7280"))); font-weight: 900; font-size: 12px;">
+                                                    [@doc.FileType.ToUpper()]
+                                                </span>
+                                                <span title="@doc.Title">@doc.Title</span>
+                                            </div>
+
+                                            <div class="folder-doc-subtitle">
+                                                @if (!string.IsNullOrWhiteSpace(doc.ChapterTitle))
+                                                {
+                                                    <span>@doc.ChapterTitle</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Chưa gán chương</span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div style="display: flex; gap: 10px; flex-shrink: 0;">
+                                            <a href="/ViewDocument?id=@doc.Id" class="brutal-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 8px 14px; font-weight: 800; font-size: 12px; text-decoration: none; box-shadow: 2px 2px 0px var(--black); display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;">
+                                                <i class="fa-solid fa-eye"></i> XEM CHI TIẾT
+                                            </a>
+                                            <a href="@doc.FileUrl" download target="_blank" class="brutal-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 8px 14px; font-weight: 800; font-size: 12px; text-decoration: none; box-shadow: 2px 2px 0px var(--black); display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;">
+                                                <i class="fa-solid fa-download"></i> TẢI VỀ
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </details>
+                    }
+                    else
+                    {
+                        <details class="subject-folder">
+                            <summary>
+                                <span class="folder-accent" style="background:@visual.Accent;"></span>
+                                <span class="folder-title">
+                                    <span class="folder-pill" style="background:@visual.Soft;">
+                                        <i class="@visual.Icon"></i>
+                                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@subjectGroup.Key</span>
+                                    </span>
+                                </span>
+                                <span class="folder-count">@subjectGroup.Count() tài liệu <i class="fa-solid fa-chevron-down folder-chevron"></i></span>
+                            </summary>
+
+                            <div class="folder-docs">
+                                @foreach (var doc in subjectGroup.OrderBy(d => d.ChapterTitle ?? string.Empty).ThenBy(d => d.Title))
+                                {
+                                    <div class="folder-doc">
+                                        <div class="folder-doc-meta">
+                                            <div class="folder-doc-title">
+                                                <span style="color: @(doc.FileType.ToLower() == "pdf" ? "#d93856" : (doc.FileType.ToLower() == "docx" ? "#2b579a" : (doc.FileType.ToLower() == "pptx" ? "#d04423" : "#6b7280"))); font-weight: 900; font-size: 12px;">
+                                                    [@doc.FileType.ToUpper()]
+                                                </span>
+                                                <span title="@doc.Title">@doc.Title</span>
+                                            </div>
+
+                                            <div class="folder-doc-subtitle">
+                                                @if (!string.IsNullOrWhiteSpace(doc.ChapterTitle))
+                                                {
+                                                    <span>@doc.ChapterTitle</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Chưa gán chương</span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div style="display: flex; gap: 10px; flex-shrink: 0;">
+                                            <a href="/ViewDocument?id=@doc.Id" class="brutal-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 8px 14px; font-weight: 800; font-size: 12px; text-decoration: none; box-shadow: 2px 2px 0px var(--black); display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;">
+                                                <i class="fa-solid fa-eye"></i> XEM CHI TIẾT
+                                            </a>
+                                            <a href="@doc.FileUrl" download target="_blank" class="brutal-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 8px 14px; font-weight: 800; font-size: 12px; text-decoration: none; box-shadow: 2px 2px 0px var(--black); display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;">
+                                                <i class="fa-solid fa-download"></i> TẢI VỀ
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </details>
+                    }
+                }
+            }
+            else
+            {
+                <div style="padding: 40px; text-align: center; border: 3px dashed #000; background: #fff; font-weight: 800; font-style: italic;">
+                    Thư viện tài liệu đang trống.
+                </div>
+            }
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/courseHub")
+                    .build();
+
+                connection.on("CourseChanged", function () {
+                    // Khi có tài liệu mới tải lên hoặc thay đổi cấu trúc, tải lại phần tử lưới tài liệu
+                    fetch(window.location.href)
+                        .then(response => response.text())
+                        .then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const newContent = doc.querySelector('.folder-grid').innerHTML;
+                            document.querySelector('.folder-grid').innerHTML = newContent;
+                        });
+                });
+
+                connection.start().catch(function (err) {
+                    return console.error(err.toString());
+                });
+        </script>
+    }
+
+@functions {
+    private (string Accent, string Soft, string Icon) GetSubjectVisual(string subjectName)
+    {
+        var name = subjectName ?? string.Empty;
+        var normalized = name.ToLowerInvariant();
+
+        if (normalized.Contains("ai"))
+        {
+            return ("#4f46e5", "#e0e7ff", "fa-solid fa-folder-open");
+        }
+
+        if (normalized.Contains("c#") || normalized.Contains(".net") || normalized.Contains("code"))
+        {
+            return ("#0f766e", "#ccfbf1", "fa-solid fa-folder-open");
+        }
+
+        if (normalized.Contains("math") || normalized.Contains("toán") || normalized.Contains("toan"))
+        {
+            return ("#b45309", "#fef3c7", "fa-solid fa-folder-open");
+        }
+
+        if (normalized.Contains("english") || normalized.Contains("tiếng anh") || normalized.Contains("anh"))
+        {
+            return ("#2563eb", "#dbeafe", "fa-solid fa-folder-open");
+        }
+
+        if (normalized.Contains("database") || normalized.Contains("sql"))
+        {
+            return ("#7c3aed", "#ede9fe", "fa-solid fa-folder-open");
+        }
+
+        if (normalized.Contains("phys") || normalized.Contains("lý"))
+        {
+            return ("#dc2626", "#fee2e2", "fa-solid fa-folder-open");
+        }
+
+        var palette = new[]
+        {
+            ("#7c3aed", "#ede9fe", "fa-solid fa-book-open"),
+            ("#0891b2", "#cffafe", "fa-solid fa-folder-tree"),
+            ("#ea580c", "#ffedd5", "fa-solid fa-folder-open"),
+            ("#16a34a", "#dcfce7", "fa-solid fa-graduation-cap"),
+            ("#db2777", "#fce7f3", "fa-solid fa-pen-nib")
+        };
+
+        var bucket = 0;
+        foreach (var ch in name)
+        {
+            bucket += ch;
+        }
+
+        var selected = palette[bucket % palette.Length];
+        return (selected.Item1, selected.Item2, "fa-solid fa-folder-open");
+    }
+}
