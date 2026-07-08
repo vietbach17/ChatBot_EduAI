@@ -26,7 +26,11 @@ namespace BussinessLayer.Services
 
         public async Task<string> GenerateJsonContentAsync(string prompt, string? responseSchemaJson = null)
         {
-            var model = "gemini-1.5-flash"; // Mô hình chuẩn, hỗ trợ JSON Schema
+            var model = Environment.GetEnvironmentVariable("GEMINI_MODEL")?.Trim();
+            if (string.IsNullOrEmpty(model))
+            {
+                model = "gemini-2.5-flash"; // Mô hình mặc định ổn định, hỗ trợ JSON Schema
+            }
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={_apiKey}";
 
             object? schemaObj = null;
