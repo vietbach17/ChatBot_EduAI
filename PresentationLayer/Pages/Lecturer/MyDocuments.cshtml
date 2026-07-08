@@ -1,0 +1,81 @@
+﻿@page
+@model PresentationLayer.Pages.Lecturer.MyDocumentsModel
+@{
+    ViewData["Title"] = "Tài liệu của tôi";
+    ViewBag.ActiveMenu = "LecturerDocuments";
+}
+
+<div class="main-wrapper" style="padding: 30px;">
+    <h1 style="color: var(--pink); font-weight: 900; margin-bottom: 20px; font-size: 28px; text-transform: uppercase;">
+        LỊCH SỬ TÀI LIỆU ĐÃ TẢI LÊN
+    </h1>
+    <p style="margin-bottom: 20px; font-weight: 600;">Danh sách tất cả các tài liệu do bạn đăng tải. Lịch sử này được giữ nguyên ngay cả khi môn học được chuyển cho giảng viên khác phụ trách.</p>
+
+    <div style="background-color: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 20px;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 3px solid var(--black);">
+                    <th style="padding: 10px; text-align: left; font-weight: 900;">TÊN TÀI LIỆU</th>
+                    <th style="padding: 10px; text-align: left; font-weight: 900;">MÔN HỌC</th>
+                    <th style="padding: 10px; text-align: left; font-weight: 900;">CHƯƠNG</th>
+                    <th style="padding: 10px; text-align: left; font-weight: 900;">NGƯỜI ĐĂNG</th>
+                    <th style="padding: 10px; text-align: left; font-weight: 900;">NGÀY ĐĂNG</th>
+                    <th style="padding: 10px; text-align: center; font-weight: 900;">LOẠI</th>
+                    <th style="padding: 10px; text-align: center; font-weight: 900;">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var doc in Model.Documents)
+                {
+                    <tr style="border-bottom: 1px dashed #ccc;">
+                        <td style="padding: 10px; font-weight: 800;">@doc.Title</td>
+                        <td style="padding: 10px; font-weight: 700;">@(doc.SubjectName ?? "-")</td>
+                        <td style="padding: 10px; font-weight: 700;">@(doc.ChapterTitle ?? "-")</td>
+                        <td style="padding: 10px; font-weight: 700;">
+                            @if (!string.IsNullOrEmpty(doc.UploaderName))
+                            {
+                                <span style="color: var(--blue); font-weight: 800;">@doc.UploaderName</span>
+                            }
+                            else
+                            {
+                                <span style="color: #999; font-style: italic;">Không rõ</span>
+                            }
+                        </td>
+                        <td style="padding: 10px; font-weight: 600;">@doc.UploadedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td style="padding: 10px; text-align: center; font-weight: 800;">
+                            @if (doc.FileType == "pdf")
+                            {
+                                <span style="color: #ff4d4f;">PDF</span>
+                            }
+                            else if (doc.FileType == "docx")
+                            {
+
+                                <span style="color: var(--blue);">DOCX</span>
+                            }
+                            else if (doc.FileType == "pptx")
+                            {
+
+                                <span style="color: #fa8c16;">PPTX</span>
+                            }
+                            else
+                            {
+
+                                <span>@doc.FileType.ToUpper()</span>
+                            }
+                        </td>
+                        <td style="padding: 10px; text-align: center;">
+                            <a href="@doc.FileUrl" download target="_blank" class="brutal-btn" style="text-decoration: none; background-color: var(--pink); color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; box-shadow: 2px 2px 0px var(--black);">
+                                <i class="fa-solid fa-download"></i> TẢI XUỐNG
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        
+        @if (!Model.Documents.Any())
+        {
+            <div style="padding: 20px; text-align: center; font-style: italic; color: #777;">Bạn chưa tải lên tài liệu nào.</div>
+        }
+    </div>
+</div>
