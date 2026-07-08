@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,13 @@ namespace PresentationLayer.Pages.Lecturer
     {
         private readonly IQuestionBankService _questionService;
         private readonly IUserService _userService;
+        private readonly IAIQuizGeneratorService _aiQuizService;
 
-        public QuestionBankModel(IQuestionBankService questionService, IUserService userService)
+        public QuestionBankModel(IQuestionBankService questionService, IUserService userService, IAIQuizGeneratorService aiQuizService)
         {
             _questionService = questionService;
             _userService = userService;
+            _aiQuizService = aiQuizService;
         }
 
         // Filters and paging
@@ -75,6 +78,12 @@ namespace PresentationLayer.Pages.Lecturer
 
         public async Task<IActionResult> OnPostAddAsync()
         {
+            // Loại bỏ kiểm tra hợp lệ của EditQuestion vì form này dành cho NewQuestion
+            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("EditQuestion")).ToList())
+            {
+                ModelState.Remove(key);
+            }
+
             if (!ModelState.IsValid)
             {
                 StatusMessage = "Error: Dữ liệu câu hỏi không hợp lệ.";
@@ -108,6 +117,12 @@ namespace PresentationLayer.Pages.Lecturer
 
         public async Task<IActionResult> OnPostEditAsync()
         {
+            // Loại bỏ kiểm tra hợp lệ của NewQuestion vì form này dành cho EditQuestion
+            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("NewQuestion")).ToList())
+            {
+                ModelState.Remove(key);
+            }
+
             if (!ModelState.IsValid)
             {
                 StatusMessage = "Error: Dữ liệu câu hỏi cập nhật không hợp lệ.";
@@ -145,6 +160,33 @@ namespace PresentationLayer.Pages.Lecturer
             }
 
             return RedirectToPage(new { SubjectId, Difficulty, Type, Search, CurrentPage });
+        }
+
+        public async Task<IActionResult> OnGetGenerateSingleQuestionAsync(int subjectId, string topic)
+        {
+            try
+            {
+                var request = new AIGenerateRequestDto
+                {
+                    SubjectId = subjectId,
+                    Topic = topic,
+                    Count = 1,
+                    Difficulty = "Medium"
+                };
+
+                var result = await _aiQuizService.GenerateQuestionsAsync(request);
+                var list = result != null ? result.ToList() : new List<AIGenerateResultDto>();
+                if (list.Count > 0)
+                {
+                    var q = list[0];
+                    return new JsonResult(new { success = true, question = q });
+                }
+                return new JsonResult(new { success = false, message = "Không thể sinh câu hỏi từ AI." });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { success = false, message = ex.Message });
+            }
         }
     }
 }

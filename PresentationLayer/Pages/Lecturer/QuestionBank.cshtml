@@ -522,9 +522,12 @@
 <!-- ADD QUESTION MODAL -->
 <div id="addModal" class="brutal-modal">
     <div class="brutal-modal-content">
-        <div class="modal-header">
+        <div class="modal-header" style="position: relative; display: flex; justify-content: space-between; align-items: center; padding-right: 15px;">
             <span>Thêm câu hỏi thủ công</span>
-            <button class="modal-close" onclick="closeAddModal()">&times;</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button type="button" class="btn-brutal btn-pink" id="btnSuggestAI" style="padding: 6px 12px; font-size: 11px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; width: auto; box-shadow: 2px 2px 0px 0px var(--black); transform: none;" onclick="suggestSingleQuestionByAI()"><i class="fa-solid fa-robot"></i> AI Tự Điền</button>
+            </div>
+            <button type="button" class="modal-close" style="position: static; font-size: 28px; background: none; border: none; cursor: pointer;" onclick="closeAddModal()">&times;</button>
         </div>
         <form method="post" asp-page-handler="Add">
             <div class="modal-body">
@@ -855,6 +858,78 @@
             }
             if (event.target == editModal) {
                 closeEditModal();
+            }
+        }
+
+        async function suggestSingleQuestionByAI() {
+            // Get selected subject
+            const subjectSelect = document.querySelector('select[name="NewQuestion.SubjectId"]');
+            const subjectId = subjectSelect.value;
+            if (!subjectId) {
+                alert("Vui lòng chọn môn học trước khi bấm AI Tự Điền!");
+                return;
+            }
+
+            const topic = prompt("Nhập từ khóa hoặc chủ đề muốn AI tạo câu hỏi:");
+            if (topic === null) return; // User cancelled
+            if (topic.trim() === "") {
+                alert("Vui lòng nhập chủ đề câu hỏi!");
+                return;
+            }
+
+            const btn = document.getElementById('btnSuggestAI');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI đang sinh...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`?handler=GenerateSingleQuestion&subjectId=${subjectId}&topic=${encodeURIComponent(topic)}`);
+                const result = await response.json();
+                if (result.success) {
+                    const q = result.question;
+                    
+                    // Fill content
+                    document.querySelector('textarea[name="NewQuestion.Content"]').value = q.content;
+                    
+                    // Set type
+                    const typeSelect = document.getElementById('addType');
+                    typeSelect.value = q.questionType;
+                    toggleAddOptions(); // Refresh the fields display
+
+                    // Set difficulty
+                    const diffSelect = document.querySelector('select[name="NewQuestion.Difficulty"]');
+                    diffSelect.value = q.difficulty;
+
+                    // Set tags
+                    const tagsInput = document.querySelector('input[name="NewQuestion.Tags"]');
+                    if (tagsInput) {
+                        tagsInput.value = q.tags;
+                    }
+
+                    if (q.questionType === 'MultipleChoice' && q.options && q.options.length >= 4) {
+                        document.getElementById('addOptA').value = q.options[0];
+                        document.getElementById('addOptB').value = q.options[1];
+                        document.getElementById('addOptC').value = q.options[2];
+                        document.getElementById('addOptD').value = q.options[3];
+
+                        // Set correct radio
+                        const radio = document.querySelector(`input[name="addCorrectAnsRadio"][value="${q.correctAnswer}"]`);
+                        if (radio) radio.checked = true;
+                    } else if (q.questionType === 'TrueFalse') {
+                        const radio = document.querySelector(`input[name="addCorrectAnsRadioTf"][value="${q.correctAnswer}"]`);
+                        if (radio) radio.checked = true;
+                    }
+                    
+                    // Trigger OptionsJson update
+                    prepareAddSubmit();
+                } else {
+                    alert("Lỗi từ AI: " + result.message);
+                }
+            } catch (err) {
+                alert("Lỗi khi kết nối với AI: " + err.message);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
             }
         }
     </script>
