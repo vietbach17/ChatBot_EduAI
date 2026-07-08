@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using BussinessLayer.DTOs;
 using BussinessLayer.Services;
+using BussinessLayer.IServices;
 using DataAccessLayer.Entities;
 
 namespace PresentationLayer.Pages.Lecturer

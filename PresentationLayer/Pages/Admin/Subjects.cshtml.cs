@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 using BussinessLayer.Services;
+using BussinessLayer.IServices;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Linq;
 
@@ -131,18 +132,5 @@ namespace PresentationLayer.Pages.Admin
             if (sub != null) sub.IsDeleted = false;
             return Task.CompletedTask;
         }
-    }
-}
-
-namespace BussinessLayer.DTOs
-{
-    public class SubjectDto
-    {
-        public int Id { get; set; }
-        public string Code { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string? LecturerName { get; set; }
-        public int? LecturerId { get; set; }
-        public bool IsDeleted { get; set; }
     }
 }

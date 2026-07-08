@@ -1,4 +1,4 @@
-﻿using DataAccessLayer.Entities;
+using DataAccessLayer.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -6,9 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using DataAccessLayer.IRepositories;
+
 namespace DataAccessLayer.Repositories
 {
-    public class DocumentActivityLogRepository
+    public class DocumentActivityLogRepository : IDocumentActivityLogRepository
     {
         private readonly ApplicationDbContext _context;
 
