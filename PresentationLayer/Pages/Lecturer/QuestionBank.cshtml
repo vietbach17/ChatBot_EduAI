@@ -192,9 +192,15 @@
             list-style: none;
             margin: 8px 0 0 10px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 5px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
             font-size: 12px;
+        }
+
+        @@media (max-width: 768px) {
+            .options-list {
+                grid-template-columns: 1fr;
+            }
         }
 
         .options-list li {
