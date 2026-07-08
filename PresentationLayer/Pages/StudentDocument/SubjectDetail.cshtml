@@ -1,0 +1,304 @@
+@page "{id:int}"
+@model PresentationLayer.Pages.StudentDocument.SubjectDetailModel
+@{
+    ViewBag.ActiveMenu = "Subjects";
+    ViewData["Title"] = Model.Subject?.Name ?? "Chi tiết môn học";
+
+    var subjectDocs = Model.Subject.Documents.Where(d => d.ChapterId == null).ToList();
+    var chapters = Model.Subject.Chapters.OrderBy(c => c.OrderIndex).ToList();
+}
+
+<div class="main-wrapper">
+    <style>
+        .subject-hero {
+            margin: 30px;
+            padding: 24px;
+            background: linear-gradient(135deg, #fff 0%, #f7f7fb 100%);
+            border: 3px solid var(--black);
+            box-shadow: var(--shadow);
+        }
+
+        .section-card {
+            background-color: var(--white);
+            border: var(--border);
+            box-shadow: 4px 4px 0px var(--black);
+            padding: 20px;
+            margin: 0 30px 20px;
+        }
+
+        .chapter-accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 0 30px 30px;
+        }
+
+        .chapter-item {
+            background-color: var(--white);
+            border: var(--border);
+            box-shadow: 4px 4px 0px var(--black);
+            overflow: hidden;
+        }
+
+        .chapter-item summary {
+            list-style: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 18px;
+            font-weight: 900;
+            font-size: 16px;
+        }
+
+        .chapter-item summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .chapter-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .chapter-badge {
+            font-size: 11px;
+            font-weight: 900;
+            color: #111;
+            background: var(--yellow);
+            border: 2px solid var(--black);
+            padding: 4px 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .chapter-body {
+            border-top: 2px dashed #d1d5db;
+            padding: 16px 18px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chapter-doc {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            background-color: #fbfbfd;
+            border: 2px solid var(--black);
+            padding: 10px 14px;
+            box-shadow: 2px 2px 0px var(--black);
+        }
+
+        .chapter-doc-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .chapter-doc-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .chapter-doc-title span:last-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chapter-doc-subtitle {
+            font-size: 12px;
+            font-weight: 700;
+            color: #666;
+        }
+    </style>
+
+    <div class="subject-hero">
+        <div style="margin-bottom: 20px;">
+            <a asp-page="/StudentDocument/Subjects" style="color: var(--black); text-decoration: none; font-weight: 800; font-size: 14px;">
+                <i class="fa-solid fa-arrow-left"></i> QUAY LẠI DANH SÁCH MÔN HỌC
+            </a>
+        </div>
+
+        <h1 style="color: var(--blue); font-weight: 900; margin-bottom: 5px; font-size: 28px; text-transform: uppercase;">
+            [@Model.Subject.Code] @Model.Subject.Name
+        </h1>
+        <p style="font-weight: 700; color: #555; margin: 0;">
+            Danh sách các chương và tài liệu đính kèm. Các chương được thu gọn, bấm để mở rộng khi cần xem.
+        </p>
+    </div>
+
+    <div id="subject-detail-container">
+        @if (subjectDocs.Any())
+        {
+            <div class="section-card">
+                <h2 style="font-weight: 900; font-size: 18px; color: var(--blue); border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 15px;">
+                    TÀI LIỆU CHUNG
+                </h2>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    @foreach (var doc in subjectDocs)
+                    {
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; background-color: var(--bg); border: 2px solid var(--black); padding: 10px 15px;">
+                            <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; min-width: 0;">
+                                <span style="color: @(doc.FileType.ToLower() == "pdf" ? "#d93856" : (doc.FileType.ToLower() == "docx" ? "#2b579a" : (doc.FileType.ToLower() == "pptx" ? "#d04423" : "#6b7280"))); font-weight:900; font-size: 12px;">
+                                    [@doc.FileType.ToUpper()]
+                                </span>
+                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@doc.Title</span>
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-shrink: 0;">
+                                <a href="/ViewDocument?id=@doc.Id" class="brutal-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                    <i class="fa-solid fa-eye"></i> XEM CHI TIẾT
+                                </a>
+                                <a href="@doc.FileUrl" target="_blank" class="brutal-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                    <i class="fa-solid fa-download"></i> TẢI VỀ
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="chapter-accordion">
+            @foreach (var chapter in chapters)
+            {
+                var chapterDocs = chapter.Documents.ToList();
+
+                if (chapter.OrderIndex == 1)
+                {
+                    <details class="chapter-item">
+                        <summary>
+                            <span class="chapter-head">
+                                <i class="fa-solid fa-folder-open" style="color: var(--yellow); font-size: 18px;"></i>
+                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@chapter.Title</span>
+                            </span>
+                            <span class="chapter-badge">@chapterDocs.Count tài liệu</span>
+                        </summary>
+
+                        <div class="chapter-body">
+                            @if (chapterDocs.Any())
+                            {
+                                @foreach (var doc in chapterDocs)
+                                {
+                                    <div class="chapter-doc">
+                                        <div class="chapter-doc-meta">
+                                            <div class="chapter-doc-title">
+                                                <span style="color: @(doc.FileType.ToLower() == "pdf" ? "#d93856" : (doc.FileType.ToLower() == "docx" ? "#2b579a" : (doc.FileType.ToLower() == "pptx" ? "#d04423" : "#6b7280"))); font-weight:900; font-size: 12px;">
+                                                    [@doc.FileType.ToUpper()]
+                                                </span>
+                                                <span title="@doc.Title">@doc.Title</span>
+                                            </div>
+                                            <div class="chapter-doc-subtitle">
+                                                @(string.IsNullOrWhiteSpace(doc.SubjectName) ? Model.Subject.Name : doc.SubjectName)
+                                            </div>
+                                        </div>
+
+                                        <div style="display: flex; gap: 10px; flex-shrink: 0;">
+                                            <a href="/ViewDocument?id=@doc.Id" class="brutal-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                                <i class="fa-solid fa-eye"></i> XEM CHI TIẾT
+                                            </a>
+                                            <a href="@doc.FileUrl" target="_blank" class="brutal-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                                <i class="fa-solid fa-download"></i> TẢI VỀ
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div style="font-style: italic; color: #777; font-size: 13px; font-weight: 600;">Chưa có tài liệu nào cho chương này.</div>
+                            }
+                        </div>
+                    </details>
+                }
+                else
+                {
+                    <details class="chapter-item">
+                        <summary>
+                            <span class="chapter-head">
+                                <i class="fa-solid fa-folder-open" style="color: var(--yellow); font-size: 18px;"></i>
+                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@chapter.Title</span>
+                            </span>
+                            <span class="chapter-badge">@chapterDocs.Count tài liệu</span>
+                        </summary>
+
+                        <div class="chapter-body">
+                            @if (chapterDocs.Any())
+                            {
+                                @foreach (var doc in chapterDocs)
+                                {
+                                    <div class="chapter-doc">
+                                        <div class="chapter-doc-meta">
+                                            <div class="chapter-doc-title">
+                                                <span style="color: @(doc.FileType.ToLower() == "pdf" ? "#d93856" : (doc.FileType.ToLower() == "docx" ? "#2b579a" : (doc.FileType.ToLower() == "pptx" ? "#d04423" : "#6b7280"))); font-weight:900; font-size: 12px;">
+                                                    [@doc.FileType.ToUpper()]
+                                                </span>
+                                                <span title="@doc.Title">@doc.Title</span>
+                                            </div>
+                                            <div class="chapter-doc-subtitle">
+                                                @(string.IsNullOrWhiteSpace(doc.SubjectName) ? Model.Subject.Name : doc.SubjectName)
+                                            </div>
+                                        </div>
+
+                                        <div style="display: flex; gap: 10px; flex-shrink: 0;">
+                                            <a href="/ViewDocument?id=@doc.Id" class="brutal-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                                <i class="fa-solid fa-eye"></i> XEM CHI TIẾT
+                                            </a>
+                                            <a href="@doc.FileUrl" target="_blank" class="brutal-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                                <i class="fa-solid fa-download"></i> TẢI VỀ
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div style="font-style: italic; color: #777; font-size: 13px; font-weight: 600;">Chưa có tài liệu nào cho chương này.</div>
+                            }
+                        </div>
+                    </details>
+                }
+            }
+
+            @if (!chapters.Any())
+            {
+                <div style="padding: 40px; text-align: center; border: 3px dashed #000; background: #fff; font-weight: 800; font-style: italic;">
+                    Chưa có chương học nào được cấu hình cho môn này.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/courseHub")
+            .build();
+
+        connection.on("CourseChanged", function () {
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('subject-detail-container').innerHTML;
+                    document.getElementById('subject-detail-container').innerHTML = newContent;
+                });
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+    </script>
+}

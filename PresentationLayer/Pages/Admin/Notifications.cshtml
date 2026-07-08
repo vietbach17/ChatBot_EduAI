@@ -1,0 +1,79 @@
+@page
+@model PresentationLayer.Pages.Admin.NotificationsModel
+@{
+    ViewData["Title"] = "Gửi Thông Báo";
+    ViewBag.ActiveMenu = "AdminDashboard";
+}
+
+@section Styles {
+    <style>
+        .form-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-weight: 800; font-size: 14px; color: var(--black); }
+        .form-group input, .form-group select, .form-group textarea {
+            border: 3px solid var(--black); padding: 12px; font-weight: 600; outline: none; font-size: 15px;
+            box-shadow: 4px 4px 0px var(--black); transition: 0.1s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--black);
+        }
+    </style>
+}
+
+<div class="main-wrapper">
+    <div style="padding: 30px;">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+            <a asp-page="/Admin/Dashboard" class="brutal-btn" style="background-color: var(--white); color: var(--black); border: 2px solid var(--black); padding: 8px 15px; font-weight: 900; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                <i class="fa-solid fa-arrow-left"></i> QUAY LẠI
+            </a>
+            <h1 style="color: var(--yellow); font-weight: 900; font-size: 28px; text-transform: uppercase; margin: 0; text-shadow: 1px 1px 0px var(--black), -1px -1px 0px var(--black), 1px -1px 0px var(--black), -1px 1px 0px var(--black);">
+                GỬI THÔNG BÁO EMAIL
+            </h1>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div style="background:#d4edda; border:3px solid #28a745; box-shadow: 4px 4px 0px #28a745; color:#155724; padding:15px; font-weight:800; margin-bottom:25px; font-size:15px;">
+                <i class="fa-solid fa-circle-check"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div style="background:#f8d7da; border:3px solid #eb2f64; box-shadow: 4px 4px 0px #eb2f64; color:#721c24; padding:15px; font-weight:800; margin-bottom:25px; font-size:15px;">
+                <i class="fa-solid fa-circle-xmark"></i> @TempData["ErrorMessage"]
+            </div>
+        }
+
+        <div style="background-color: var(--white); border: 3px solid var(--black); box-shadow: 8px 8px 0px var(--black); padding: 30px; max-width: 800px;">
+            <p style="font-weight: 700; color: #555; margin-bottom: 25px; font-size: 14px;">
+                <i class="fa-solid fa-circle-info"></i> Hệ thống sẽ gửi email tới danh sách người dùng được chọn. Những người dùng không có email sẽ tự động bị bỏ qua.
+            </p>
+
+            <form method="post" asp-page-handler="Send">
+                <div class="form-group">
+                    <label>Đối tượng nhận</label>
+                    <select asp-for="SendModel.TargetAudience">
+                        <option value="All">Tất cả người dùng</option>
+                        <option value="Students">Chỉ Sinh viên</option>
+                        <option value="Lecturers">Chỉ Giảng viên</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Tiêu đề thông báo</label>
+                    <input type="text" asp-for="SendModel.Subject" placeholder="Nhập tiêu đề email..." required />
+                    <span asp-validation-for="SendModel.Subject" style="color: red; font-weight: bold; font-size: 12px;"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Nội dung</label>
+                    <textarea asp-for="SendModel.EmailContent" rows="10" placeholder="Nhập nội dung thông báo. Hỗ trợ xuống dòng tự động..." required></textarea>
+                    <span asp-validation-for="SendModel.EmailContent" style="color: red; font-weight: bold; font-size: 12px;"></span>
+                </div>
+
+                <button type="submit" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 3px solid var(--black); padding: 15px 30px; font-weight: 900; font-size: 16px; box-shadow: 4px 4px 0px var(--black); cursor: pointer; margin-top: 10px;" onclick="return confirm('Bạn có chắc chắn muốn gửi email thông báo này? Hành động này không thể hoàn tác.');">
+                    <i class="fa-solid fa-paper-plane"></i> GỬI NGAY
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

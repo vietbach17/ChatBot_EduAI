@@ -4,6 +4,8 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 
+using BussinessLayer.IServices;
+
 namespace BussinessLayer.Services
 {
     public class EmailService : IEmailService

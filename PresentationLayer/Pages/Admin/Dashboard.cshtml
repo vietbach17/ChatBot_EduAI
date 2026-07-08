@@ -1,0 +1,76 @@
+@page
+@model PresentationLayer.Pages.Admin.DashboardModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    ViewBag.ActiveMenu = "AdminDashboard";
+}
+
+<div class="main-wrapper">
+    <div style="padding: 30px;">
+        <h1 style="color: var(--pink); font-weight: 900; margin-bottom: 30px; font-size: 28px; text-transform: uppercase;">
+            TỔNG QUAN HỆ THỐNG
+        </h1>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: start;">
+            <!-- Cột trái: Thống kê -->
+            <div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <!-- Doanh thu -->
+                    <div style="background-color: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-money-bill-wave" style="font-size: 40px; color: var(--pink); margin-bottom: 10px;"></i>
+                        <div style="font-size: 32px; font-weight: 900; color: var(--black);">@Model.EstimatedRevenue.ToString("N0")<span style="font-size: 20px;">đ</span></div>
+                        <div style="font-weight: 800; color: #555; text-transform: uppercase; font-size: 14px;">Doanh thu (Tháng)</div>
+                    </div>
+
+                    <!-- Tổng User -->
+                    <div style="background-color: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-users" style="font-size: 40px; color: var(--blue); margin-bottom: 10px;"></i>
+                        <div style="font-size: 36px; font-weight: 900; color: var(--black);">@Model.TotalUsers</div>
+                        <div style="font-weight: 800; color: #555; text-transform: uppercase; font-size: 14px;">Người dùng</div>
+                    </div>
+
+                    <!-- Tổng Môn Học -->
+                    <div style="background-color: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-book" style="font-size: 40px; color: var(--green); margin-bottom: 10px;"></i>
+                        <div style="font-size: 36px; font-weight: 900; color: var(--black);">@Model.TotalSubjects</div>
+                        <div style="font-weight: 800; color: #555; text-transform: uppercase; font-size: 14px;">Môn học</div>
+                    </div>
+
+                    <!-- Tổng Tài Liệu -->
+                    <div style="background-color: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-file-pdf" style="font-size: 40px; color: var(--yellow); margin-bottom: 10px;"></i>
+                        <div style="font-size: 36px; font-weight: 900; color: var(--black);">@Model.TotalDocuments</div>
+                        <div style="font-weight: 800; color: #555; text-transform: uppercase; font-size: 14px;">Tài liệu</div>
+                    </div>
+                </div>
+                
+                <!-- Liên kết quản lý -->
+                <div style="display: flex; gap: 20px;">
+                    <a asp-page="/Admin/Users" class="brutal-btn" style="background-color: var(--blue); color: var(--white); border: var(--border); padding: 10px 20px; font-weight: 800; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                        <i class="fa-solid fa-user-gear"></i> QUẢN LÝ NGƯỜI DÙNG
+                    </a>
+                    <a asp-page="/Admin/Subjects" class="brutal-btn" style="background-color: var(--green); color: var(--black); border: var(--border); padding: 10px 20px; font-weight: 800; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                        <i class="fa-solid fa-book-open-reader"></i> QUẢN LÝ MÔN HỌC
+                    </a>
+                </div>
+            </div>
+
+            <!-- Cột phải: Tác vụ nhanh -->
+            <div style="background-color: var(--white); border: 3px solid var(--black); box-shadow: 6px 6px 0px var(--black); padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+                <h2 style="font-weight: 900; margin-bottom: 5px; font-size: 20px; color: var(--pink); border-bottom: 2px solid var(--black); padding-bottom: 10px;">
+                    <i class="fa-solid fa-bolt"></i> TÁC VỤ NHANH
+                </h2>
+                
+                <a asp-page="/Admin/Notifications" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 2px solid var(--black); padding: 15px 20px; font-weight: 900; text-decoration: none; box-shadow: 3px 3px 0px var(--black); display: flex; align-items: center; gap: 10px; font-size: 16px;">
+                    <i class="fa-solid fa-paper-plane" style="font-size: 20px;"></i> GỬI THÔNG BÁO
+                </a>
+                <a asp-page="/Admin/Users" class="brutal-btn" style="background-color: var(--blue); color: var(--white); border: 2px solid var(--black); padding: 15px 20px; font-weight: 900; text-decoration: none; box-shadow: 3px 3px 0px var(--black); display: flex; align-items: center; gap: 10px; font-size: 16px;">
+                    <i class="fa-solid fa-user-plus" style="font-size: 20px;"></i> THÊM NGƯỜI DÙNG
+                </a>
+                <a asp-page="/Admin/Subjects" class="brutal-btn" style="background-color: var(--green); color: var(--black); border: 2px solid var(--black); padding: 15px 20px; font-weight: 900; text-decoration: none; box-shadow: 3px 3px 0px var(--black); display: flex; align-items: center; gap: 10px; font-size: 16px;">
+                    <i class="fa-solid fa-folder-plus" style="font-size: 20px;"></i> THÊM MÔN HỌC
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
