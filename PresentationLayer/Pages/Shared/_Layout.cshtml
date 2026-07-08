@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -82,24 +82,27 @@
     <div class="sidebar">
         @{
             var userRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
+            var activePage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
         }
 
         <div class="logo"><i class="fa-solid fa-graduation-cap"></i> EduManager</div>
 
         @if (userRole == "Admin")
         {
-            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">QUáº¢N TRá»Š VIÃŠN</div>
-            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">QUẢN TRỊ VIÊN</div>
+            <a asp-page="/Auth/Profile" class="nav-item @(activePage.Contains("/Auth/Profile") ? "active" : "")"><i class="fa-solid fa-user"></i> HỒ SƠ</a>
         }
         else if (userRole == "Lecturer")
         {
-            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">GIáº¢NG VIÃŠN</div>
-            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">GIẢNG VIÊN</div>
+            <a asp-page="/Auth/Profile" class="nav-item @(activePage.Contains("/Auth/Profile") ? "active" : "")"><i class="fa-solid fa-user"></i> HỒ SƠ</a>
+            <a asp-page="/Lecturer/QuestionBank" class="nav-item @(activePage.Contains("/Lecturer/QuestionBank") ? "active" : "")"><i class="fa-solid fa-database"></i> NGÂN HÀNG CÂU HỎI</a>
+            <a asp-page="/Lecturer/AIGenerateQuestions" class="nav-item @(activePage.Contains("/Lecturer/AIGenerateQuestions") ? "active" : "")"><i class="fa-solid fa-robot"></i> AI TẠO CÂU HỎI</a>
         }
         else
         {
-            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">SINH VIÃŠN</div>
-            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">SINH VIÊN</div>
+            <a asp-page="/Auth/Profile" class="nav-item @(activePage.Contains("/Auth/Profile") ? "active" : "")"><i class="fa-solid fa-user"></i> HỒ SƠ</a>
         }
         
         <a asp-page="/Auth/Profile" class="user-profile" style="text-decoration: none; cursor: pointer; transition: 0.1s;">
@@ -114,7 +117,7 @@
                 </div>
             }
         </a>
-        <a asp-page="/Auth/Logout" class="nav-item" style="border:dashed 2px var(--black);">ÄÄƒng xuáº¥t</a>      
+        <a asp-page="/Auth/Logout" class="nav-item" style="border:dashed 2px var(--black); text-align: center;">Đăng xuất</a>      
     </div>
 
     <!-- MAIN CONTENT -->

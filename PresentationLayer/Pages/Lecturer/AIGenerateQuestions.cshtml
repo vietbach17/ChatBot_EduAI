@@ -1,0 +1,465 @@
+@page
+@model PresentationLayer.Pages.Lecturer.AIGenerateQuestionsModel
+@{
+    ViewData["Title"] = "AI Tạo Câu Hỏi";
+}
+
+@section Styles {
+    <style>
+        .page-container {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            width: 100%;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 5px solid var(--black);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @@media (max-width: 900px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .brutal-card {
+            background: var(--white);
+            border: 3px solid var(--black);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            position: relative;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .brutal-input, .brutal-select {
+            padding: 10px 12px;
+            font-weight: 700;
+            font-family: inherit;
+            border: 3px solid var(--black);
+            background: var(--white);
+            color: var(--black);
+            outline: none;
+            transition: 0.1s;
+        }
+
+        .brutal-input:focus, .brutal-select:focus {
+            box-shadow: 2px 2px 0px 0px var(--black);
+            transform: translate(-1px, -1px);
+        }
+
+        .btn-brutal {
+            padding: 12px 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 3px solid var(--black);
+            box-shadow: 3px 3px 0px 0px var(--black);
+            background: var(--white);
+            cursor: pointer;
+            transition: 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--black);
+            width: 100%;
+        }
+
+        .btn-brutal:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px 0px var(--black);
+        }
+
+        .btn-brutal:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px 0px var(--black);
+        }
+
+        .btn-pink { background: var(--pink); color: var(--white); }
+        .btn-green { background: var(--green); color: var(--white); }
+        .btn-yellow { background: var(--yellow); }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            gap: 20px;
+        }
+
+        .loading-box {
+            border: 5px solid var(--black);
+            box-shadow: 8px 8px 0px 0px var(--black);
+            padding: 40px;
+            background: var(--white);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .loading-spinner {
+            font-size: 50px;
+            color: var(--pink);
+            animation: spin 1s infinite linear;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        @@keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Generated Questions list */
+        .generated-title {
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .q-card {
+            border: 3px solid var(--black);
+            box-shadow: var(--shadow);
+            background: var(--white);
+            margin-bottom: 20px;
+            padding: 20px;
+            position: relative;
+            transition: 0.1s;
+        }
+
+        .q-card.deselected {
+            opacity: 0.5;
+            background: #f8f9fa;
+        }
+
+        .q-checkbox {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            accent-color: var(--black);
+        }
+
+        .brutal-badge {
+            padding: 3px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            border: 2px solid var(--black);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--white);
+            color: var(--black);
+            display: inline-block;
+        }
+
+        .badge-easy { background: var(--green); color: var(--white); }
+        .badge-medium { background: var(--yellow); }
+        .badge-hard { background: var(--pink); color: var(--white); }
+        .badge-ai { border-style: dashed; background: #e0f2fe; }
+
+        .mc-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .status-banner {
+            padding: 12px 20px;
+            border: 3px solid var(--black);
+            box-shadow: var(--shadow);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .status-success { background: var(--green); color: var(--white); }
+        .status-error { background: var(--pink); color: var(--white); }
+    </style>
+}
+
+<div class="page-container">
+
+    <!-- Title -->
+    <div class="header-title">
+        <span><i class="fa-solid fa-robot"></i> AI Tạo Câu Hỏi</span>
+        <a href="/Lecturer/QuestionBank" class="btn-brutal btn-yellow" style="width: auto;"><i class="fa-solid fa-database"></i> Xem ngân hàng</a>
+    </div>
+
+    <!-- Status Message -->
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        var isError = Model.StatusMessage.StartsWith("Error");
+        var displayMsg = Model.StatusMessage.Substring(Model.StatusMessage.IndexOf(":") + 1).Trim();
+        <div class="status-banner @(isError ? "status-error" : "status-success")">
+            <span><i class="fa-solid @(isError ? "fa-circle-exclamation" : "fa-circle-check")"></i> @displayMsg</span>
+            <button style="background:none; border:none; color:inherit; font-weight:900; cursor:pointer;" onclick="this.parentElement.remove()">X</button>
+        </div>
+    }
+
+    <div class="layout-grid">
+        
+        <!-- Left: Configuration Form -->
+        <div class="brutal-card">
+            <h3 style="font-weight:900; text-transform:uppercase; font-size:16px; margin-bottom:15px; border-bottom:3px solid var(--black); padding-bottom:5px;">Yêu cầu tạo câu</h3>
+            <form method="post" asp-page-handler="Generate" onsubmit="showLoading()">
+                <div class="form-group">
+                    <label>Môn học</label>
+                    <select asp-for="GenerateRequest.SubjectId" class="brutal-select" required>
+                        <option value="">-- Chọn môn học --</option>
+                        @foreach (var sub in Model.Subjects)
+                        {
+                            <option value="@sub.Id">[@sub.Code] @sub.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Chủ đề học thuật</label>
+                    <input type="text" asp-for="GenerateRequest.Topic" class="brutal-input" placeholder="Ví dụ: Vòng lặp For trong C#, Class..." required />
+                </div>
+
+                <div class="form-group">
+                    <label>Độ khó</label>
+                    <select asp-for="GenerateRequest.Difficulty" class="brutal-select" required>
+                        <option value="Easy">Dễ (Easy)</option>
+                        <option value="Medium">Trung bình (Medium)</option>
+                        <option value="Hard">Khó (Hard)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Số lượng câu hỏi</label>
+                    <select asp-for="GenerateRequest.Count" class="brutal-select" required>
+                        <option value="3">3 câu hỏi</option>
+                        <option value="5">5 câu hỏi</option>
+                        <option value="8">8 câu hỏi</option>
+                        <option value="10">10 câu hỏi (Khuyên dùng)</option>
+                    </select>
+                    <span style="font-size:10px; color:#666; font-weight:700;">Lưu ý: Số câu nhiều hơn có thể tốn thời gian hơn.</span>
+                </div>
+
+                <button type="submit" class="btn-brutal btn-pink" style="margin-top: 10px;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Tạo Câu Hỏi</button>
+            </form>
+        </div>
+
+        <!-- Right: Generated Questions List -->
+        <div>
+            @if (!Model.HasGenerated)
+            {
+                <div class="brutal-card" style="text-align: center; padding: 50px 20px;">
+                    <i class="fa-solid fa-robot" style="font-size: 64px; color: var(--pink); margin-bottom: 20px; display: block;"></i>
+                    <h3 style="font-weight:900; text-transform:uppercase; margin-bottom:10px;">Chưa có câu hỏi nào được tạo</h3>
+                    <p style="font-weight: 700; color:#555; max-width: 500px; margin: 0 auto;">Vui lòng thiết lập môn học, nhập chủ đề học thuật ở cột bên trái và bấm nút "AI Tạo Câu Hỏi" để bắt đầu sinh câu hỏi tự động.</p>
+                </div>
+            }
+            else
+            {
+                <form method="post" asp-page-handler="Save">
+                    <div class="generated-title">
+                        <span>Danh sách xem trước (@Model.GeneratedQuestions.Count câu hỏi)</span>
+                        <button type="submit" class="btn-brutal btn-green" style="width: auto;"><i class="fa-solid fa-save"></i> Lưu câu đã chọn</button>
+                    </div>
+
+                    @for (int idx = 0; idx < Model.GeneratedQuestions.Count; idx++)
+                    {
+                        var q = Model.GeneratedQuestions[idx];
+                        var optionsList = new List<string>();
+                        if (q.QuestionType == "MultipleChoice" && !string.IsNullOrEmpty(q.OptionsJson))
+                        {
+                            try
+                            {
+                                optionsList = System.Text.Json.JsonSerializer.Deserialize<List<string>>(q.OptionsJson) ?? new List<string>();
+                            }
+                            catch { }
+                        }
+
+                        <div class="q-card" id="qcard-@idx">
+                            <input type="checkbox" asp-for="GeneratedQuestions[idx].IsSelected" class="q-checkbox" onchange="toggleCardOpacity(@idx)" />
+                            
+                            <input type="hidden" asp-for="GeneratedQuestions[idx].SubjectId" />
+                            <input type="hidden" asp-for="GeneratedQuestions[idx].QuestionType" />
+                            <input type="hidden" asp-for="GeneratedQuestions[idx].Difficulty" />
+                            <input type="hidden" asp-for="GeneratedQuestions[idx].Tags" />
+
+                            <div style="margin-bottom: 10px; display: flex; gap: 8px; align-items: center;">
+                                <span style="font-weight:900; font-size: 14px; border:2px solid var(--black); background:var(--black); color:var(--white); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">@(idx + 1)</span>
+                                <span class="brutal-badge @(q.Difficulty == "Easy" ? "badge-easy" : (q.Difficulty == "Medium" ? "badge-medium" : "badge-hard"))">@q.Difficulty</span>
+                                <span class="brutal-badge">@(q.QuestionType == "MultipleChoice" ? "Trắc nghiệm" : "Đúng/Sai")</span>
+                                <span class="brutal-badge badge-ai"><i class="fa-solid fa-robot"></i> AI sinh</span>
+                            </div>
+
+                            <!-- Editable Question Content -->
+                            <div class="form-group">
+                                <label>Nội dung câu hỏi</label>
+                                <textarea asp-for="GeneratedQuestions[idx].Content" class="brutal-input" rows="2" style="font-weight:800;" required></textarea>
+                            </div>
+
+                            <!-- Editable Options if Multiple Choice -->
+                            @if (q.QuestionType == "MultipleChoice")
+                            {
+                                <div class="mc-inputs">
+                                    @for (int optIdx = 0; optIdx < 4; optIdx++)
+                                    {
+                                        var letter = (char)('A' + optIdx);
+                                        <div class="form-group">
+                                            <label>Lựa chọn @letter</label>
+                                            <input type="text" class="brutal-input mc-opt-@idx" data-index="@optIdx" value="@(optionsList.Count > optIdx ? optionsList[optIdx] : "")" onchange="updateOptionsJson(@idx)" required />
+                                        </div>
+                                    }
+                                </div>
+                                <input type="hidden" asp-for="GeneratedQuestions[idx].OptionsJson" id="optionsJson-@idx" />
+
+                                <div class="form-group" style="margin-top: 15px;">
+                                    <label>Đáp án đúng</label>
+                                    <div style="display: flex; gap: 20px;">
+                                        @foreach (var letter in new[] { "A", "B", "C", "D" })
+                                        {
+                                            <label style="display:flex; align-items:center; gap:5px; font-weight:700;">
+                                                <input type="radio" name="correctAnswerRadio-@idx" value="@letter" @(q.CorrectAnswer == letter ? "checked" : "") onchange="updateCorrectAnswer(@idx, '@letter')" /> @letter
+                                            </label>
+                                        }
+                                    </div>
+                                    <input type="hidden" asp-for="GeneratedQuestions[idx].CorrectAnswer" id="correctAnswer-@idx" />
+                                </div>
+                            }
+                            else if (q.QuestionType == "TrueFalse")
+                            {
+                                <div class="form-group" style="margin-top: 15px;">
+                                    <label>Đáp án đúng</label>
+                                    <div style="display: flex; gap: 20px;">
+                                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;">
+                                            <input type="radio" name="correctAnswerRadio-@idx" value="True" @(q.CorrectAnswer == "True" ? "checked" : "") onchange="updateCorrectAnswer(@idx, 'True')" /> ĐÚNG (True)
+                                        </label>
+                                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;">
+                                            <input type="radio" name="correctAnswerRadio-@idx" value="False" @(q.CorrectAnswer == "False" ? "checked" : "") onchange="updateCorrectAnswer(@idx, 'False')" /> SAI (False)
+                                        </label>
+                                    </div>
+                                    <input type="hidden" asp-for="GeneratedQuestions[idx].CorrectAnswer" id="correctAnswer-@idx" />
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(q.Tags))
+                            {
+                                <div style="margin-top:10px;">
+                                    <span style="font-size:10px; font-weight:800; color:#555; text-transform:uppercase;">Thẻ tag:</span>
+                                    @foreach (var tag in q.Tags.Split(','))
+                                    {
+                                        <span class="brutal-badge" style="background:#e9ecef; border-color:#aaa; font-size:9px; margin-left:3px;">#@tag.Trim()</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+                        <button type="submit" class="btn-brutal btn-green" style="width: auto; padding: 15px 40px; font-size:16px;"><i class="fa-solid fa-floppy-disk"></i> Lưu tất cả câu hỏi đã chọn</button>
+                    </div>
+                </form>
+            }
+        </div>
+
+    </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-box">
+        <i class="fa-solid fa-gear loading-spinner"></i>
+        <h3 style="font-weight: 900; text-transform: uppercase; margin-bottom: 10px;">Trí tuệ nhân tạo đang sinh câu hỏi...</h3>
+        <p style="font-weight: 700; color: #555; font-size: 14px;">Quá trình này có thể mất từ 10 - 20 giây do AI cần phân tích chủ đề và xây dựng đáp án học thuật chuẩn xác.</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function toggleCardOpacity(index) {
+            const checkbox = document.querySelector(`input[name="GeneratedQuestions[${index}].IsSelected"]`);
+            const card = document.getElementById(`qcard-${index}`);
+            if (checkbox.checked) {
+                card.classList.remove('deselected');
+            } else {
+                card.classList.add('deselected');
+            }
+        }
+
+        // Update Hidden OptionsJson field when input changes
+        function updateOptionsJson(idx) {
+            const optionInputs = document.querySelectorAll(`.mc-opt-${idx}`);
+            const opts = [];
+            optionInputs.forEach(input => {
+                opts.push(input.value);
+            });
+            document.getElementById(`optionsJson-${idx}`).value = JSON.stringify(opts);
+        }
+
+        // Update Hidden CorrectAnswer field when radio selection changes
+        function updateCorrectAnswer(idx, val) {
+            document.getElementById(`correctAnswer-${idx}`).value = val;
+        }
+
+        // Initialize OptionsJson on load if model had generated items
+        document.addEventListener("DOMContentLoaded", function() {
+            @if (Model.HasGenerated)
+            {
+                for (int i = 0; i < Model.GeneratedQuestions.Count; i++)
+                {
+                    if (Model.GeneratedQuestions[i].QuestionType == "MultipleChoice")
+                    {
+                        <text>updateOptionsJson(@i);</text>
+                        <text>updateCorrectAnswer(@i, '@Html.Raw(Model.GeneratedQuestions[i].CorrectAnswer)');</text>
+                    }
+                    else
+                    {
+                        <text>updateCorrectAnswer(@i, '@Html.Raw(Model.GeneratedQuestions[i].CorrectAnswer)');</text>
+                    }
+                }
+            }
+        });
+    </script>
+}
