@@ -9,9 +9,9 @@ namespace PresentationLayer.Pages.Auth
     [Authorize]
     public class ProfileModel : PageModel
     {
-        private readonly BussinessLayer.Services.IUserService _userService;
+        private readonly BussinessLayer.IServices.IUserService _userService;
 
-        public ProfileModel(BussinessLayer.Services.IUserService userService)
+        public ProfileModel(BussinessLayer.IServices.IUserService userService)
         {
             _userService = userService;
         }

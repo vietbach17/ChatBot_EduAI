@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace BussinessLayer.Services
+namespace BussinessLayer.IServices
 {
     public interface IEmailService
     {
