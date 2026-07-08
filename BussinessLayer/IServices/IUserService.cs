@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 using DataAccessLayer.Entities;
 
-namespace BussinessLayer.Services
+namespace BussinessLayer.IServices
 {
     public interface IUserService
     {

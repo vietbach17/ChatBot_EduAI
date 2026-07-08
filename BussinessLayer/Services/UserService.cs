@@ -6,6 +6,8 @@ using DataAccessLayer.Entities;
 using DataAccessLayer.Repositories;
 using DataAccessLayer.IRepositories;
 
+using BussinessLayer.IServices;
+
 namespace BussinessLayer.Services
 {
     public class UserService : IUserService
