@@ -44,8 +44,11 @@ builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<IDocumentActivityLogService, DocumentActivityLogService>();
 builder.Services.AddScoped<IPaymentGateway, VNPayGateway>();
+builder.Services.AddScoped<IPaymentGateway, PayOSGateway>();
+builder.Services.AddScoped<IPaymentGateway, SePayGateway>();
 builder.Services.AddScoped<PaymentGatewayFactory>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IPaymentHistoryService, PaymentHistoryService>();
 builder.Services.AddHostedService<QuotaResetBackgroundService>();
 
 // Authentication

@@ -30,8 +30,11 @@ namespace PresentationLayer.Pages.PaymentHistory
 
         public async Task<IActionResult> OnGetAsync()
         {
-            // TODO: Get real UserId from Claims
-            int currentUserId = 1; // Dummy UserId
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            if (!int.TryParse(userIdClaim, out int currentUserId))
+            {
+                currentUserId = 1; // Dự phòng
+            }
             
             var allHistories = await _historyService.GetPaymentHistoryByUserIdAsync(currentUserId);
 

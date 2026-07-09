@@ -88,20 +88,30 @@
 
         @if (userRole == "Admin")
         {
-            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">QUáº¢N TRá»Š VIÃŠN</div>
-            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">QUẢN TRỊ VIÊN</div>
+            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Hồ sơ</a>
+            <a asp-page="/Admin/Dashboard" class="nav-item"><i class="fa-solid fa-chart-line"></i> Tổng quan</a>
+            <a asp-page="/Admin/Users" class="nav-item"><i class="fa-solid fa-users"></i> Người dùng</a>
+            <a asp-page="/Admin/Subjects" class="nav-item"><i class="fa-solid fa-book"></i> Môn học</a>
+            <a asp-page="/Admin/Plans" class="nav-item"><i class="fa-solid fa-box"></i> Gói cước</a>
+            <a asp-page="/Admin/Subscriptions" class="nav-item"><i class="fa-solid fa-receipt"></i> Đăng ký</a>
+            <a asp-page="/Admin/Notifications" class="nav-item"><i class="fa-solid fa-bell"></i> Thông báo</a>
             <a asp-page="/Admin/PaymentHistory" class="nav-item"><i class="fa-solid fa-file-invoice-dollar"></i> Lịch sử TT</a>
         }
         else if (userRole == "Lecturer")
         {
-            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">GIáº¢NG VIÃŠN</div>
-            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
-            <a asp-page="/PaymentHistory/Index" class="nav-item"><i class="fa-solid fa-file-invoice-dollar"></i> Lịch sử TT</a>
+            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">GIẢNG VIÊN</div>
+            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Hồ sơ</a>
+            <a asp-page="/Lecturer/MySubjects" class="nav-item"><i class="fa-solid fa-book-open"></i> Môn học của tôi</a>
+            <a asp-page="/Lecturer/AllSubjects" class="nav-item"><i class="fa-solid fa-globe"></i> Tất cả môn học</a>
+            <a asp-page="/Lecturer/MyDocuments" class="nav-item"><i class="fa-solid fa-file-alt"></i> Tài liệu</a>
         }
         else
         {
-            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">SINH VIÃŠN</div>
-            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">SINH VIÊN</div>
+            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Hồ sơ</a>
+            <a asp-page="/Chat/Index" class="nav-item"><i class="fa-solid fa-robot"></i> Hỏi đáp AI</a>
+            <a asp-page="/Subscription/Index" class="nav-item"><i class="fa-solid fa-box"></i> Gói cước</a>
             <a asp-page="/PaymentHistory/Index" class="nav-item"><i class="fa-solid fa-file-invoice-dollar"></i> Lịch sử TT</a>
         }
         
@@ -117,7 +127,7 @@
                 </div>
             }
         </a>
-        <a asp-page="/Auth/Logout" class="nav-item" style="border:dashed 2px var(--black);">ÄÄƒng xuáº¥t</a>      
+        <a asp-page="/Auth/Logout" class="nav-item" style="border:dashed 2px var(--black);">Đăng xuất</a>      
     </div>
 
     <!-- MAIN CONTENT -->

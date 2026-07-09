@@ -66,59 +66,75 @@
 </style>
 }
 
-<div class="main-wrapper">
-    <div class="invoice-card">
-        <h2 style="font-weight: 900; font-size: 24px; text-transform: uppercase; border-bottom: 3px solid var(--black); padding-bottom: 12px; margin-bottom: 20px; color: var(--pink);">
-            <i class="fa-solid fa-file-invoice-dollar"></i> Hóa đơn tạm tính
-        </h2>
+<div class="main-wrapper" style="padding: 40px;">
+    <!-- MỘT HỘP DUY NHẤT CHỨA 2 CỘT NẰM NGANG -->
+    <div class="invoice-card" style="max-width: 900px; display: flex; flex-wrap: wrap; gap: 40px;">
+        
+        <!-- BÊN TRÁI: HÓA ĐƠN -->
+        <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+            <h2 style="font-weight: 900; font-size: 24px; text-transform: uppercase; border-bottom: 3px solid var(--black); padding-bottom: 12px; margin-bottom: 20px; color: var(--pink);">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Hóa đơn tạm tính
+            </h2>
 
-        <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; margin-bottom: 24px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
-                <span>Gói đăng ký:</span>
-                <span style="font-size: 18px; color: var(--blue);">@Model.Plan.Name.ToUpper()</span>
+            <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                    <span>Gói đăng ký:</span>
+                    <span style="font-size: 18px; color: var(--blue);">@Model.Plan.Name.ToUpper()</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                    <span>Thời hạn:</span>
+                    <span>@Model.Plan.DurationDays ngày</span>
+                </div>
+                <hr style="border-top: 2px dashed #cbd5e1; margin: 15px 0;">
+                <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px;">
+                    <span>Tổng tiền:</span>
+                    <span style="color: var(--pink);">@Model.Plan.Price.ToString("N0") đ</span>
+                </div>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
-                <span>Thời hạn:</span>
-                <span>@Model.Plan.DurationDays ngày</span>
-            </div>
-            <hr style="border-top: 2px dashed #cbd5e1; margin: 15px 0;">
-            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px;">
-                <span>Tổng tiền:</span>
-                <span style="color: var(--pink);">@Model.Plan.Price.ToString("N0") đ</span>
+
+            <div style="margin-top: auto; padding-top: 20px; text-align: center;">
+                <a href="/Subscription/Index" style="font-weight: 800; color: #555; text-decoration: none;">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại bảng giá
+                </a>
             </div>
         </div>
 
-        <h3 style="font-weight: 900; font-size: 16px; text-transform: uppercase; margin-bottom: 15px;">
-            Chọn cổng thanh toán
-        </h3>
+        <!-- ĐƯỜNG KẺ GIỮA (Chỉ hiện trên màn hình to) -->
+        <div style="width: 3px; background-color: var(--black); border-radius: 2px;" class="desktop-divider"></div>
 
-        <form method="post">
-            <input type="hidden" name="planId" value="@Model.Plan.Id" />
+        <!-- BÊN PHẢI: CHỌN CỔNG THANH TOÁN -->
+        <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+            <h3 style="font-weight: 900; font-size: 20px; text-transform: uppercase; border-bottom: 3px solid var(--black); padding-bottom: 12px; margin-bottom: 20px; color: var(--pink);">
+                <i class="fa-solid fa-credit-card"></i> Chọn cổng thanh toán
+            </h3>
 
-            <label class="payment-option">
-                <input type="radio" name="paymentMethod" value="VNPay" checked />
-                <span style="font-weight: 800;">Cổng VNPay (Thử nghiệm)</span>
-            </label>
+            <form method="post" style="display: flex; flex-direction: column; flex: 1;">
+                <input type="hidden" name="planId" value="@Model.Plan.Id" />
 
-            <label class="payment-option disabled-option">
-                <input type="radio" name="paymentMethod" value="PayOS" disabled />
-                <span style="font-weight: 800;">Cổng PayOS (Chờ tích hợp)</span>
-            </label>
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="VNPay" checked />
+                    <span style="font-weight: 800;">Cổng VNPay</span>
+                </label>
 
-            <label class="payment-option disabled-option">
-                <input type="radio" name="paymentMethod" value="SePay" disabled />
-                <span style="font-weight: 800;">Cổng SePay (Chờ tích hợp)</span>
-            </label>
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="PayOS" />
+                    <span style="font-weight: 800;">Cổng PayOS</span>
+                </label>
 
-            <button type="submit" class="checkout-btn">
-                Xác nhận và Thanh toán <i class="fa-solid fa-arrow-right-to-bracket"></i>
-            </button>
-        </form>
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="SePay" />
+                    <span style="font-weight: 800;">Cổng SePay</span>
+                </label>
 
-        <div style="margin-top: 20px; text-align: center;">
-            <a href="/Subscription/Index" style="font-weight: 800; color: #555; text-decoration: none;">
-                <i class="fa-solid fa-arrow-left"></i> Quay lại bảng giá
-            </a>
+                <button type="submit" class="checkout-btn" style="margin-top: auto;">
+                    Xác nhận và Thanh toán <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
         </div>
     </div>
 </div>
+<style>
+    @@media (max-width: 768px) {
+        .desktop-divider { display: none; }
+    }
+</style>
