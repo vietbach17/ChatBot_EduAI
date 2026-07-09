@@ -16,13 +16,13 @@ namespace DataAccessLayer.Migrations
                 type: "boolean",
                 nullable: false,
                 defaultValue: false);
-
             migrationBuilder.UpdateData(
                 table: "QuestionBanks",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "IsDeleted",
                 value: false);
+
 
             migrationBuilder.UpdateData(
                 table: "QuestionBanks",

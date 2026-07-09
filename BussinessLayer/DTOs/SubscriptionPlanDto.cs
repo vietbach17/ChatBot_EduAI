@@ -9,5 +9,22 @@ namespace BussinessLayer.DTOs
         public int MonthlyQuestionLimit { get; set; } // -1 = không giới hạn
         public bool IsActive { get; set; }
         public int SortOrder { get; set; }
+        public string Features { get; set; } = "[]";
+        public int DurationDays { get; set; } = 30;
+
+        public List<string> FeatureList 
+        {
+            get 
+            {
+                try 
+                {
+                    return System.Text.Json.JsonSerializer.Deserialize<List<string>>(Features) ?? new List<string>();
+                }
+                catch 
+                {
+                    return new List<string>();
+                }
+            }
+        }
     }
 }

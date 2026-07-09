@@ -29,6 +29,7 @@ builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<IDocumentActivityLogRepository, DocumentActivityLogRepository>();
 builder.Services.AddScoped<IQuestionBankRepository, QuestionBankRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
 
 // Services
 builder.Services.AddHttpClient();
@@ -46,6 +47,13 @@ builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddSingleton<IFileTextExtractorService, FileTextExtractorService>();
 builder.Services.AddScoped<IQuestionBankService, QuestionBankService>();
 builder.Services.AddScoped<IAIQuizGeneratorService, AIQuizGeneratorService>();
+builder.Services.AddScoped<IPaymentGateway, VNPayGateway>();
+builder.Services.AddScoped<IPaymentGateway, PayOSGateway>();
+builder.Services.AddScoped<IPaymentGateway, SePayGateway>();
+builder.Services.AddScoped<PaymentGatewayFactory>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IPaymentHistoryService, PaymentHistoryService>();
+builder.Services.AddHostedService<QuotaResetBackgroundService>();
 
 // Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

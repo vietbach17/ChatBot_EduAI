@@ -90,19 +90,32 @@
         @if (userRole == "Admin")
         {
             <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">QUẢN TRỊ VIÊN</div>
-            <a asp-page="/Auth/Profile" class="nav-item @(activePage.Contains("/Auth/Profile") ? "active" : "")"><i class="fa-solid fa-user"></i> HỒ SƠ</a>
+            <a asp-page="/Auth/Profile" class="nav-item @(activePage.Contains("/Auth/Profile") ? "active" : "")"><i class="fa-solid fa-user"></i> Hồ sơ</a>
+            <a asp-page="/Admin/Dashboard" class="nav-item @(activePage.Contains("/Admin/Dashboard") ? "active" : "")"><i class="fa-solid fa-chart-line"></i> Tổng quan</a>
+            <a asp-page="/Admin/Users" class="nav-item @(activePage.Contains("/Admin/Users") ? "active" : "")"><i class="fa-solid fa-users"></i> Người dùng</a>
+            <a asp-page="/Admin/Subjects" class="nav-item @(activePage.Contains("/Admin/Subjects") ? "active" : "")"><i class="fa-solid fa-book"></i> Môn học</a>
+            <a asp-page="/Admin/Plans" class="nav-item @(activePage.Contains("/Admin/Plans") ? "active" : "")"><i class="fa-solid fa-box"></i> Gói cước</a>
+            <a asp-page="/Admin/Subscriptions" class="nav-item @(activePage.Contains("/Admin/Subscriptions") ? "active" : "")"><i class="fa-solid fa-receipt"></i> Đăng ký</a>
+            <a asp-page="/Admin/Notifications" class="nav-item @(activePage.Contains("/Admin/Notifications") ? "active" : "")"><i class="fa-solid fa-bell"></i> Thông báo</a>
+            <a asp-page="/Admin/PaymentHistory" class="nav-item @(activePage.Contains("/Admin/PaymentHistory") ? "active" : "")"><i class="fa-solid fa-file-invoice-dollar"></i> Lịch sử TT</a>
         }
         else if (userRole == "Lecturer")
         {
             <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">GIẢNG VIÊN</div>
-            <a asp-page="/Auth/Profile" class="nav-item @(activePage.Contains("/Auth/Profile") ? "active" : "")"><i class="fa-solid fa-user"></i> HỒ SƠ</a>
-            <a asp-page="/Lecturer/QuestionBank" class="nav-item @(activePage.Contains("/Lecturer/QuestionBank") ? "active" : "")"><i class="fa-solid fa-database"></i> NGÂN HÀNG CÂU HỎI</a>
-            <a asp-page="/Lecturer/AIGenerateQuestions" class="nav-item @(activePage.Contains("/Lecturer/AIGenerateQuestions") ? "active" : "")"><i class="fa-solid fa-robot"></i> AI TẠO CÂU HỎI</a>
+            <a asp-page="/Auth/Profile" class="nav-item @(activePage.Contains("/Auth/Profile") ? "active" : "")"><i class="fa-solid fa-user"></i> Hồ sơ</a>
+            <a asp-page="/Lecturer/MySubjects" class="nav-item @(activePage.Contains("/Lecturer/MySubjects") ? "active" : "")"><i class="fa-solid fa-book-open"></i> Môn học của tôi</a>
+            <a asp-page="/Lecturer/AllSubjects" class="nav-item @(activePage.Contains("/Lecturer/AllSubjects") ? "active" : "")"><i class="fa-solid fa-globe"></i> Tất cả môn học</a>
+            <a asp-page="/Lecturer/MyDocuments" class="nav-item @(activePage.Contains("/Lecturer/MyDocuments") ? "active" : "")"><i class="fa-solid fa-file-alt"></i> Tài liệu</a>
+            <a asp-page="/Lecturer/QuestionBank" class="nav-item @(activePage.Contains("/Lecturer/QuestionBank") ? "active" : "")"><i class="fa-solid fa-database"></i> Ngân hàng câu hỏi</a>
+            <a asp-page="/Lecturer/AIGenerateQuestions" class="nav-item @(activePage.Contains("/Lecturer/AIGenerateQuestions") ? "active" : "")"><i class="fa-solid fa-robot"></i> AI tạo câu hỏi</a>
         }
         else
         {
             <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">SINH VIÊN</div>
-            <a asp-page="/Auth/Profile" class="nav-item @(activePage.Contains("/Auth/Profile") ? "active" : "")"><i class="fa-solid fa-user"></i> HỒ SƠ</a>
+            <a asp-page="/Auth/Profile" class="nav-item @(activePage.Contains("/Auth/Profile") ? "active" : "")"><i class="fa-solid fa-user"></i> Hồ sơ</a>
+            <a asp-page="/Chat/Index" class="nav-item @(activePage.Contains("/Chat/Index") ? "active" : "")"><i class="fa-solid fa-robot"></i> Hỏi đáp AI</a>
+            <a asp-page="/Subscription/Index" class="nav-item @(activePage.Contains("/Subscription/Index") ? "active" : "")"><i class="fa-solid fa-box"></i> Gói cước</a>
+            <a asp-page="/PaymentHistory/Index" class="nav-item @(activePage.Contains("/PaymentHistory/Index") ? "active" : "")"><i class="fa-solid fa-file-invoice-dollar"></i> Lịch sử TT</a>
         }
         
         <a asp-page="/Auth/Profile" class="user-profile" style="text-decoration: none; cursor: pointer; transition: 0.1s;">

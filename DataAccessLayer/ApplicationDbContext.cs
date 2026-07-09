@@ -21,6 +21,7 @@ namespace DataAccessLayer
         public DbSet<QuestionBank> QuestionBanks { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<QuizQuestion> QuizQuestions { get; set; }
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -62,11 +63,24 @@ namespace DataAccessLayer
                 new Chapter { Id = 3, SubjectId = 2, Title = "Chương 1: Tổng quan AI", OrderIndex = 1 }
             );
 
-            // Seed dữ liệu gói mặc định
+            // Cấu hình liên kết của PaymentTransaction
+            modelBuilder.Entity<PaymentTransaction>()
+                .HasOne(t => t.User)
+                .WithMany(u => u.PaymentTransactions)
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PaymentTransaction>()
+                .HasOne(t => t.SubscriptionPlan)
+                .WithMany()
+                .HasForeignKey(t => t.PlanId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Seed Data 3 gói cước mới thay thế gói cũ
             modelBuilder.Entity<SubscriptionPlan>().HasData(
-                new SubscriptionPlan { Id = 1, Name = "Free",    Description = "Gói miễn phí cơ bản",            Price = 0,      MonthlyQuestionLimit = 5,   IsActive = true, SortOrder = 1 },
-                new SubscriptionPlan { Id = 2, Name = "Basic",   Description = "Gói cơ bản 100 câu hỏi/tháng",  Price = 50000,  MonthlyQuestionLimit = 100,  IsActive = true, SortOrder = 2 },
-                new SubscriptionPlan { Id = 3, Name = "Premium", Description = "Gói cao cấp không giới hạn",    Price = 150000, MonthlyQuestionLimit = -1,   IsActive = true, SortOrder = 3 }
+                new SubscriptionPlan { Id = 1, Name = "Basic", Description = "Gói cơ bản miễn phí", Price = 0, MonthlyQuestionLimit = 5, IsActive = true, SortOrder = 1, DurationDays = 30, Features = "[\"Hỏi đáp AI cơ bản\", \"Độ trễ phản hồi bình thường\", \"Giới hạn 5 câu hỏi / 5 giờ\"]" },
+                new SubscriptionPlan { Id = 2, Name = "Pro", Description = "Gói nâng cao nhiều tính năng", Price = 25000, MonthlyQuestionLimit = 20, IsActive = true, SortOrder = 2, DurationDays = 30, Features = "[\"Ưu tiên xử lý câu hỏi\", \"Tốc độ phản hồi AI nhanh hơn\", \"Giới hạn 20 câu hỏi / 5 giờ\", \"Hỗ trợ tài liệu đính kèm\"]" },
+                new SubscriptionPlan { Id = 3, Name = "Ultra", Description = "Gói cao cấp không giới hạn", Price = 100000, MonthlyQuestionLimit = -1, IsActive = true, SortOrder = 3, DurationDays = 30, Features = "[\"Không giới hạn số câu hỏi\", \"AI phản hồi tức thì\", \"Mô hình AI cao cấp nhất\", \"Hỗ trợ ưu tiên 24/7\"]" }
             );
 
             // Cấu hình các quan hệ khóa ngoại để tránh vòng lặp Cascade cho QuestionBank, Quiz, QuizQuestion
