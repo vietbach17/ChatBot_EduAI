@@ -689,7 +689,7 @@
             <span>Sửa câu hỏi</span>
             <button class="modal-close" onclick="closeEditModal()">&times;</button>
         </div>
-        <form method="post" asp-page-handler="Edit">
+        <form id="editQuestionForm" method="post" asp-page-handler="Edit">
             <input type="hidden" asp-for="EditQuestionId" id="editQuestionId" />
             <div class="modal-body">
                 <div class="form-group">
@@ -1032,7 +1032,7 @@
 
         // Confirm Update
         function confirmUpdateQuestion() {
-            const form = document.querySelector('form[asp-page-handler="Edit"]');
+            const form = document.getElementById('editQuestionForm');
             // Run prepareEditSubmit to collect radio values & JSON
             prepareEditSubmit();
 
