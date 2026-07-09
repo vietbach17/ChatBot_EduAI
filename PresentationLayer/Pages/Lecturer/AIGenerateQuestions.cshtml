@@ -216,6 +216,16 @@
         }
         .status-success { background: var(--green); color: var(--white); }
         .status-error { background: var(--pink); color: var(--white); }
+        /* Log history items */
+        .log-item {
+            background: var(--white);
+            transition: 0.1s;
+        }
+        .log-item:hover {
+            background: #fffbeb;
+            box-shadow: 2px 2px 0px 0px var(--black);
+            transform: translate(-1px, -1px);
+        }
     </style>
 }
 
@@ -241,48 +251,89 @@
 
     <div class="layout-grid">
         
-        <!-- Left: Configuration Form -->
-        <div class="brutal-card">
-            <h3 style="font-weight:900; text-transform:uppercase; font-size:16px; margin-bottom:15px; border-bottom:3px solid var(--black); padding-bottom:5px;">Yêu cầu tạo câu</h3>
-            <form method="post" asp-page-handler="Generate" onsubmit="showLoading()">
-                <div class="form-group">
-                    <label>Môn học</label>
-                    <select asp-for="GenerateRequest.SubjectId" class="brutal-select" required>
-                        <option value="">-- Chọn môn học --</option>
-                        @foreach (var sub in Model.Subjects)
+        <!-- Left: Configuration Form & History -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="brutal-card">
+                <h3 style="font-weight:900; text-transform:uppercase; font-size:16px; margin-bottom:15px; border-bottom:3px solid var(--black); padding-bottom:5px;">Yêu cầu tạo câu</h3>
+                <form method="post" asp-page-handler="Generate" onsubmit="showLoading()">
+                    <div class="form-group">
+                        <label>Môn học</label>
+                        <select asp-for="GenerateRequest.SubjectId" class="brutal-select" required>
+                            <option value="">-- Chọn môn học --</option>
+                            @foreach (var sub in Model.Subjects)
+                            {
+                                <option value="@sub.Id">[@sub.Code] @sub.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Chủ đề học thuật</label>
+                        <input type="text" asp-for="GenerateRequest.Topic" class="brutal-input" placeholder="Ví dụ: Vòng lặp For trong C#, Class..." required />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Loại câu hỏi</label>
+                        <select asp-for="GenerateRequest.QuestionType" class="brutal-select" required>
+                            <option value="All">Tất cả / Hỗn hợp</option>
+                            <option value="MultipleChoice">Trắc nghiệm (4 tùy chọn)</option>
+                            <option value="TrueFalse">Đúng / Sai</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Độ khó</label>
+                        <select asp-for="GenerateRequest.Difficulty" class="brutal-select" required>
+                            <option value="Easy">Dễ (Easy)</option>
+                            <option value="Medium">Trung bình (Medium)</option>
+                            <option value="Hard">Khó (Hard)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Số lượng câu hỏi</label>
+                        <select asp-for="GenerateRequest.Count" class="brutal-select" required>
+                            <option value="3">3 câu hỏi</option>
+                            <option value="5">5 câu hỏi</option>
+                            <option value="8">8 câu hỏi</option>
+                            <option value="10">10 câu hỏi (Khuyên dùng)</option>
+                        </select>
+                        <span style="font-size:10px; color:#666; font-weight:700;">Lưu ý: Số câu nhiều hơn có thể tốn thời gian hơn.</span>
+                    </div>
+
+                    <button type="submit" class="btn-brutal btn-pink" style="margin-top: 10px;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Tạo Câu Hỏi</button>
+                </form>
+            </div>
+
+            <!-- Lịch sử tạo câu -->
+            <div class="brutal-card" style="padding-top: 15px;">
+                <h3 style="font-weight:900; text-transform:uppercase; font-size:14px; margin-bottom:12px; border-bottom:3px solid var(--black); padding-bottom:5px;"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử gói câu hỏi</h3>
+                @if (!Model.GenerationLogs.Any())
+                {
+                    <div style="font-size: 11px; font-weight: 700; color: #777; text-align: center; padding: 15px 0;">Chưa tạo gói câu hỏi nào.</div>
+                }
+                else
+                {
+                    <div style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;">
+                        @foreach (var log in Model.GenerationLogs)
                         {
-                            <option value="@sub.Id">[@sub.Code] @sub.Name</option>
+                            <div class="log-item" style="border: 2px solid var(--black); padding: 10px; font-size: 12px; cursor: pointer; transition: 0.1s;" onclick="viewLogDetails(@log.Id)">
+                                <div style="display: flex; justify-content: space-between; font-weight: 800; margin-bottom: 5px;">
+                                    <span>[@log.Subject.Code] @log.Subject.Name</span>
+                                    <span class="brutal-badge" style="font-size: 9px; padding: 1px 4px; border: 1.5px solid var(--black);">@log.Quantity câu</span>
+                                </div>
+                                <div style="font-weight: 700; color: #333; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    Chủ đề: @log.Topic
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #555; font-weight: 700;">
+                                    <span>Độ khó: @(log.Difficulty == "Easy" ? "Dễ" : log.Difficulty == "Medium" ? "T.Bình" : "Khó")</span>
+                                    <span>@log.CreatedAt.AddHours(7).ToString("dd/MM HH:mm")</span>
+                                </div>
+                            </div>
                         }
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Chủ đề học thuật</label>
-                    <input type="text" asp-for="GenerateRequest.Topic" class="brutal-input" placeholder="Ví dụ: Vòng lặp For trong C#, Class..." required />
-                </div>
-
-                <div class="form-group">
-                    <label>Độ khó</label>
-                    <select asp-for="GenerateRequest.Difficulty" class="brutal-select" required>
-                        <option value="Easy">Dễ (Easy)</option>
-                        <option value="Medium">Trung bình (Medium)</option>
-                        <option value="Hard">Khó (Hard)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Số lượng câu hỏi</label>
-                    <select asp-for="GenerateRequest.Count" class="brutal-select" required>
-                        <option value="3">3 câu hỏi</option>
-                        <option value="5">5 câu hỏi</option>
-                        <option value="8">8 câu hỏi</option>
-                        <option value="10">10 câu hỏi (Khuyên dùng)</option>
-                    </select>
-                    <span style="font-size:10px; color:#666; font-weight:700;">Lưu ý: Số câu nhiều hơn có thể tốn thời gian hơn.</span>
-                </div>
-
-                <button type="submit" class="btn-brutal btn-pink" style="margin-top: 10px;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Tạo Câu Hỏi</button>
-            </form>
+                    </div>
+                }
+            </div>
         </div>
 
         <!-- Right: Generated Questions List -->
@@ -405,6 +456,24 @@
 </div>
 </div>
 
+<!-- LOG DETAILS MODAL -->
+<div id="logDetailsModal" class="brutal-modal">
+    <div class="brutal-modal-content" style="max-width: 900px; width: 95%; border: 3px solid var(--black); box-shadow: 5px 5px 0px 0px var(--black);">
+        <div class="modal-header">
+            <span><i class="fa-solid fa-clock-rotate-left"></i> Chi tiết gói câu hỏi đã tạo</span>
+            <button type="button" class="modal-close" onclick="closeLogDetailsModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+            <div id="logMeta" style="border: 3px solid var(--black); padding: 15px; margin-bottom: 20px; font-size: 13px; font-weight: 800; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #fafafa;">
+                <!-- JS populated -->
+            </div>
+            <div id="logQuestionsList" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- JS populated -->
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- LOADING OVERLAY -->
 <div id="loadingOverlay" class="loading-overlay">
     <div class="loading-box">
@@ -416,8 +485,103 @@
 
 @section Scripts {
     <script>
+        window.onclick = function(event) {
+            const logModal = document.getElementById('logDetailsModal');
+            if (event.target == logModal) {
+                closeLogDetailsModal();
+            }
+        }
+
         function showLoading() {
             document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        async function viewLogDetails(logId) {
+            const modal = document.getElementById('logDetailsModal');
+            modal.style.display = 'flex';
+            
+            const metaDiv = document.getElementById('logMeta');
+            const listDiv = document.getElementById('logQuestionsList');
+            
+            metaDiv.innerHTML = '<div style="grid-column: span 2; text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>';
+            listDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch(`?handler=LogDetails&logId=${logId}`);
+                const data = await response.json();
+                if (data.success) {
+                    const typeText = data.questionType === 'MultipleChoice' ? 'Trắc nghiệm (4 lựa chọn)' : data.questionType === 'TrueFalse' ? 'Đúng / Sai' : 'Tất cả / Hỗn hợp';
+                    const diffText = data.difficulty === 'Easy' ? 'Dễ' : data.difficulty === 'Medium' ? 'Trung bình' : 'Khó';
+                    metaDiv.innerHTML = `
+                        <div>Môn học: <span style="font-weight:900; color:var(--black);">[${data.subjectName}]</span></div>
+                        <div>Chủ đề: <span style="font-weight:900; color:var(--black);">${data.topic}</span></div>
+                        <div>Độ khó: <span style="font-weight:900; color:var(--black);">${diffText}</span></div>
+                        <div>Loại câu hỏi: <span style="font-weight:900; color:var(--black);">${typeText}</span></div>
+                        <div style="grid-column: span 2;">Thời gian tạo: <span style="font-weight:900; color:var(--black);">${data.createdAt}</span></div>
+                    `;
+                    
+                    const questions = JSON.parse(data.questions);
+                    listDiv.innerHTML = '';
+                    questions.forEach((q, idx) => {
+                        const qDiv = document.createElement('div');
+                        qDiv.className = 'q-card';
+                        qDiv.style.marginBottom = '10px';
+                        qDiv.style.padding = '15px';
+                        
+                        let optionsHtml = '';
+                        if (q.questionType === 'MultipleChoice' && q.options) {
+                            optionsHtml = `<div class="mc-inputs" style="margin-top: 10px;">`;
+                            const labels = ['A', 'B', 'C', 'D'];
+                            q.options.forEach((opt, oIdx) => {
+                                const isCorrect = labels[oIdx] === q.correctAnswer;
+                                optionsHtml += `
+                                    <div style="border: 2px solid var(--black); padding: 8px; font-weight:700; ${isCorrect ? 'background:#e6fffa;' : ''}">
+                                        <strong>${labels[oIdx]}.</strong> ${escapeHtml(opt)}
+                                    </div>
+                                `;
+                            });
+                            optionsHtml += `</div>`;
+                        } else {
+                            optionsHtml = `
+                                <div style="margin-top: 10px; display:flex; gap:15px;">
+                                    <div style="border: 2px solid var(--black); padding: 8px; font-weight:700; ${q.correctAnswer === 'True' ? 'background:#e6fffa;' : ''}">ĐÚNG (True)</div>
+                                    <div style="border: 2px solid var(--black); padding: 8px; font-weight:700; ${q.correctAnswer === 'False' ? 'background:#e6fffa;' : ''}">SAI (False)</div>
+                                </div>
+                            `;
+                        }
+                        
+                        qDiv.innerHTML = `
+                            <div style="font-weight: 800; font-size:14px; line-height:1.4;">
+                                Câu ${idx + 1}: ${escapeHtml(q.content)}
+                            </div>
+                            ${optionsHtml}
+                            <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center;">
+                                <span class="brutal-badge" style="font-size:10px;">Loại: ${q.questionType === 'MultipleChoice' ? 'Trắc nghiệm' : 'Đúng/Sai'}</span>
+                                <span class="brutal-badge badge-ai" style="font-size:10px;">Tags: ${escapeHtml(q.tags || 'AI')}</span>
+                            </div>
+                        `;
+                        listDiv.appendChild(qDiv);
+                    });
+                } else {
+                    metaDiv.innerHTML = `<div style="grid-column: span 2; color: red; text-align: center;">Lỗi: ${data.message}</div>`;
+                }
+            } catch (err) {
+                metaDiv.innerHTML = `<div style="grid-column: span 2; color: red; text-align: center;">Lỗi tải dữ liệu: ${err.message}</div>`;
+            }
+        }
+
+        function closeLogDetailsModal() {
+            document.getElementById('logDetailsModal').style.display = 'none';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         function toggleCardOpacity(index) {

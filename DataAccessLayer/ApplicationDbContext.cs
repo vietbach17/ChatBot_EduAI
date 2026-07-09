@@ -22,6 +22,7 @@ namespace DataAccessLayer
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<QuizQuestion> QuizQuestions { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+        public DbSet<AIGenerationLog> AIGenerationLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -165,6 +166,18 @@ namespace DataAccessLayer
                     CreatedAt = new System.DateTime(2026, 7, 8, 0, 0, 0, System.DateTimeKind.Utc)
                 }
             );
+
+            modelBuilder.Entity<AIGenerationLog>()
+                .HasOne(l => l.Lecturer)
+                .WithMany()
+                .HasForeignKey(l => l.LecturerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<AIGenerationLog>()
+                .HasOne(l => l.Subject)
+                .WithMany()
+                .HasForeignKey(l => l.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

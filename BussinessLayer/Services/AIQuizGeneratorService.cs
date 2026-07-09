@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 using DataAccessLayer;
 using BussinessLayer.IServices;
+using Microsoft.EntityFrameworkCore;
+using DataAccessLayer.Entities;
 
 namespace BussinessLayer.Services
 {
@@ -19,17 +21,34 @@ namespace BussinessLayer.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<AIGenerateResultDto>> GenerateQuestionsAsync(AIGenerateRequestDto request)
+        public async Task<IEnumerable<AIGenerateResultDto>> GenerateQuestionsAsync(AIGenerateRequestDto request, int lecturerId)
         {
             if (request == null) return new List<AIGenerateResultDto>();
 
             var subject = await _context.Subjects.FindAsync(request.SubjectId);
             var subjectName = subject?.Name ?? "Môn học chung";
 
+            var typeConstraint = "";
+            if (request.QuestionType == "MultipleChoice")
+            {
+                typeConstraint = "Tất cả các câu hỏi phải có loại 'MultipleChoice' (Trắc nghiệm 4 lựa chọn). Không tạo câu hỏi Đúng/Sai.";
+            }
+            else if (request.QuestionType == "TrueFalse")
+            {
+                typeConstraint = "Tất cả các câu hỏi phải có loại 'TrueFalse' (Đúng/Sai). Không tạo câu hỏi Trắc nghiệm 4 lựa chọn.";
+            }
+            else
+            {
+                typeConstraint = "Bạn có thể tự do tạo kết hợp cả hai loại câu hỏi 'MultipleChoice' và 'TrueFalse' theo tỉ lệ ngẫu nhiên.";
+            }
+
             var prompt = $@"
 Bạn là một giảng viên đại học và chuyên gia khảo thí giàu kinh nghiệm.
-Hãy tạo {request.Count} câu hỏi trắc nghiệm tiếng Việt chất lượng cao liên quan đến chủ đề '{request.Topic}' của môn học '{subjectName}'.
+Hãy tạo {request.Count} câu hỏi tiếng Việt chất lượng cao liên quan đến chủ đề '{request.Topic}' của môn học '{subjectName}'.
 Mức độ khó của các câu hỏi phải là: '{request.Difficulty}'.
+
+Yêu cầu về loại câu hỏi:
+{typeConstraint}
 
 Yêu cầu chi tiết:
 1. Đối với câu hỏi loại 'MultipleChoice' (Trắc nghiệm 4 lựa chọn):
@@ -75,13 +94,40 @@ Yêu cầu chi tiết:
                 };
 
                 var questions = JsonSerializer.Deserialize<List<AIGenerateResultDto>>(jsonResult, options);
-                return questions ?? new List<AIGenerateResultDto>();
+                var resultList = questions ?? new List<AIGenerateResultDto>();
+
+                if (resultList.Count > 0)
+                {
+                    var logEntry = new AIGenerationLog
+                    {
+                        LecturerId = lecturerId,
+                        SubjectId = request.SubjectId,
+                        Topic = request.Topic,
+                        Difficulty = request.Difficulty,
+                        QuestionType = request.QuestionType,
+                        Quantity = resultList.Count,
+                        CreatedAt = DateTime.UtcNow,
+                        GeneratedQuestionsJson = jsonResult
+                    };
+                    _context.AIGenerationLogs.Add(logEntry);
+                    await _context.SaveChangesAsync();
+                }
+
+                return resultList;
             }
             catch (Exception ex)
             {
-                // Ghi log lỗi nếu cần và ném ra ngoại lệ thân thiện hơn
                 throw new InvalidOperationException($"Lỗi khi tạo câu hỏi bằng AI: {ex.Message}", ex);
             }
+        }
+
+        public async Task<IEnumerable<AIGenerationLog>> GetGenerationLogsAsync(int lecturerId)
+        {
+            return await _context.AIGenerationLogs
+                .Include(l => l.Subject)
+                .Where(l => l.LecturerId == lecturerId)
+                .OrderByDescending(l => l.CreatedAt)
+                .ToListAsync();
         }
     }
 }

@@ -153,6 +153,12 @@ namespace PresentationLayer.Pages.Lecturer
 
         public async Task<IActionResult> OnGetGenerateSingleQuestionAsync(int subjectId, string topic)
         {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return new JsonResult(new { success = false, message = "Unauthorized" });
+
+            var user = await _userService.GetUserByUsernameAsync(username);
+            if (user == null) return new JsonResult(new { success = false, message = "Lecturer not found" });
+
             try
             {
                 var request = new AIGenerateRequestDto
@@ -160,10 +166,11 @@ namespace PresentationLayer.Pages.Lecturer
                     SubjectId = subjectId,
                     Topic = topic,
                     Count = 1,
-                    Difficulty = "Medium"
+                    Difficulty = "Medium",
+                    QuestionType = "All"
                 };
 
-                var result = await _aiQuizService.GenerateQuestionsAsync(request);
+                var result = await _aiQuizService.GenerateQuestionsAsync(request, user.Id);
                 var list = result != null ? result.ToList() : new List<AIGenerateResultDto>();
                 if (list.Count > 0)
                 {

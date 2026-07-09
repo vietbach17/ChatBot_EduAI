@@ -16,5 +16,8 @@ namespace BussinessLayer.DTOs
 
         [Required(ErrorMessage = "Vui lòng chọn độ khó.")]
         public string Difficulty { get; set; } = "Medium"; // "Easy", "Medium", "Hard"
+
+        [Required(ErrorMessage = "Vui lòng chọn loại câu hỏi.")]
+        public string QuestionType { get; set; } = "All"; // "All", "MultipleChoice", "TrueFalse"
     }
 }

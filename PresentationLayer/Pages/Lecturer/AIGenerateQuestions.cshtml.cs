@@ -36,31 +36,50 @@ namespace PresentationLayer.Pages.Lecturer
         public List<SelectedQuestionViewModel> GeneratedQuestions { get; set; } = new List<SelectedQuestionViewModel>();
 
         public IEnumerable<Subject> Subjects { get; set; } = new List<Subject>();
+        public IEnumerable<AIGenerationLog> GenerationLogs { get; set; } = new List<AIGenerationLog>();
 
         [TempData]
         public string? StatusMessage { get; set; }
 
         public bool HasGenerated { get; set; } = false;
 
-        public async Task<IActionResult> OnGetAsync()
+        private async Task<UserDto?> GetLecturerAsync()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return null;
+            return await _userService.GetUserByUsernameAsync(username);
+        }
+
+        private async Task LoadDataAsync(int lecturerId)
         {
             Subjects = await _questionService.GetAllSubjectsAsync();
+            GenerationLogs = await _aiGeneratorService.GetGenerationLogsAsync(lecturerId);
+        }
+
+        public async Task<IActionResult> OnGetAsync()
+        {
+            var user = await GetLecturerAsync();
+            if (user == null) return Challenge();
+
+            await LoadDataAsync(user.Id);
             return Page();
         }
 
         public async Task<IActionResult> OnPostGenerateAsync()
         {
-            Subjects = await _questionService.GetAllSubjectsAsync();
+            var user = await GetLecturerAsync();
+            if (user == null) return Challenge();
 
             if (!ModelState.IsValid)
             {
+                await LoadDataAsync(user.Id);
                 StatusMessage = "Error: Dữ liệu cấu hình yêu cầu không hợp lệ.";
                 return Page();
             }
 
             try
             {
-                var aiResults = await _aiGeneratorService.GenerateQuestionsAsync(GenerateRequest);
+                var aiResults = await _aiGeneratorService.GenerateQuestionsAsync(GenerateRequest, user.Id);
                 
                 GeneratedQuestions = aiResults.Select(r => new SelectedQuestionViewModel
                 {
@@ -84,26 +103,23 @@ namespace PresentationLayer.Pages.Lecturer
                 StatusMessage = $"Error: Lỗi tạo câu hỏi bằng AI: {ex.Message}";
             }
 
+            await LoadDataAsync(user.Id);
             return Page();
         }
 
         public async Task<IActionResult> OnPostSaveAsync()
         {
-            Subjects = await _questionService.GetAllSubjectsAsync();
+            var user = await GetLecturerAsync();
+            if (user == null) return Challenge();
 
             var selectedQuestions = GeneratedQuestions.Where(q => q.IsSelected).ToList();
             if (!selectedQuestions.Any())
             {
+                await LoadDataAsync(user.Id);
                 StatusMessage = "Error: Bạn chưa chọn câu hỏi nào để lưu.";
                 HasGenerated = true; // keep showing the generated questions list
                 return Page();
             }
-
-            var username = User.Identity?.Name;
-            if (string.IsNullOrEmpty(username)) return Challenge();
-
-            var user = await _userService.GetUserByUsernameAsync(username);
-            if (user == null) return Challenge();
 
             int savedCount = 0;
             foreach (var q in selectedQuestions)
@@ -131,6 +147,26 @@ namespace PresentationLayer.Pages.Lecturer
             HasGenerated = false;
 
             return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnGetLogDetailsAsync(int logId)
+        {
+            var user = await GetLecturerAsync();
+            if (user == null) return new JsonResult(new { success = false, message = "Unauthorized" });
+
+            var logs = await _aiGeneratorService.GetGenerationLogsAsync(user.Id);
+            var target = logs.FirstOrDefault(l => l.Id == logId);
+            if (target == null) return new JsonResult(new { success = false, message = "Không tìm thấy gói câu hỏi." });
+
+            return new JsonResult(new {
+                success = true,
+                topic = target.Topic,
+                subjectName = target.Subject.Name,
+                difficulty = target.Difficulty,
+                questionType = target.QuestionType,
+                createdAt = target.CreatedAt.ToString("dd/MM/yyyy HH:mm"),
+                questions = target.GeneratedQuestionsJson
+            });
         }
     }
 
