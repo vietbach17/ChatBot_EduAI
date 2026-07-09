@@ -35,6 +35,14 @@ namespace DataAccessLayer.Entities
         public DateTime? QuotaResetDate { get; set; } // ngày reset quota (đầu tháng tiếp theo)
         // ========================
         
+        // ===== FORGOT PASSWORD =====
+        [MaxLength(6)]
+        public string? ResetOtp { get; set; }
+        
+        public DateTime? ResetOtpExpiry { get; set; }
+        // ===========================
+
+        
         public ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
         public ICollection<Subject> AssignedSubjects { get; set; } = new List<Subject>();
         public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();

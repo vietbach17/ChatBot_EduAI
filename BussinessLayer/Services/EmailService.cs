@@ -292,5 +292,82 @@ namespace BussinessLayer.Services
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
         }
+
+        public async Task SendPasswordResetOtpAsync(string toEmail, string otp)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(_fromName, _smtpUser));
+            message.To.Add(MailboxAddress.Parse(toEmail));
+            message.Subject = "[EduManager] Mã xác thực khôi phục mật khẩu";
+
+            message.Body = new TextPart("html")
+            {
+                Text = $"""
+                <!DOCTYPE html>
+                <html lang="vi">
+                <head><meta charset="UTF-8"></head>
+                <body style="font-family: 'Segoe UI', Arial, sans-serif; background:#f8f8f8; margin:0; padding:0;">
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f8f8; padding: 30px 0;">
+                    <tr><td align="center">
+                      <table width="500" cellpadding="0" cellspacing="0"
+                             style="background:#fff; border:3px solid #000; box-shadow: 6px 6px 0px #000;">
+                        <!-- Header -->
+                        <tr>
+                          <td style="background:#f4cf45; padding:25px 30px; border-bottom:3px solid #000;">
+                            <h1 style="margin:0; color:#000; font-size:22px; font-weight:900; letter-spacing:1px;">
+                              🔐 Khôi phục mật khẩu
+                            </h1>
+                          </td>
+                        </tr>
+                        <!-- Body -->
+                        <tr>
+                          <td style="padding:30px;">
+                            <h2 style="margin:0 0 10px; color:#000; font-size:18px; font-weight:800;">
+                              Xin chào!
+                            </h2>
+                            <p style="margin:0 0 25px; color:#555; font-size:14px; font-weight:600;">
+                              Bạn vừa yêu cầu khôi phục mật khẩu cho tài khoản trên hệ thống EduManager. 
+                              Vui lòng nhập mã xác thực (OTP) dưới đây để tiếp tục:
+                            </p>
+
+                            <div style="text-align: center; margin: 30px 0;">
+                                <div style="display: inline-block; background: #eb2f64; color: #fff; font-size: 32px; font-weight: 900; letter-spacing: 5px; padding: 15px 30px; border: 3px solid #000; box-shadow: 4px 4px 0px #000;">
+                                    {otp}
+                                </div>
+                            </div>
+
+                            <p style="margin:0 0 20px; color:#e53935; font-size:13px; font-weight:700;
+                                      background:#fff3cd; border:2px solid #f4cf45; padding:10px;">
+                              ⏳ Mã OTP này có hiệu lực trong vòng 5 phút. Vui lòng không chia sẻ mã này cho bất kỳ ai.
+                            </p>
+
+                            <p style="margin:0; color:#555; font-size:13px; font-weight:600;">
+                              Nếu bạn không yêu cầu khôi phục mật khẩu, hãy bỏ qua email này. Tài khoản của bạn vẫn an toàn.
+                            </p>
+                          </td>
+                        </tr>
+                        <!-- Footer -->
+                        <tr>
+                          <td style="padding:15px 30px; border-top:3px solid #000;
+                                     background:#f8f8f8; text-align:center;">
+                            <p style="margin:0; font-size:12px; color:#888; font-weight:600;">
+                              © EduManager — Email này được gửi tự động, vui lòng không trả lời.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td></tr>
+                  </table>
+                </body>
+                </html>
+                """
+            };
+
+            using var client = new SmtpClient();
+            await client.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(_smtpUser, _smtpPass);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+        }
     }
 }
