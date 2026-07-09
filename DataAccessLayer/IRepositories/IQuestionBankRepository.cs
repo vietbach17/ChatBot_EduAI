@@ -16,7 +16,13 @@ namespace DataAccessLayer.IRepositories
             int pageSize);
         Task AddAsync(QuestionBank question);
         Task UpdateAsync(QuestionBank question);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(int id); // Soft-delete
         Task<int> CountAsync(int subjectId, string? difficulty, string? type, string? search);
+        
+        // Trash bin methods
+        Task<IEnumerable<QuestionBank>> GetDeletedPagedAsync(int page, int pageSize);
+        Task<int> CountDeletedAsync();
+        Task RestoreAsync(int id);
+        Task HardDeleteAsync(int id);
     }
 }

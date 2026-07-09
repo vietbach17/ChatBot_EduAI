@@ -51,13 +51,8 @@ namespace PresentationLayer.Pages.Lecturer
         public IEnumerable<Subject> Subjects { get; set; } = new List<Subject>();
 
         // Forms and actions
-        [BindProperty]
         public CreateQuestionDto NewQuestion { get; set; } = new CreateQuestionDto();
-
-        [BindProperty]
         public int EditQuestionId { get; set; }
-
-        [BindProperty]
         public CreateQuestionDto EditQuestion { get; set; } = new CreateQuestionDto();
 
         [TempData]
@@ -76,17 +71,14 @@ namespace PresentationLayer.Pages.Lecturer
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAddAsync()
+        public async Task<IActionResult> OnPostAddAsync(CreateQuestionDto NewQuestion)
         {
-            // Loại bỏ kiểm tra hợp lệ của EditQuestion vì form này dành cho NewQuestion
-            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("EditQuestion")).ToList())
-            {
-                ModelState.Remove(key);
-            }
-
             if (!ModelState.IsValid)
             {
-                StatusMessage = "Error: Dữ liệu câu hỏi không hợp lệ.";
+                var errors = string.Join(" | ", ModelState.Keys
+                    .Where(k => ModelState[k].Errors.Count > 0)
+                    .Select(k => k + ": " + string.Join(", ", ModelState[k].Errors.Select(e => e.ErrorMessage))));
+                StatusMessage = "Error: Dữ liệu câu hỏi không hợp lệ. Chi tiết: " + errors;
                 return RedirectToPage(new { SubjectId, Difficulty, Type, Search, CurrentPage });
             }
 
@@ -115,17 +107,14 @@ namespace PresentationLayer.Pages.Lecturer
             return RedirectToPage(new { SubjectId, Difficulty, Type, Search, CurrentPage });
         }
 
-        public async Task<IActionResult> OnPostEditAsync()
+        public async Task<IActionResult> OnPostEditAsync(int EditQuestionId, CreateQuestionDto EditQuestion)
         {
-            // Loại bỏ kiểm tra hợp lệ của NewQuestion vì form này dành cho EditQuestion
-            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("NewQuestion")).ToList())
-            {
-                ModelState.Remove(key);
-            }
-
             if (!ModelState.IsValid)
             {
-                StatusMessage = "Error: Dữ liệu câu hỏi cập nhật không hợp lệ.";
+                var errors = string.Join(" | ", ModelState.Keys
+                    .Where(k => ModelState[k].Errors.Count > 0)
+                    .Select(k => k + ": " + string.Join(", ", ModelState[k].Errors.Select(e => e.ErrorMessage))));
+                StatusMessage = "Error: Dữ liệu câu hỏi cập nhật không hợp lệ. Chi tiết: " + errors;
                 return RedirectToPage(new { SubjectId, Difficulty, Type, Search, CurrentPage });
             }
 
@@ -187,6 +176,53 @@ namespace PresentationLayer.Pages.Lecturer
             {
                 return new JsonResult(new { success = false, message = ex.Message });
             }
+        }
+        public async Task<IActionResult> OnGetDeletedQuestionsAsync(int page = 1)
+        {
+            try
+            {
+                var result = await _questionService.GetDeletedPagedQuestionsAsync(page, PageSize);
+                return new JsonResult(new {
+                    success = true,
+                    items = result.Items,
+                    totalCount = result.TotalCount,
+                    pageSize = PageSize,
+                    currentPage = page,
+                    totalPages = (int)Math.Ceiling((double)result.TotalCount / PageSize)
+                });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { success = false, message = ex.Message });
+            }
+        }
+
+        public async Task<IActionResult> OnPostRestoreAsync(int id)
+        {
+            var success = await _questionService.RestoreQuestionAsync(id);
+            if (success)
+            {
+                StatusMessage = "Thành công: Khôi phục câu hỏi thành công.";
+            }
+            else
+            {
+                StatusMessage = "Error: Khôi phục câu hỏi thất bại.";
+            }
+            return RedirectToPage(new { SubjectId, Difficulty, Type, Search, CurrentPage });
+        }
+
+        public async Task<IActionResult> OnPostHardDeleteAsync(int id)
+        {
+            var success = await _questionService.HardDeleteQuestionAsync(id);
+            if (success)
+            {
+                StatusMessage = "Thành công: Xóa vĩnh viễn câu hỏi thành công.";
+            }
+            else
+            {
+                StatusMessage = "Error: Xóa vĩnh viễn câu hỏi thất bại.";
+            }
+            return RedirectToPage(new { SubjectId, Difficulty, Type, Search, CurrentPage });
         }
     }
 }

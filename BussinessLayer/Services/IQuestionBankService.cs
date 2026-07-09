@@ -20,5 +20,10 @@ namespace BussinessLayer.Services
         Task<bool> DeleteQuestionAsync(int id);
         Task<IEnumerable<Subject>> GetAllSubjectsAsync();
         Task<Dictionary<string, int>> GetQuestionStatisticsAsync(int subjectId);
+
+        // Trash bin service methods
+        Task<(IEnumerable<QuestionBankDto> Items, int TotalCount)> GetDeletedPagedQuestionsAsync(int page, int pageSize);
+        Task<bool> RestoreQuestionAsync(int id);
+        Task<bool> HardDeleteQuestionAsync(int id);
     }
 }

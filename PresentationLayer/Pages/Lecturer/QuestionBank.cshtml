@@ -333,7 +333,10 @@
     <!-- Title -->
     <div class="header-title">
         <span><i class="fa-solid fa-database"></i> Ngân hàng câu hỏi</span>
-        <button class="btn-brutal btn-yellow" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Thêm thủ công</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-brutal btn-pink" onclick="openTrashModal()"><i class="fa-solid fa-trash-can"></i> Thùng rác</button>
+            <button class="btn-brutal btn-yellow" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Thêm thủ công</button>
+        </div>
     </div>
 
     <!-- Status Message -->
@@ -484,12 +487,9 @@
                                             onclick="openEditModal(@q.Id, @q.SubjectId, '@HttpUtility.JavaScriptStringEncode(q.Content)', '@q.QuestionType', '@HttpUtility.JavaScriptStringEncode(q.OptionsJson ?? "[]")', '@q.CorrectAnswer', '@q.Difficulty', '@HttpUtility.JavaScriptStringEncode(q.Tags ?? "")')">
                                         <i class="fa-solid fa-pen"></i> Sửa
                                     </button>
-                                    <form method="post" asp-page-handler="Delete" asp-route-id="@q.Id" 
-                                          onsubmit="return confirm('Bạn chắc chắn muốn xóa câu hỏi này chứ? Thao tác không thể hoàn tác.');">
-                                        <button type="submit" class="btn-brutal btn-pink" style="padding: 5px 10px; font-size:12px;">
-                                            <i class="fa-solid fa-trash"></i> Xóa
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn-brutal btn-pink" style="padding: 5px 10px; font-size:12px;" onclick="confirmDeleteQuestion(@q.Id)">
+                                        <i class="fa-solid fa-trash"></i> Xóa
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -618,6 +618,70 @@
     </div>
 </div>
 
+<!-- TRASH BIN MODAL -->
+<div id="trashModal" class="brutal-modal">
+    <div class="brutal-modal-content" style="max-width: 900px; width: 90%; border: 3px solid var(--black); box-shadow: 5px 5px 0px 0px var(--black);">
+        <div class="modal-header">
+            <span><i class="fa-solid fa-trash-can"></i> Thùng rác câu hỏi</span>
+            <button type="button" class="modal-close" onclick="closeTrashModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+            <div id="trashLoading" style="text-align: center; padding: 20px; font-weight: bold;">
+                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải câu hỏi đã xóa...
+            </div>
+            <div id="trashEmpty" style="display: none; text-align: center; padding: 40px; font-weight: bold; font-size: 16px;">
+                <i class="fa-solid fa-trash-arrow-up" style="font-size: 40px; margin-bottom: 10px; display: block; color: var(--dark-pink);"></i>
+                Thùng rác trống!
+            </div>
+            <div id="trashContent" style="display: none;">
+                <table class="brutal-table" style="font-size: 13px; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%; text-align: center;">ID</th>
+                            <th style="width: 22%;">Môn học</th>
+                            <th style="width: 48%;">Nội dung câu hỏi</th>
+                            <th style="width: 22%; text-align: center;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trashTableBody">
+                    </tbody>
+                </table>
+                <div id="trashPagination" class="pagination-container" style="margin-top: 15px; justify-content: center; gap: 5px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CUSTOM CONFIRMATION MODAL -->
+<div id="customConfirmModal" class="brutal-modal" style="z-index: 10000; display: none;">
+    <div class="brutal-modal-content" style="max-width: 450px; text-align: center; padding: 25px; border: 3px solid var(--black); box-shadow: 5px 5px 0px 0px var(--black);">
+        <div class="modal-header" style="border-bottom: none; padding-bottom: 0; justify-content: center;">
+            <span style="font-size: 20px; font-weight: 900; text-transform: uppercase;"><i class="fa-solid fa-circle-question"></i> Xác nhận</span>
+        </div>
+        <div class="modal-body" style="padding-top: 15px; padding-bottom: 15px;">
+            <p id="customConfirmMessage" style="font-weight: 700; font-size: 14px; margin-bottom: 0; line-height: 1.5;"></p>
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center; padding-top: 10px;">
+            <button type="button" class="btn-brutal" id="btnCustomConfirmCancel" style="padding: 6px 16px;">Hủy</button>
+            <button type="button" class="btn-brutal btn-pink" id="btnCustomConfirmOK" style="padding: 6px 16px; box-shadow: 3px 3px 0px 0px var(--black);">Đồng ý</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden forms for POST requests -->
+<form id="deleteForm" method="post" asp-page-handler="Delete">
+    <input type="hidden" name="id" id="deleteQuestionIdVal" />
+</form>
+
+<form id="restoreForm" method="post" asp-page-handler="Restore">
+    <input type="hidden" name="id" id="restoreQuestionIdVal" />
+</form>
+
+<form id="hardDeleteForm" method="post" asp-page-handler="HardDelete">
+    <input type="hidden" name="id" id="hardDeleteQuestionIdVal" />
+</form>
+
 <!-- EDIT QUESTION MODAL -->
 <div id="editModal" class="brutal-modal">
     <div class="brutal-modal-content">
@@ -709,11 +773,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-brutal" onclick="closeEditModal()">Hủy</button>
-                <button type="submit" class="btn-brutal btn-green" onclick="prepareEditSubmit()"><i class="fa-solid fa-save"></i> Cập nhật</button>
+                <button type="button" class="btn-brutal btn-green" onclick="confirmUpdateQuestion()"><i class="fa-solid fa-save"></i> Cập nhật</button>
             </div>
         </form>
-</div>
-</div>
+    </div>
 </div>
 
 @section Scripts {
@@ -853,11 +916,19 @@
         window.onclick = function(event) {
             const addModal = document.getElementById('addModal');
             const editModal = document.getElementById('editModal');
+            const trashModal = document.getElementById('trashModal');
+            const confirmModal = document.getElementById('customConfirmModal');
             if (event.target == addModal) {
                 closeAddModal();
             }
             if (event.target == editModal) {
                 closeEditModal();
+            }
+            if (event.target == trashModal) {
+                closeTrashModal();
+            }
+            if (event.target == confirmModal) {
+                confirmModal.style.display = 'none';
             }
         }
 
@@ -931,6 +1002,145 @@
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
             }
+        }
+
+        // Custom Confirm Dialog
+        function showCustomConfirm(message, callback) {
+            document.getElementById('customConfirmMessage').innerText = message;
+            const modal = document.getElementById('customConfirmModal');
+            modal.style.display = 'flex';
+            
+            const btnOK = document.getElementById('btnCustomConfirmOK');
+            const btnCancel = document.getElementById('btnCustomConfirmCancel');
+            
+            btnCancel.onclick = function() {
+                modal.style.display = 'none';
+            };
+            btnOK.onclick = function() {
+                modal.style.display = 'none';
+                callback();
+            };
+        }
+
+        // Confirm Delete
+        function confirmDeleteQuestion(id) {
+            showCustomConfirm("Bạn có chắc chắn muốn xóa câu hỏi này? Câu hỏi sẽ được chuyển vào Thùng rác.", function() {
+                document.getElementById('deleteQuestionIdVal').value = id;
+                document.getElementById('deleteForm').submit();
+            });
+        }
+
+        // Confirm Update
+        function confirmUpdateQuestion() {
+            const form = document.querySelector('form[asp-page-handler="Edit"]');
+            // Run prepareEditSubmit to collect radio values & JSON
+            prepareEditSubmit();
+
+            // Check standard HTML5 validation
+            if (!form.reportValidity()) {
+                return; // Let browser show errors like 'required'
+            }
+
+            showCustomConfirm("Bạn có chắc chắn muốn cập nhật các thay đổi của câu hỏi này?", function() {
+                form.submit();
+            });
+        }
+
+        // Trash Bin JS logic
+        let currentTrashPage = 1;
+
+        function openTrashModal() {
+            document.getElementById('trashModal').style.display = 'flex';
+            loadTrashQuestions(1);
+        }
+
+        function closeTrashModal() {
+            document.getElementById('trashModal').style.display = 'none';
+        }
+
+        async function loadTrashQuestions(page) {
+            currentTrashPage = page;
+            const loading = document.getElementById('trashLoading');
+            const empty = document.getElementById('trashEmpty');
+            const content = document.getElementById('trashContent');
+            const tbody = document.getElementById('trashTableBody');
+            const pag = document.getElementById('trashPagination');
+
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            content.style.display = 'none';
+
+            try {
+                const response = await fetch(`?handler=DeletedQuestions&page=${page}`);
+                const data = await response.json();
+                if (data.success) {
+                    tbody.innerHTML = '';
+                    if (data.items.length === 0) {
+                        loading.style.display = 'none';
+                        empty.style.display = 'block';
+                        return;
+                    }
+
+                    data.items.forEach(q => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="text-align: center; font-weight: 800;">${q.id}</td>
+                            <td><span class="badge badge-purple">[${q.subjectCode}] ${q.subjectName}</span></td>
+                            <td style="font-weight: 700; white-space: normal; word-break: break-all;">${escapeHtml(q.content)}</td>
+                            <td style="text-align: center;">
+                                <div style="display: flex; gap: 8px; justify-content: center;">
+                                    <button type="button" class="btn-brutal btn-green" style="padding: 4px 8px; font-size:11px;" onclick="restoreQuestion(${q.id})"><i class="fa-solid fa-rotate-left"></i> Khôi phục</button>
+                                    <button type="button" class="btn-brutal btn-pink" style="padding: 4px 8px; font-size:11px;" onclick="confirmHardDelete(${q.id})"><i class="fa-solid fa-circle-xmark"></i> Vĩnh viễn</button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Pagination
+                    pag.innerHTML = '';
+                    if (data.totalPages > 1) {
+                        if (data.currentPage > 1) {
+                            pag.innerHTML += `<button type="button" class="btn-brutal" style="padding: 2px 8px;" onclick="loadTrashQuestions(${data.currentPage - 1})">&laquo;</button>`;
+                        }
+                        pag.innerHTML += `<span class="page-num active" style="padding: 2px 8px; margin: 0 5px;">${data.currentPage} / ${data.totalPages}</span>`;
+                        if (data.currentPage < data.totalPages) {
+                            pag.innerHTML += `<button type="button" class="btn-brutal" style="padding: 2px 8px;" onclick="loadTrashQuestions(${data.currentPage + 1})">&raquo;</button>`;
+                        }
+                    }
+
+                    loading.style.display = 'none';
+                    content.style.display = 'block';
+                } else {
+                    alert("Lỗi tải thùng rác: " + data.message);
+                }
+            } catch (err) {
+                alert("Lỗi kết nối thùng rác: " + err.message);
+            }
+        }
+
+        function restoreQuestion(id) {
+            showCustomConfirm("Bạn có muốn khôi phục câu hỏi này về Ngân hàng câu hỏi không?", function() {
+                document.getElementById('restoreQuestionIdVal').value = id;
+                document.getElementById('restoreForm').submit();
+            });
+        }
+
+        function confirmHardDelete(id) {
+            showCustomConfirm("CẢNH BÁO: Bạn có chắc chắn muốn xóa VĨNH VIỄN câu hỏi này? Hành động này KHÔNG THỂ khôi phục!", function() {
+                document.getElementById('hardDeleteQuestionIdVal').value = id;
+                document.getElementById('hardDeleteForm').submit();
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
     </script>
 }

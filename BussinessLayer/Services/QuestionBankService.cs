@@ -99,7 +99,7 @@ namespace BussinessLayer.Services
 
         public async Task<Dictionary<string, int>> GetQuestionStatisticsAsync(int subjectId)
         {
-            var query = _context.QuestionBanks.AsQueryable();
+            var query = _context.QuestionBanks.Where(q => !q.IsDeleted).AsQueryable();
             if (subjectId > 0)
             {
                 query = query.Where(q => q.SubjectId == subjectId);
@@ -141,6 +141,26 @@ namespace BussinessLayer.Services
                 LecturerUsername = q.Lecturer?.Username ?? string.Empty,
                 CreatedAt = q.CreatedAt
             };
+        }
+
+        public async Task<(IEnumerable<QuestionBankDto> Items, int TotalCount)> GetDeletedPagedQuestionsAsync(int page, int pageSize)
+        {
+            var questions = await _repository.GetDeletedPagedAsync(page, pageSize);
+            var totalCount = await _repository.CountDeletedAsync();
+            var dtos = questions.Select(MapToDto);
+            return (dtos, totalCount);
+        }
+
+        public async Task<bool> RestoreQuestionAsync(int id)
+        {
+            await _repository.RestoreAsync(id);
+            return true;
+        }
+
+        public async Task<bool> HardDeleteQuestionAsync(int id)
+        {
+            await _repository.HardDeleteAsync(id);
+            return true;
         }
     }
 }

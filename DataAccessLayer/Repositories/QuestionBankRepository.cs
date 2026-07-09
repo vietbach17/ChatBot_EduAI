@@ -35,6 +35,7 @@ namespace DataAccessLayer.Repositories
             var query = _context.QuestionBanks
                 .Include(q => q.Subject)
                 .Include(q => q.Lecturer)
+                .Where(q => !q.IsDeleted)
                 .AsQueryable();
 
             if (subjectId > 0)
@@ -81,14 +82,15 @@ namespace DataAccessLayer.Repositories
             var question = await _context.QuestionBanks.FindAsync(id);
             if (question != null)
             {
-                _context.QuestionBanks.Remove(question);
+                question.IsDeleted = true;
+                _context.QuestionBanks.Update(question);
                 await _context.SaveChangesAsync();
             }
         }
 
         public async Task<int> CountAsync(int subjectId, string? difficulty, string? type, string? search)
         {
-            var query = _context.QuestionBanks.AsQueryable();
+            var query = _context.QuestionBanks.Where(q => !q.IsDeleted).AsQueryable();
 
             if (subjectId > 0)
             {
@@ -111,6 +113,46 @@ namespace DataAccessLayer.Repositories
             }
 
             return await query.CountAsync();
+        }
+
+        public async Task<IEnumerable<QuestionBank>> GetDeletedPagedAsync(int page, int pageSize)
+        {
+            return await _context.QuestionBanks
+                .Include(q => q.Subject)
+                .Include(q => q.Lecturer)
+                .Where(q => q.IsDeleted)
+                .OrderByDescending(q => q.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> CountDeletedAsync()
+        {
+            return await _context.QuestionBanks
+                .Where(q => q.IsDeleted)
+                .CountAsync();
+        }
+
+        public async Task RestoreAsync(int id)
+        {
+            var question = await _context.QuestionBanks.FindAsync(id);
+            if (question != null)
+            {
+                question.IsDeleted = false;
+                _context.QuestionBanks.Update(question);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task HardDeleteAsync(int id)
+        {
+            var question = await _context.QuestionBanks.FindAsync(id);
+            if (question != null)
+            {
+                _context.QuestionBanks.Remove(question);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

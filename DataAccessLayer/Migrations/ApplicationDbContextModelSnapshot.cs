@@ -286,6 +286,9 @@ namespace DataAccessLayer.Migrations
                     b.Property<bool>("IsAIGenerated")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("LecturerId")
                         .HasColumnType("integer");
 
@@ -320,6 +323,7 @@ namespace DataAccessLayer.Migrations
                             CreatedAt = new DateTime(2026, 7, 8, 0, 0, 0, 0, DateTimeKind.Utc),
                             Difficulty = "Easy",
                             IsAIGenerated = false,
+                            IsDeleted = false,
                             LecturerId = 2,
                             OptionsJson = "[\"readonly\",\"const\",\"static\",\"let\"]",
                             QuestionType = "MultipleChoice",
@@ -334,6 +338,7 @@ namespace DataAccessLayer.Migrations
                             CreatedAt = new DateTime(2026, 7, 8, 0, 0, 0, 0, DateTimeKind.Utc),
                             Difficulty = "Easy",
                             IsAIGenerated = false,
+                            IsDeleted = false,
                             LecturerId = 2,
                             QuestionType = "TrueFalse",
                             SubjectId = 1,
@@ -347,6 +352,7 @@ namespace DataAccessLayer.Migrations
                             CreatedAt = new DateTime(2026, 7, 8, 0, 0, 0, 0, DateTimeKind.Utc),
                             Difficulty = "Medium",
                             IsAIGenerated = false,
+                            IsDeleted = false,
                             LecturerId = 2,
                             OptionsJson = "[\"UseRouting()\",\"UseStaticFiles()\",\"UseEndpoints()\",\"UseHttpsRedirection()\"]",
                             QuestionType = "MultipleChoice",
