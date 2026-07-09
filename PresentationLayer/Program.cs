@@ -2,10 +2,10 @@ using BussinessLayer.Services;
 using BussinessLayer.IServices;
 using DataAccessLayer;
 using DataAccessLayer.Repositories;
+using DataAccessLayer.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using DataAccessLayer.IRepositories;
 
 Env.Load("../.env");
 
@@ -24,9 +24,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
-builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
+builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<IDocumentActivityLogRepository, DocumentActivityLogRepository>();
+builder.Services.AddScoped<IQuestionBankRepository, QuestionBankRepository>();
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
 
 // Services
@@ -36,13 +38,15 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<IDocumentActivityLogService, DocumentActivityLogService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
 builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddSingleton<IFileTextExtractorService, FileTextExtractorService>();
-builder.Services.AddScoped<IDocumentService, DocumentService>();
-builder.Services.AddScoped<ISubjectService, SubjectService>();
-builder.Services.AddScoped<IDocumentActivityLogService, DocumentActivityLogService>();
+builder.Services.AddScoped<IQuestionBankService, QuestionBankService>();
+builder.Services.AddScoped<IAIQuizGeneratorService, AIQuizGeneratorService>();
 builder.Services.AddScoped<IPaymentGateway, VNPayGateway>();
 builder.Services.AddScoped<IPaymentGateway, PayOSGateway>();
 builder.Services.AddScoped<IPaymentGateway, SePayGateway>();

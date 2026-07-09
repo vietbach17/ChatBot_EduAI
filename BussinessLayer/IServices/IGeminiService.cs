@@ -11,5 +11,6 @@ namespace BussinessLayer.IServices
         Task<List<float[]>> GetEmbeddingsAsync(List<string> texts);
         Task<string> GenerateAnswerAsync(string prompt, string? modelName = null);
         Task<List<GeminiModelInfo>> GetAvailableModelsAsync();
+        Task<string> GenerateJsonContentAsync(string prompt, string? responseSchemaJson = null);
     }
 }
