@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -90,16 +90,19 @@
         {
             <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">QUáº¢N TRá»Š VIÃŠN</div>
             <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <a asp-page="/Admin/PaymentHistory" class="nav-item"><i class="fa-solid fa-file-invoice-dollar"></i> Lịch sử TT</a>
         }
         else if (userRole == "Lecturer")
         {
             <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">GIáº¢NG VIÃŠN</div>
             <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <a asp-page="/PaymentHistory/Index" class="nav-item"><i class="fa-solid fa-file-invoice-dollar"></i> Lịch sử TT</a>
         }
         else
         {
             <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">SINH VIÃŠN</div>
             <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <a asp-page="/PaymentHistory/Index" class="nav-item"><i class="fa-solid fa-file-invoice-dollar"></i> Lịch sử TT</a>
         }
         
         <a asp-page="/Auth/Profile" class="user-profile" style="text-decoration: none; cursor: pointer; transition: 0.1s;">

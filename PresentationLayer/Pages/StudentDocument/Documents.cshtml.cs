@@ -1,22 +1,26 @@
 using BussinessLayer.DTOs;
 using BussinessLayer.Services;
+using BussinessLayer.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-[Authorize]
-public class DocumentsModel : PageModel
+namespace PresentationLayer.Pages.StudentDocument
 {
-    private readonly IDocumentService _documentService;
-
-    public DocumentsModel(IDocumentService documentService)
+    [Authorize]
+    public class DocumentsModel : PageModel
     {
-        _documentService = documentService;
-    }
+        private readonly IDocumentService _documentService;
 
-    public List<DocumentDto> Documents { get; set; } = new List<DocumentDto>();
+        public DocumentsModel(IDocumentService documentService)
+        {
+            _documentService = documentService;
+        }
 
-    public async Task OnGetAsync()
-    {
-        Documents = (await _documentService.GetAllDocumentsAsync()).ToList();
+        public List<DocumentDto> Documents { get; set; } = new List<DocumentDto>();
+
+        public async Task OnGetAsync()
+        {
+            Documents = (await _documentService.GetAllDocumentsAsync()).ToList();
+        }
     }
 }
