@@ -330,12 +330,19 @@
                 <form method="post" asp-page-handler="Generate" onsubmit="showLoading()">
                     <div class="form-group">
                         <label>Môn học</label>
-                        <select asp-for="GenerateRequest.SubjectId" class="brutal-select" required>
+                        <select asp-for="GenerateRequest.SubjectId" id="subjectSelect" class="brutal-select" required>
                             <option value="">-- Chọn môn học --</option>
                             @foreach (var sub in Model.Subjects)
                             {
                                 <option value="@sub.Id">[@sub.Code] @sub.Name</option>
                             }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tài liệu nguồn (Tùy chọn)</label>
+                        <select asp-for="GenerateRequest.DocumentId" id="documentSelect" class="brutal-select" disabled>
+                            <option value="">-- Dùng kiến thức chung / Không chọn --</option>
                         </select>
                     </div>
 
@@ -698,8 +705,57 @@
             document.getElementById(`correctAnswer-${idx}`).value = val;
         }
 
+        // Tải tài liệu động khi thay đổi môn học hoặc khi tải trang
+        const subjectSelect = document.getElementById('subjectSelect');
+        const documentSelect = document.getElementById('documentSelect');
+
+        if (subjectSelect) {
+            subjectSelect.addEventListener('change', async function() {
+                const subjectId = this.value;
+                if (!subjectId) {
+                    documentSelect.innerHTML = '<option value="">-- Dùng kiến thức chung / Không chọn --</option>';
+                    documentSelect.disabled = true;
+                    return;
+                }
+
+                documentSelect.innerHTML = '<option value="">Đang tải danh sách tài liệu...</option>';
+                documentSelect.disabled = true;
+
+                try {
+                    const response = await fetch(`?handler=SubjectDocuments&subjectId=${subjectId}`);
+                    const data = await response.json();
+                    if (data.success && data.documents && data.documents.length > 0) {
+                        let html = '<option value="">-- Dùng kiến thức chung / Không chọn --</option>';
+                        data.documents.forEach(doc => {
+                            html += `<option value="${doc.id}">${escapeHtml(doc.title)}</option>`;
+                        });
+                        documentSelect.innerHTML = html;
+                        documentSelect.disabled = false;
+                        
+                        // Giữ lại tài liệu đã chọn trước đó nếu có (khi submit lỗi)
+                        const prevValue = "@Model.GenerateRequest.DocumentId";
+                        if (prevValue && documentSelect.querySelector(`option[value="${prevValue}"]`)) {
+                            documentSelect.value = prevValue;
+                        }
+                    } else {
+                        documentSelect.innerHTML = '<option value="">-- Không có tài liệu nào --</option>';
+                        documentSelect.disabled = true;
+                    }
+                } catch (err) {
+                    console.error('Error fetching documents:', err);
+                    documentSelect.innerHTML = '<option value="">Lỗi tải tài liệu</option>';
+                    documentSelect.disabled = true;
+                }
+            });
+        }
+
         // Initialize OptionsJson on load if model had generated items
         document.addEventListener("DOMContentLoaded", function() {
+            // Kích hoạt sự kiện change môn học để tải tài liệu khi mở lại trang có môn học sẵn
+            if (subjectSelect && subjectSelect.value) {
+                subjectSelect.dispatchEvent(new Event('change'));
+            }
+
             @if (Model.HasGenerated)
             {
                 for (int i = 0; i < Model.GeneratedQuestions.Count; i++)

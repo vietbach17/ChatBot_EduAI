@@ -19,5 +19,7 @@ namespace BussinessLayer.DTOs
 
         [Required(ErrorMessage = "Vui lòng chọn loại câu hỏi.")]
         public string QuestionType { get; set; } = "All"; // "All", "MultipleChoice", "TrueFalse"
+
+        public int? DocumentId { get; set; }
     }
 }

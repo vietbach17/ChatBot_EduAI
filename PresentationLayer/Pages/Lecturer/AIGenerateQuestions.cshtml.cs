@@ -18,15 +18,18 @@ namespace PresentationLayer.Pages.Lecturer
         private readonly IAIQuizGeneratorService _aiGeneratorService;
         private readonly IQuestionBankService _questionService;
         private readonly IUserService _userService;
+        private readonly IDocumentService _documentService;
 
         public AIGenerateQuestionsModel(
             IAIQuizGeneratorService aiGeneratorService,
             IQuestionBankService questionService,
-            IUserService userService)
+            IUserService userService,
+            IDocumentService documentService)
         {
             _aiGeneratorService = aiGeneratorService;
             _questionService = questionService;
             _userService = userService;
+            _documentService = documentService;
         }
 
         [BindProperty]
@@ -167,6 +170,20 @@ namespace PresentationLayer.Pages.Lecturer
                 createdAt = target.CreatedAt.ToString("dd/MM/yyyy HH:mm"),
                 questions = target.GeneratedQuestionsJson
             });
+        }
+
+        public async Task<IActionResult> OnGetSubjectDocumentsAsync(int subjectId)
+        {
+            var user = await GetLecturerAsync();
+            if (user == null) return new JsonResult(new { success = false, message = "Unauthorized" });
+
+            var docs = await _documentService.GetDocumentsBySubjectAsync(subjectId);
+            var result = docs
+                .Where(d => d.Status.ToString() == "Indexed")
+                .Select(d => new { id = d.Id, title = d.Title })
+                .ToList();
+
+            return new JsonResult(new { success = true, documents = result });
         }
     }
 
