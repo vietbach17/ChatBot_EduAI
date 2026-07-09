@@ -7,6 +7,7 @@ namespace DataAccessLayer.IRepositories
     public interface IUserRepository
     {
         Task<User?> GetUserByUsernameAsync(string username);
+        Task<User?> GetUserByEmailAsync(string email);
         Task<User?> GetUserByIdAsync(int id);
         Task<IEnumerable<User>> GetAllUsersAsync(bool includeDeleted = false);
         Task<IEnumerable<User>> GetLecturersAsync();
