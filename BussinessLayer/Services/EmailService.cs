@@ -204,5 +204,93 @@ namespace BussinessLayer.Services
 
             await client.DisconnectAsync(true);
         }
+
+        public async Task SendInvoiceEmailAsync(DataAccessLayer.Entities.PaymentTransaction transaction)
+        {
+            if (transaction?.User?.Email == null) return;
+
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(_fromName, _smtpUser));
+            message.To.Add(MailboxAddress.Parse(transaction.User.Email));
+            message.Subject = $"[EduManager] Hóa đơn thanh toán - {transaction.TransactionCode}";
+
+            var planName = transaction.SubscriptionPlan?.Name ?? "Gói dịch vụ";
+            var amount = transaction.Amount.ToString("N0") + " VNĐ";
+            var date = transaction.CreatedAt.ToString("dd/MM/yyyy HH:mm");
+            var method = transaction.PaymentMethod ?? "N/A";
+            var status = transaction.Status == "Success" ? "Thành công" : (transaction.Status == "Failed" ? "Thất bại" : "Đang xử lý");
+            var expiry = transaction.ExpiryDate?.ToString("dd/MM/yyyy") ?? "Không thời hạn";
+
+            message.Body = new TextPart("html")
+            {
+                Text = $"""
+                <!DOCTYPE html>
+                <html lang="vi">
+                <head><meta charset="UTF-8"></head>
+                <body style="font-family: 'Segoe UI', Arial, sans-serif; background:#f8f8f8; margin:0; padding:0;">
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f8f8; padding: 30px 0;">
+                    <tr><td align="center">
+                      <table width="500" cellpadding="0" cellspacing="0" style="background:#fff; border:3px solid #000; box-shadow: 6px 6px 0px #000;">
+                        <tr>
+                          <td style="background:#10b981; padding:25px 30px; border-bottom:3px solid #000;">
+                            <h1 style="margin:0; color:#fff; font-size:22px; font-weight:900; letter-spacing:1px;">🧾 Hóa Đơn Thanh Toán</h1>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:30px;">
+                            <h2 style="margin:0 0 10px; color:#000; font-size:20px; font-weight:900;">Cảm ơn bạn đã sử dụng dịch vụ!</h2>
+                            <p style="margin:0 0 25px; color:#555; font-size:14px; font-weight:600;">Thông tin chi tiết về giao dịch của bạn như sau:</p>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #000; margin-bottom:25px;">
+                              <tr style="border-bottom:2px solid #000;">
+                                <td style="padding:12px 15px; background:#f4cf45; font-weight:900; font-size:13px; border-right:2px solid #000; width:40%;">Mã giao dịch</td>
+                                <td style="padding:12px 15px; font-weight:800; font-size:14px; color:#000;">{transaction.TransactionCode}</td>
+                              </tr>
+                              <tr style="border-bottom:2px solid #000;">
+                                <td style="padding:12px 15px; background:#f4cf45; font-weight:900; font-size:13px; border-right:2px solid #000;">Tên gói</td>
+                                <td style="padding:12px 15px; font-weight:800; font-size:14px; color:#000;">{planName}</td>
+                              </tr>
+                              <tr style="border-bottom:2px solid #000;">
+                                <td style="padding:12px 15px; background:#f4cf45; font-weight:900; font-size:13px; border-right:2px solid #000;">Tổng tiền</td>
+                                <td style="padding:12px 15px; font-weight:800; font-size:16px; color:#eb2f64;">{amount}</td>
+                              </tr>
+                              <tr style="border-bottom:2px solid #000;">
+                                <td style="padding:12px 15px; background:#f4cf45; font-weight:900; font-size:13px; border-right:2px solid #000;">Phương thức TT</td>
+                                <td style="padding:12px 15px; font-weight:800; font-size:14px; color:#000;">{method}</td>
+                              </tr>
+                              <tr style="border-bottom:2px solid #000;">
+                                <td style="padding:12px 15px; background:#f4cf45; font-weight:900; font-size:13px; border-right:2px solid #000;">Ngày TT</td>
+                                <td style="padding:12px 15px; font-weight:800; font-size:14px; color:#000;">{date}</td>
+                              </tr>
+                              <tr style="border-bottom:2px solid #000;">
+                                <td style="padding:12px 15px; background:#f4cf45; font-weight:900; font-size:13px; border-right:2px solid #000;">Hạn sử dụng</td>
+                                <td style="padding:12px 15px; font-weight:800; font-size:14px; color:#000;">{expiry}</td>
+                              </tr>
+                              <tr>
+                                <td style="padding:12px 15px; background:#f4cf45; font-weight:900; font-size:13px; border-right:2px solid #000;">Trạng thái</td>
+                                <td style="padding:12px 15px; font-weight:800; font-size:14px; color:{(transaction.Status == "Success" ? "#10b981" : "#e53935")};">{status}</td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:15px 30px; border-top:3px solid #000; background:#f8f8f8; text-align:center;">
+                            <p style="margin:0; font-size:12px; color:#888; font-weight:600;">© EduManager — Email này được gửi tự động.</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td></tr>
+                  </table>
+                </body>
+                </html>
+                """
+            };
+
+            using var client = new SmtpClient();
+            await client.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(_smtpUser, _smtpPass);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+        }
     }
 }

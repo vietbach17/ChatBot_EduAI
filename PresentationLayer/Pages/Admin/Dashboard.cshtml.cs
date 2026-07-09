@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
 using BussinessLayer.Services;
+using BussinessLayer.IServices;
 using System.Linq;
 
 namespace PresentationLayer.Pages.Admin

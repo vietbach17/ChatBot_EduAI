@@ -22,5 +22,26 @@ namespace DataAccessLayer.Entities
         public bool IsActive { get; set; } = true;
 
         public int SortOrder { get; set; } = 0; // thứ tự hiển thị
+
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Features { get; set; } = "[]"; // Lưu dạng JSON string, VD: ["Hỏi đáp AI", "Tốc độ nhanh"]
+
+        public int DurationDays { get; set; } = 30;  // Thời hạn của gói (mặc định 30 ngày)
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public List<string> FeatureList 
+        {
+            get 
+            {
+                try 
+                {
+                    return System.Text.Json.JsonSerializer.Deserialize<List<string>>(Features) ?? new List<string>();
+                }
+                catch 
+                {
+                    return new List<string>();
+                }
+            }
+        }
     }
 }
