@@ -19,47 +19,7 @@ ChatEdu AI là một nền tảng hỗ trợ học tập tích hợp Trợ lý T
 
 Dự án được xây dựng theo mô hình **3-Tier Architecture** (3 lớp) kết hợp với các dịch vụ AI và Cơ sở dữ liệu:
 
-```mermaid
-graph TD
-    subgraph PresentationLayer [Presentation Layer]
-        direction LR
-        Pages([Pages])
-        ViewModels([ViewModels])
-        SignalR([SignalR])
-    end
-
-    subgraph BussinessLayer [Bussiness Layer]
-        direction LR
-        Services([Services])
-        Helpers([Helpers])
-        DTOs([DTOs])
-        IServices([IServices])
-    end
-
-    subgraph DataAccessLayer [Data Access Layer]
-        direction LR
-        Repositories([Repositories])
-        DbContext([ApplicationDbContext])
-        Migrations([Migrations])
-        IRepositories([IRepositories])
-        Entities([Entities])
-    end
-
-    AI([AI Services])
-    DB[(PostgreSQL<br>pgvector)]
-
-    PresentationLayer --> |Request| BussinessLayer
-    BussinessLayer -.-> |Response| PresentationLayer
-
-    BussinessLayer --> |Request| DataAccessLayer
-    DataAccessLayer -.-> |Response| BussinessLayer
-
-    BussinessLayer --> |Request| AI
-    AI -.-> |Response| BussinessLayer
-
-    DataAccessLayer --> |Request| DB
-    DB -.-> |Response| DataAccessLayer
-```
+![Kiến trúc hệ thống](images/architecture.png)
 
 ---
 
