@@ -1,7 +1,124 @@
 @page
 @model PresentationLayer.Pages.Payment.CreateModel
 @{
-    ViewData["Title"] = "Processing Payment...";
+    ViewData["Title"] = "Xác nhận thanh toán";
+    ViewBag.ActiveMenu = "Subscription";
 }
-<h2>Processing...</h2>
-<p>You are being redirected to VNPay...</p>
+
+@section Styles {
+<style>
+    .invoice-card {
+        background: var(--white);
+        border: 3px solid var(--black);
+        box-shadow: 6px 6px 0px var(--black);
+        padding: 30px;
+        max-width: 600px;
+        margin: 40px auto;
+    }
+    .payment-option {
+        border: 2px solid var(--black);
+        padding: 16px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        transition: background-color 0.1s, transform 0.1s;
+        box-shadow: 3px 3px 0px var(--black);
+    }
+    .payment-option:hover {
+        background-color: #f9fafb;
+    }
+    .payment-option.disabled-option {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .payment-option.disabled-option:hover {
+        background-color: transparent;
+    }
+    .payment-option input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--pink);
+    }
+    .gateway-logo {
+        height: 24px;
+        object-fit: contain;
+    }
+    .checkout-btn {
+        width: 100%;
+        background-color: var(--pink);
+        color: var(--white);
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 900;
+        border: 3px solid var(--black);
+        box-shadow: 4px 4px 0px var(--black);
+        cursor: pointer;
+        text-transform: uppercase;
+        transition: transform 0.1s, box-shadow 0.1s;
+        margin-top: 15px;
+    }
+    .checkout-btn:active {
+        transform: translate(4px, 4px);
+        box-shadow: 0px 0px 0px var(--black);
+    }
+</style>
+}
+
+<div class="main-wrapper">
+    <div class="invoice-card">
+        <h2 style="font-weight: 900; font-size: 24px; text-transform: uppercase; border-bottom: 3px solid var(--black); padding-bottom: 12px; margin-bottom: 20px; color: var(--pink);">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Hóa đơn tạm tính
+        </h2>
+
+        <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                <span>Gói đăng ký:</span>
+                <span style="font-size: 18px; color: var(--blue);">@Model.Plan.Name.ToUpper()</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                <span>Thời hạn:</span>
+                <span>@Model.Plan.DurationDays ngày</span>
+            </div>
+            <hr style="border-top: 2px dashed #cbd5e1; margin: 15px 0;">
+            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px;">
+                <span>Tổng tiền:</span>
+                <span style="color: var(--pink);">@Model.Plan.Price.ToString("N0") đ</span>
+            </div>
+        </div>
+
+        <h3 style="font-weight: 900; font-size: 16px; text-transform: uppercase; margin-bottom: 15px;">
+            Chọn cổng thanh toán
+        </h3>
+
+        <form method="post">
+            <input type="hidden" name="planId" value="@Model.Plan.Id" />
+
+            <label class="payment-option">
+                <input type="radio" name="paymentMethod" value="VNPay" checked />
+                <span style="font-weight: 800;">Cổng VNPay (Thử nghiệm)</span>
+            </label>
+
+            <label class="payment-option disabled-option">
+                <input type="radio" name="paymentMethod" value="PayOS" disabled />
+                <span style="font-weight: 800;">Cổng PayOS (Chờ tích hợp)</span>
+            </label>
+
+            <label class="payment-option disabled-option">
+                <input type="radio" name="paymentMethod" value="SePay" disabled />
+                <span style="font-weight: 800;">Cổng SePay (Chờ tích hợp)</span>
+            </label>
+
+            <button type="submit" class="checkout-btn">
+                Xác nhận và Thanh toán <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            </button>
+        </form>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="/Subscription/Index" style="font-weight: 800; color: #555; text-decoration: none;">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại bảng giá
+            </a>
+        </div>
+    </div>
+</div>

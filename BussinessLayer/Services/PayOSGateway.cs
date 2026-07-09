@@ -20,7 +20,7 @@ namespace BussinessLayer.Services
             return "PayOS";
         }
 
-        public string CreatePaymentUrl(PaymentRequest request)
+        public Task<string> CreatePaymentUrl(PaymentRequest request)
         {
             // Tích hợp PayOS SDK: tạo payment link
             // Tham khảo tài liệu PayOS để thực hiện các bước tạo link thanh toán thực tế
@@ -30,14 +30,14 @@ namespace BussinessLayer.Services
             
             // TODO: Implement actual PayOS integration here
             // Returning a dummy URL for now
-            return $"https://pay.payos.vn/dummy-payment?orderId={request.OrderId}&amount={request.Amount}";
+            return Task.FromResult($"https://pay.payos.vn/dummy-payment?orderId={request.TransactionId}&amount={request.Amount}");
         }
 
-        public bool ValidateCallback(Dictionary<string, string> queryParams)
+        public Task<bool> ValidateCallback(IDictionary<string, string> queryParams)
         {
             // Xử lý webhook/callback, validate signature
             // TODO: Implement actual PayOS signature validation
-            return queryParams.ContainsKey("code") && queryParams["code"] == "00";
+            return Task.FromResult(queryParams.ContainsKey("code") && queryParams["code"] == "00");
         }
     }
 }

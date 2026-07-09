@@ -20,7 +20,7 @@ namespace BussinessLayer.Services
             return "SePay";
         }
 
-        public string CreatePaymentUrl(PaymentRequest request)
+        public Task<string> CreatePaymentUrl(PaymentRequest request)
         {
             // Tích hợp SePay API: tạo QR / payment URL
             // Tham khảo tài liệu SePay để thực hiện
@@ -28,14 +28,14 @@ namespace BussinessLayer.Services
             
             // TODO: Implement actual SePay integration here
             // Returning a dummy URL for now
-            return $"https://sepay.vn/dummy-qr?orderId={request.OrderId}&amount={request.Amount}";
+            return Task.FromResult($"https://sepay.vn/dummy-qr?orderId={request.TransactionId}&amount={request.Amount}");
         }
 
-        public bool ValidateCallback(Dictionary<string, string> queryParams)
+        public Task<bool> ValidateCallback(IDictionary<string, string> queryParams)
         {
             // Xử lý webhook callback xác nhận chuyển khoản
             // TODO: Implement actual SePay signature validation
-            return queryParams.ContainsKey("status") && queryParams["status"] == "success";
+            return Task.FromResult(queryParams.ContainsKey("status") && queryParams["status"] == "success");
         }
     }
 }

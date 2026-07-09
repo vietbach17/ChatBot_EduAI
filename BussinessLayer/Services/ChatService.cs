@@ -21,11 +21,13 @@ namespace BussinessLayer.Services
         private readonly IDocumentRepository _documentRepository;
         private readonly IGeminiService _geminiService;
         private readonly IUserRepository _userRepository;
+        private readonly ISubscriptionService _subscriptionService;
 
         public static int GetMonthlyLimit(string plan) => plan switch
         {
-            "Basic" => 100,
-            "Premium" => int.MaxValue,
+            "Basic" => 5,
+            "Pro" => 20,
+            "Ultra" => int.MaxValue,
             _ => 5
         };
 
@@ -33,12 +35,14 @@ namespace BussinessLayer.Services
             IChatRepository chatRepository,
             IDocumentRepository documentRepository,
             IGeminiService geminiService,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            ISubscriptionService subscriptionService)
         {
             _chatRepository = chatRepository;
             _documentRepository = documentRepository;
             _geminiService = geminiService;
             _userRepository = userRepository;
+            _subscriptionService = subscriptionService;
         }
 
         public async Task<List<ChatSessionDto>> GetUserSessionsAsync(int userId)
@@ -85,41 +89,42 @@ namespace BussinessLayer.Services
                 var conversationHistory = BuildConversationHistory(existingSession?.Messages);
 
                 var user = await _userRepository.GetUserByIdAsync(userId);
-                var effectivePlan = "Free";
-                var limit = GetMonthlyLimit("Free");
+                var effectivePlan = "Basic";
+                var limit = GetMonthlyLimit("Basic");
                 var remainingBefore = int.MaxValue;
                 var remainingAfter = int.MaxValue;
 
                 if (user != null)
                 {
-                    var now = DateTime.UtcNow;
-                    if (user.QuotaResetDate == null || now >= user.QuotaResetDate)
-                    {
-                        user.MonthlyQuestionCount = 0;
-                        user.QuotaResetDate = DateTime.SpecifyKind(
-                            new DateTime(now.Year, now.Month, 1).AddMonths(1),
-                            DateTimeKind.Utc);
-                        await _userRepository.UpdateUserAsync(user);
-                    }
+                    // Call CheckAndUpdateQuotaAsync to ensure reset count/cycle if it's new or expired
+                    await _subscriptionService.CheckAndUpdateQuotaAsync(userId);
 
-                    var planActive = user.SubscriptionPlan == "Free" ||
+                    // Reload user to get the updated QuotaResetDate / count
+                    user = await _userRepository.GetUserByIdAsync(userId) ?? user;
+
+                    var now = DateTime.UtcNow;
+                    var planActive = user.SubscriptionPlan == "Basic" || user.SubscriptionPlan == "Free" ||
                                      (user.SubscriptionExpiry.HasValue && user.SubscriptionExpiry.Value >= now);
-                    effectivePlan = planActive ? user.SubscriptionPlan : "Free";
+                    effectivePlan = planActive ? user.SubscriptionPlan : "Basic";
+                    if (effectivePlan == "Free") effectivePlan = "Basic";
 
                     limit = GetMonthlyLimit(effectivePlan);
                     remainingBefore = limit == int.MaxValue ? int.MaxValue : Math.Max(0, limit - user.MonthlyQuestionCount);
                     remainingAfter = remainingBefore == int.MaxValue ? int.MaxValue : Math.Max(0, remainingBefore - 1);
 
-                    if (user.MonthlyQuestionCount >= limit)
+                    if (limit != int.MaxValue && user.MonthlyQuestionCount >= limit)
                     {
+                        var remainingTime = user.QuotaResetDate.HasValue ? (user.QuotaResetDate.Value - now) : TimeSpan.Zero;
+                        var hours = Math.Max(0, (int)Math.Ceiling(remainingTime.TotalHours));
+
                         return new ChatResponseDto
                         {
                             Success = false,
                             OutOfQuota = true,
                             Remaining = remainingBefore,
-                            Message = effectivePlan == "Free"
-                                ? $"Bạn đã dùng hết {limit} câu hỏi miễn phí trong tháng này. Nâng cấp gói để tiếp tục!"
-                                : $"Bạn đã đạt giới hạn {limit} câu hỏi/tháng của gói {effectivePlan}."
+                            Message = effectivePlan == "Basic"
+                                ? $"Bạn đã đạt giới hạn {limit} câu hỏi trong 5 giờ. Vui lòng nâng cấp gói hoặc chờ thêm {hours} giờ để tiếp tục hỏi."
+                                : $"Bạn đã đạt giới hạn {limit} câu hỏi trong 5 giờ của gói {effectivePlan}. Vui lòng nâng cấp gói hoặc chờ thêm {hours} giờ để tiếp tục hỏi."
                         };
                     }
                 }

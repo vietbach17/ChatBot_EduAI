@@ -1,10 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BussinessLayer.IServices;
 
 namespace BussinessLayer.Services
 {
-    // STUB: This file is a stub for TV1 to implement later.
     public class PaymentGatewayFactory
     {
         private readonly IEnumerable<IPaymentGateway> _gateways;
@@ -14,9 +14,14 @@ namespace BussinessLayer.Services
             _gateways = gateways;
         }
 
-        public IPaymentGateway GetGateway(string method)
+        public IPaymentGateway GetGateway(string paymentMethod)
         {
-            return _gateways.FirstOrDefault(g => g.GetGatewayName() == method);
+            var gateway = _gateways.FirstOrDefault(g => g.GetGatewayName().Equals(paymentMethod, StringComparison.OrdinalIgnoreCase));
+            if (gateway == null)
+            {
+                throw new NotSupportedException($"Cổng thanh toán {paymentMethod} chưa được hỗ trợ.");
+            }
+            return gateway;
         }
     }
 }
