@@ -18,6 +18,9 @@ namespace DataAccessLayer
         public DbSet<DocumentChunk> DocumentChunks { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         public DbSet<DocumentActivityLog> DocumentActivityLogs { get; set; }
+        public DbSet<QuestionBank> QuestionBanks { get; set; }
+        public DbSet<Quiz> Quizzes { get; set; }
+        public DbSet<QuizQuestion> QuizQuestions { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -78,6 +81,89 @@ namespace DataAccessLayer
                 new SubscriptionPlan { Id = 1, Name = "Basic", Description = "Gói cơ bản miễn phí", Price = 0, MonthlyQuestionLimit = 5, IsActive = true, SortOrder = 1, DurationDays = 30, Features = "[\"Hỏi đáp AI cơ bản\", \"Độ trễ phản hồi bình thường\", \"Giới hạn 5 câu hỏi / 5 giờ\"]" },
                 new SubscriptionPlan { Id = 2, Name = "Pro", Description = "Gói nâng cao nhiều tính năng", Price = 25000, MonthlyQuestionLimit = 20, IsActive = true, SortOrder = 2, DurationDays = 30, Features = "[\"Ưu tiên xử lý câu hỏi\", \"Tốc độ phản hồi AI nhanh hơn\", \"Giới hạn 20 câu hỏi / 5 giờ\", \"Hỗ trợ tài liệu đính kèm\"]" },
                 new SubscriptionPlan { Id = 3, Name = "Ultra", Description = "Gói cao cấp không giới hạn", Price = 100000, MonthlyQuestionLimit = -1, IsActive = true, SortOrder = 3, DurationDays = 30, Features = "[\"Không giới hạn số câu hỏi\", \"AI phản hồi tức thì\", \"Mô hình AI cao cấp nhất\", \"Hỗ trợ ưu tiên 24/7\"]" }
+            );
+
+            // Cấu hình các quan hệ khóa ngoại để tránh vòng lặp Cascade cho QuestionBank, Quiz, QuizQuestion
+            modelBuilder.Entity<QuestionBank>()
+                .HasOne(q => q.Subject)
+                .WithMany()
+                .HasForeignKey(q => q.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuestionBank>()
+                .HasOne(q => q.Lecturer)
+                .WithMany()
+                .HasForeignKey(q => q.LecturerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Quiz>()
+                .HasOne(q => q.Subject)
+                .WithMany()
+                .HasForeignKey(q => q.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Quiz>()
+                .HasOne(q => q.Lecturer)
+                .WithMany()
+                .HasForeignKey(q => q.LecturerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<QuizQuestion>()
+                .HasOne(qq => qq.Quiz)
+                .WithMany()
+                .HasForeignKey(qq => qq.QuizId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuizQuestion>()
+                .HasOne(qq => qq.QuestionBank)
+                .WithMany()
+                .HasForeignKey(qq => qq.QuestionBankId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Seed câu hỏi mẫu
+            modelBuilder.Entity<QuestionBank>().HasData(
+                new QuestionBank
+                {
+                    Id = 1,
+                    SubjectId = 1,
+                    Content = "Từ khóa nào được dùng để khai báo hằng số trong C#?",
+                    QuestionType = "MultipleChoice",
+                    OptionsJson = "[\"readonly\",\"const\",\"static\",\"let\"]",
+                    CorrectAnswer = "B",
+                    Difficulty = "Easy",
+                    Tags = "Syntax,Variables",
+                    IsAIGenerated = false,
+                    LecturerId = 2,
+                    CreatedAt = new System.DateTime(2026, 7, 8, 0, 0, 0, System.DateTimeKind.Utc)
+                },
+                new QuestionBank
+                {
+                    Id = 2,
+                    SubjectId = 1,
+                    Content = "C# là một ngôn ngữ lập trình thuần hướng đối tượng (Pure Object-Oriented). Đúng hay Sai?",
+                    QuestionType = "TrueFalse",
+                    OptionsJson = null,
+                    CorrectAnswer = "False",
+                    Difficulty = "Easy",
+                    Tags = "OOP,Theory",
+                    IsAIGenerated = false,
+                    LecturerId = 2,
+                    CreatedAt = new System.DateTime(2026, 7, 8, 0, 0, 0, System.DateTimeKind.Utc)
+                },
+                new QuestionBank
+                {
+                    Id = 3,
+                    SubjectId = 2,
+                    Content = "Middleware nào được sử dụng để phục vụ các tệp tĩnh (static files) như HTML, CSS, JS trong ASP.NET Core?",
+                    QuestionType = "MultipleChoice",
+                    OptionsJson = "[\"UseRouting()\",\"UseStaticFiles()\",\"UseEndpoints()\",\"UseHttpsRedirection()\"]",
+                    CorrectAnswer = "B",
+                    Difficulty = "Medium",
+                    Tags = "Middleware,StaticFiles",
+                    IsAIGenerated = false,
+                    LecturerId = 2,
+                    CreatedAt = new System.DateTime(2026, 7, 8, 0, 0, 0, System.DateTimeKind.Utc)
+                }
             );
         }
     }
