@@ -65,9 +65,7 @@ namespace BussinessLayer.Services
             };
 
             var requestBody = JsonSerializer.Serialize(payload, jsonOptions);
-            var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync(url, content);
+            var response = await PostWithRetryAsync(url, requestBody);
             if (!response.IsSuccessStatusCode)
             {
                 var errorText = await response.Content.ReadAsStringAsync();
@@ -92,6 +90,35 @@ namespace BussinessLayer.Services
             throw new InvalidOperationException($"Không thể phân tích kết quả trả về từ Gemini API. Response: {responseBody}");
         }
 
+        private async Task<HttpResponseMessage> PostWithRetryAsync(string url, string requestBody, int maxRetries = 3, int delayMs = 1500)
+        {
+            HttpResponseMessage? response = null;
+            for (int i = 0; i < maxRetries; i++)
+            {
+                var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+                response = await _httpClient.PostAsync(url, content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    return response;
+                }
+                
+                if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable || 
+                    response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
+                    (int)response.StatusCode == 429 || (int)response.StatusCode == 503)
+                {
+                    if (i < maxRetries - 1)
+                    {
+                        await Task.Delay(delayMs * (i + 1));
+                        continue;
+                    }
+                }
+                
+                break;
+            }
+            return response ?? new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable);
+        }
+
         public async Task<float[]> GetEmbeddingAsync(string text)
         {
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key={_apiKey}";
@@ -108,9 +135,7 @@ namespace BussinessLayer.Services
                 }
             };
 
-            var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-            
-            var response = await _httpClient.PostAsync(url, jsonContent);
+            var response = await PostWithRetryAsync(url, JsonSerializer.Serialize(requestBody));
             if (!response.IsSuccessStatusCode)
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
