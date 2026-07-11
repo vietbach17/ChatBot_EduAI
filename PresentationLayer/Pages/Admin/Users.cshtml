@@ -65,13 +65,14 @@
                         <th style="padding: 10px; text-align: left; font-weight: 900;">TÀI KHOẢN</th>
                         <th style="padding: 10px; text-align: left; font-weight: 900;">EMAIL</th>
                         <th style="padding: 10px; text-align: left; font-weight: 900;">VAI TRÒ</th>
+                        <th style="padding: 10px; text-align: center; font-weight: 900;">TRẠNG THÁI</th>
                         <th style="padding: 10px; text-align: center; font-weight: 900;">THAO TÁC</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var user in Model.Users)
                     {
-                        <tr style="border-bottom: 1px dashed #ccc;">
+                        <tr style="border-bottom: 1px dashed #ccc; background-color: @(user.IsDeleted ? "#fbeaea" : "transparent");">
                             <td style="padding: 10px; font-weight: 700;">@user.Id</td>
                             <td style="padding: 10px; font-weight: 700;">@user.Username</td>
                             <td style="padding: 10px; font-weight: 700;">@(user.Email ?? "-")</td>
@@ -80,19 +81,37 @@
                                 else if(user.Role == "Lecturer") { <span style="color: var(--blue);">@user.Role</span> }
                                 else { <span style="color: var(--green);">@user.Role</span> }
                             </td>
+                            <td style="padding: 10px; text-align: center; font-weight: 800;">
+                                @if(user.IsDeleted) { <span style="color: red;">Đã Xóa</span> }
+                                else { <span style="color: var(--green);">Hoạt động</span> }
+                            </td>
                             <td style="padding: 10px; text-align: center;">
                                 @if(user.Username != User.Identity?.Name)
                                 {
-                                    <button type="button" class="brutal-btn" style="background-color: var(--blue); color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black); margin-right: 5px;" 
-                                            onclick="openUpdateModal(@user.Id, '@user.Username', '@(user.Email ?? "")', '@user.Role')">
-                                        <i class="fa-solid fa-pen"></i> SỬA
-                                    </button>
-                                    <form method="post" asp-page-handler="DeleteUser" style="display:inline;">
-                                        <input type="hidden" name="id" value="@user.Id" />
-                                        <button type="submit" class="brutal-btn" style="background-color: #ff4d4f; color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black);" onclick="return confirm('Bạn có chắc muốn xóa user này?');">
-                                            <i class="fa-solid fa-trash"></i> XÓA
-                                        </button>
-                                    </form>
+                                    <div style="display: flex; gap: 5px; justify-content: center;">
+                                        @if(!user.IsDeleted)
+                                        {
+                                            <button type="button" class="brutal-btn" style="background-color: var(--blue); color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black);" 
+                                                    onclick="openUpdateModal(@user.Id, '@user.Username', '@(user.Email ?? "")', '@user.Role')">
+                                                <i class="fa-solid fa-pen"></i> SỬA
+                                            </button>
+                                            <form method="post" asp-page-handler="DeleteUser" style="display:inline;" data-confirm="Bạn có chắc muốn xóa user này?">
+                                                <input type="hidden" name="id" value="@user.Id" />
+                                                <button type="submit" class="brutal-btn" style="background-color: #ff4d4f; color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black);">
+                                                    <i class="fa-solid fa-trash"></i> XÓA
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form method="post" asp-page-handler="RestoreUser" style="display:inline;" data-confirm="Bạn có chắc chắn muốn khôi phục user này không?">
+                                                <input type="hidden" name="id" value="@user.Id" />
+                                                <button type="submit" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black);">
+                                                    <i class="fa-solid fa-rotate-left"></i> KHÔI PHỤC
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
                                 }
                             </td>
                         </tr>

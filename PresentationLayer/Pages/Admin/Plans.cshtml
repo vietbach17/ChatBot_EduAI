@@ -118,11 +118,10 @@
                                         onclick="openEditModal(@plan.Id, '@plan.Name.Replace("'", "\\'")', '@plan.Description.Replace("'", "\\'")', @plan.Price.ToString(System.Globalization.CultureInfo.InvariantCulture), @plan.MonthlyQuestionLimit, @plan.SortOrder, @plan.IsActive.ToString().ToLower())">
                                     <i class="fa-solid fa-pen"></i> SỬA
                                 </button>
-                                <form method="post" asp-page-handler="Delete" style="display:inline;">
+                                <form method="post" asp-page-handler="Delete" style="display:inline;" data-confirm="Xóa gói '@plan.Name'? Người dùng đang dùng gói này sẽ không bị ảnh hưởng ngay.">
                                     <input type="hidden" name="id" value="@plan.Id" />
                                     <button type="submit" class="brutal-btn"
-                                            style="background:#ff4d4f; color:white; border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);"
-                                            onclick="return confirm('Xóa gói \'@plan.Name\'? Người dùng đang dùng gói này sẽ không bị ảnh hưởng ngay.')">
+                                            style="background:#ff4d4f; color:white; border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);">
                                         <i class="fa-solid fa-trash"></i> XÓA
                                     </button>
                                 </form>

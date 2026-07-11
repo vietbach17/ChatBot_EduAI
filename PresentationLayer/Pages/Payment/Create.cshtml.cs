@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-
 namespace PresentationLayer.Pages.Payment
 {
     [Authorize]
@@ -20,39 +19,59 @@ namespace PresentationLayer.Pages.Payment
         private readonly ISubscriptionPlanService _planService;
         private readonly IPaymentService _paymentService;
         private readonly PaymentGatewayFactory _gatewayFactory;
+        private readonly DataAccessLayer.IRepositories.IAddonPackageRepository _addonRepository;
 
         public CreateModel(
             ISubscriptionPlanService planService,
             IPaymentService paymentService,
-            PaymentGatewayFactory gatewayFactory)
+            PaymentGatewayFactory gatewayFactory,
+            DataAccessLayer.IRepositories.IAddonPackageRepository addonRepository)
         {
             _planService = planService;
             _paymentService = paymentService;
             _gatewayFactory = gatewayFactory;
+            _addonRepository = addonRepository;
         }
 
-        public SubscriptionPlanDto Plan { get; set; } = default!;
+        public SubscriptionPlanDto? Plan { get; set; }
+        public DataAccessLayer.Entities.AddonPackage? Addon { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string plan)
+        public async Task<IActionResult> OnGetAsync(string? plan, int? addonId)
         {
-            if (string.IsNullOrEmpty(plan))
+            if (string.IsNullOrEmpty(plan) && !addonId.HasValue)
             {
                 return RedirectToPage("/Subscription/Index");
             }
 
-            var allPlans = await _planService.GetAllAsync();
-            var targetPlan = allPlans.FirstOrDefault(p => p.Name.Equals(plan, StringComparison.OrdinalIgnoreCase));
-
-            if (targetPlan == null || targetPlan.Price <= 0)
+            if (addonId.HasValue)
             {
-                return RedirectToPage("/Subscription/Index");
+                var targetAddon = await _addonRepository.GetByIdAsync(addonId.Value);
+                if (targetAddon == null || !targetAddon.IsActive || targetAddon.Price <= 0)
+                {
+                    return RedirectToPage("/Subscription/Index");
+                }
+                Addon = targetAddon;
+                return Page();
             }
 
-            Plan = targetPlan;
-            return Page();
+            if (!string.IsNullOrEmpty(plan))
+            {
+                var allPlans = await _planService.GetAllAsync();
+                var targetPlan = allPlans.FirstOrDefault(p => p.Name.Equals(plan, StringComparison.OrdinalIgnoreCase));
+
+                if (targetPlan == null || targetPlan.Price <= 0)
+                {
+                    return RedirectToPage("/Subscription/Index");
+                }
+
+                Plan = targetPlan;
+                return Page();
+            }
+
+            return RedirectToPage("/Subscription/Index");
         }
 
-        public async Task<IActionResult> OnPostAsync(int planId, string paymentMethod)
+        public async Task<IActionResult> OnPostAsync(int? planId, int? addonId, string paymentMethod)
         {
             var userId = GetUserId();
             if (userId <= 0)
@@ -60,17 +79,34 @@ namespace PresentationLayer.Pages.Payment
                 return RedirectToPage("/Auth/Login");
             }
 
-            var plan = await _planService.GetByIdAsync(planId);
-            if (plan == null || plan.Price <= 0)
+            if (!planId.HasValue && !addonId.HasValue)
             {
-                TempData["ErrorMessage"] = "Gói cước không hợp lệ.";
+                TempData["ErrorMessage"] = "Yêu cầu không hợp lệ.";
                 return RedirectToPage("/Subscription/Index");
             }
 
             try
             {
-                // Call PaymentService instead of calling repository directly
-                var transaction = await _paymentService.CreateTransactionAsync(userId, planId, paymentMethod);
+                PaymentTransactionDto transaction;
+                string orderDesc;
+
+                if (addonId.HasValue)
+                {
+                    transaction = await _paymentService.CreateAddonTransactionAsync(userId, addonId.Value, paymentMethod);
+                    var addon = await _addonRepository.GetByIdAsync(addonId.Value);
+                    orderDesc = $"Thanh toan mua goi nap them {addon?.Name} cho account {User.Identity?.Name}";
+                }
+                else
+                {
+                    var plan = await _planService.GetByIdAsync(planId.Value);
+                    if (plan == null || plan.Price <= 0)
+                    {
+                        TempData["ErrorMessage"] = "Gói cước không hợp lệ.";
+                        return RedirectToPage("/Subscription/Index");
+                    }
+                    transaction = await _paymentService.CreateTransactionAsync(userId, planId.Value, paymentMethod);
+                    orderDesc = $"Thanh toan mua goi {plan.Name} cho account {User.Identity?.Name}";
+                }
 
                 var gateway = _gatewayFactory.GetGateway(paymentMethod);
                 
@@ -85,7 +121,7 @@ namespace PresentationLayer.Pages.Payment
                 {
                     TransactionId = transaction.Id,
                     Amount = transaction.Amount,
-                    OrderDescription = $"Thanh toan mua goi {plan.Name} cho account {User.Identity?.Name}",
+                    OrderDescription = orderDesc,
                     ReturnUrl = returnUrl,
                     IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1"
                 };
@@ -108,4 +144,3 @@ namespace PresentationLayer.Pages.Payment
         }
     }
 }
-

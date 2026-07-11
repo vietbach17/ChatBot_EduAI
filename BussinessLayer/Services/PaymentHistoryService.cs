@@ -91,5 +91,20 @@ namespace BussinessLayer.Services
                 ExpiryDate = t.ExpiryDate
             };
         }
+
+        public async Task<bool> CancelPaymentAsync(int transactionId, int userId)
+        {
+            var transactions = await _transactionRepository.GetByUserIdAsync(userId);
+            var transaction = transactions?.FirstOrDefault(x => x.Id == transactionId);
+            
+            if (transaction == null || transaction.Status != "Pending") 
+            {
+                return false;
+            }
+
+            transaction.Status = "Cancelled";
+            await _transactionRepository.UpdateAsync(transaction);
+            return true;
+        }
     }
 }

@@ -13,13 +13,16 @@ namespace BussinessLayer.Services
     {
         private readonly IPaymentTransactionRepository _transactionRepository;
         private readonly ISubscriptionPlanRepository _planRepository;
+        private readonly IAddonPackageRepository _addonRepository;
 
         public PaymentService(
             IPaymentTransactionRepository transactionRepository,
-            ISubscriptionPlanRepository planRepository)
+            ISubscriptionPlanRepository planRepository,
+            IAddonPackageRepository addonRepository)
         {
             _transactionRepository = transactionRepository;
             _planRepository = planRepository;
+            _addonRepository = addonRepository;
         }
 
         public async Task<PaymentTransactionDto> CreateTransactionAsync(int userId, int planId, string paymentMethod)
@@ -39,6 +42,30 @@ namespace BussinessLayer.Services
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow,
                 ExpiryDate = DateTime.UtcNow.AddDays(plan.DurationDays)
+            };
+
+            await _transactionRepository.AddAsync(transaction);
+
+            return MapToDto(transaction);
+        }
+
+        public async Task<PaymentTransactionDto> CreateAddonTransactionAsync(int userId, int addonId, string paymentMethod)
+        {
+            var addon = await _addonRepository.GetByIdAsync(addonId);
+            if (addon == null || !addon.IsActive)
+            {
+                throw new ArgumentException("Gói nạp thêm không tồn tại hoặc đã ngừng bán.");
+            }
+
+            var transaction = new PaymentTransaction
+            {
+                UserId = userId,
+                AddonId = addonId,
+                Amount = addon.Price,
+                PaymentMethod = paymentMethod,
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow,
+                ExpiryDate = null
             };
 
             await _transactionRepository.AddAsync(transaction);
@@ -75,7 +102,8 @@ namespace BussinessLayer.Services
                 Id = t.Id,
                 UserId = t.UserId,
                 PlanId = t.PlanId,
-                PlanName = t.SubscriptionPlan?.Name ?? string.Empty,
+                AddonId = t.AddonId,
+                PlanName = t.SubscriptionPlan?.Name ?? t.AddonPackage?.Name ?? string.Empty,
                 Amount = t.Amount,
                 PaymentMethod = t.PaymentMethod,
                 Status = t.Status,
@@ -86,4 +114,3 @@ namespace BussinessLayer.Services
         }
     }
 }
-

@@ -34,6 +34,7 @@ builder.Services.AddScoped<IDocumentActivityLogRepository, DocumentActivityLogRe
 builder.Services.AddScoped<IQuestionBankRepository, QuestionBankRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
+builder.Services.AddScoped<IAddonPackageRepository, AddonPackageRepository>();
 
 // Services
 builder.Services.AddHttpClient();

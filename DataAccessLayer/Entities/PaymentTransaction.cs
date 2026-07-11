@@ -15,11 +15,15 @@ namespace DataAccessLayer.Entities
         [ForeignKey("UserId")]
         public User User { get; set; } = null!;
 
-        [Required]
-        public int PlanId { get; set; }
+        public int? PlanId { get; set; }
         
         [ForeignKey("PlanId")]
-        public SubscriptionPlan SubscriptionPlan { get; set; } = null!;
+        public SubscriptionPlan? SubscriptionPlan { get; set; }
+
+        public int? AddonId { get; set; }
+
+        [ForeignKey("AddonId")]
+        public AddonPackage? AddonPackage { get; set; }
 
         [Required]
         public decimal Amount { get; set; }

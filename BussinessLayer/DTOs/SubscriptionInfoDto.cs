@@ -17,5 +17,8 @@ namespace BussinessLayer.DTOs
 
         public DateTime? Expiry { get; set; }
         public bool IsActive { get; set; }
+        
+        public int ExtraQuota { get; set; }
+        public bool UseExtraQuota { get; set; }
     }
 }

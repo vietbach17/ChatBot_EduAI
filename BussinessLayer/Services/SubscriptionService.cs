@@ -85,7 +85,10 @@ namespace BussinessLayer.Services
                 ResetDate = user.ShortTermResetDate,
 
                 Expiry        = user.SubscriptionExpiry,
-                IsActive      = planActive
+                IsActive      = planActive,
+
+                ExtraQuota    = user.ExtraQuestionQuota,
+                UseExtraQuota = user.UseExtraQuota
             };
         }
 
@@ -170,6 +173,13 @@ namespace BussinessLayer.Services
 
             var user = await _userRepository.GetUserByIdAsync(transaction.UserId);
             if (user == null) return false;
+
+            if (transaction.AddonId.HasValue && transaction.AddonPackage != null)
+            {
+                user.ExtraQuestionQuota += transaction.AddonPackage.QuotaAmount;
+                await _userRepository.UpdateUserAsync(user);
+                return true;
+            }
 
             var plan = transaction.SubscriptionPlan;
             if (plan == null) return false;

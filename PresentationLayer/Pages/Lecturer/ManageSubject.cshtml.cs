@@ -40,6 +40,7 @@ namespace PresentationLayer.Pages.Lecturer
         [BindProperty] public DocumentUploadViewModel UploadDocumentModel { get; set; } = new DocumentUploadViewModel();
 
         public bool IsOwner { get; set; } = false;
+        public bool IsAdmin { get; set; } = false;
         
         public List<DocumentActivityLogDto> ActivityLogs { get; set; } = new();
 
@@ -52,13 +53,18 @@ namespace PresentationLayer.Pages.Lecturer
             var userIdStr = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (int.TryParse(userIdStr, out int userId))
             {
-                if (Subject.LecturerId == userId || User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value == "Admin")
+                if (Subject.LecturerId == userId)
                 {
                     IsOwner = true;
                 }
             }
             
-            if (IsOwner)
+            if (User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value == "Admin")
+            {
+                IsAdmin = true;
+            }
+            
+            if (IsOwner || IsAdmin)
             {
                 ActivityLogs = (await _activityLogService.GetLogsBySubjectIdAsync(id)).ToList();
             }
