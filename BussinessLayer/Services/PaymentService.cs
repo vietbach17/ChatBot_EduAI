@@ -1,3 +1,6 @@
+using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
 using System;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
@@ -83,3 +86,4 @@ namespace BussinessLayer.Services
         }
     }
 }
+

@@ -1,3 +1,6 @@
+using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -5,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using BussinessLayer.DTOs;
 using BussinessLayer.Helpers;
 
-namespace BussinessLayer.Services
+namespace BussinessLayer.Gateways
 {
     public class VNPayGateway : IPaymentGateway
     {
@@ -68,3 +71,4 @@ namespace BussinessLayer.Services
         }
     }
 }
+

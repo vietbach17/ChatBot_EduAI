@@ -1,3 +1,6 @@
+using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
@@ -63,3 +66,4 @@ namespace BussinessLayer.Services
         }
     }
 }
+

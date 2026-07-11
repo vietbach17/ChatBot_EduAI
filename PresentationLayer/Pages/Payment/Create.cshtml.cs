@@ -1,3 +1,6 @@
+using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -74,7 +77,7 @@ namespace PresentationLayer.Pages.Payment
                 // Dynamically construct return callback URL based on selected gateway
                 string callbackPage = paymentMethod.Equals("VNPay", StringComparison.OrdinalIgnoreCase) 
                     ? "/Payment/VNPayCallback" 
-                    : "/Payment/VNPayCallback"; // Fallback/Default
+                    : "/PaymentHistory/Index"; // Fallback for SePay/others to history page
 
                 var returnUrl = $"{Request.Scheme}://{Request.Host}{callbackPage}";
 
@@ -105,3 +108,4 @@ namespace PresentationLayer.Pages.Payment
         }
     }
 }
+
