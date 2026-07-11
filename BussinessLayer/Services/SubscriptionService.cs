@@ -1,3 +1,6 @@
+using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +24,20 @@ namespace BussinessLayer.Services
             _paymentTransactionRepository = paymentTransactionRepository;
         }
 
-        private static int GetMonthlyLimit(string plan) => plan switch
+        private static int GetShortTermLimit(string plan) => plan switch
         {
-            "Basic" => 5,
+            "Basic" => 10,
             "Pro" => 20,
             "Ultra" => int.MaxValue,
-            _ => 5
+            _ => 10
+        };
+
+        private static int GetMonthlyLimit(string plan) => plan switch
+        {
+            "Basic" => 50,
+            "Pro" => 500,
+            "Ultra" => int.MaxValue,
+            _ => 50
         };
 
         public async Task<SubscriptionInfoDto> GetSubscriptionInfoAsync(int userId)
@@ -38,7 +49,14 @@ namespace BussinessLayer.Services
             if (user.QuotaResetDate.HasValue && now >= user.QuotaResetDate.Value)
             {
                 user.MonthlyQuestionCount = 0;
-                user.QuotaResetDate = null;
+                user.QuotaResetDate = now.AddDays(30);
+                await _userRepository.UpdateUserAsync(user);
+            }
+
+            if (user.ShortTermResetDate.HasValue && now >= user.ShortTermResetDate.Value)
+            {
+                user.ShortTermQuestionCount = 0;
+                user.ShortTermResetDate = now.AddHours(5);
                 await _userRepository.UpdateUserAsync(user);
             }
 
@@ -47,18 +65,27 @@ namespace BussinessLayer.Services
             string effectivePlan = planActive ? user.SubscriptionPlan : "Basic";
             if (effectivePlan == "Free") effectivePlan = "Basic";
 
-            int limit = GetMonthlyLimit(effectivePlan);
-            int remaining = limit == int.MaxValue ? int.MaxValue : Math.Max(0, limit - user.MonthlyQuestionCount);
+            int limit = GetShortTermLimit(effectivePlan);
+            int remaining = limit == int.MaxValue ? int.MaxValue : Math.Max(0, limit - user.ShortTermQuestionCount);
+
+            int limitMonth = GetMonthlyLimit(effectivePlan);
+            int remainingMonth = limitMonth == int.MaxValue ? int.MaxValue : Math.Max(0, limitMonth - user.MonthlyQuestionCount);
 
             return new SubscriptionInfoDto
             {
                 CurrentPlan   = effectivePlan,
-                MonthlyLimit  = limit,
+                MonthlyLimit  = limitMonth,
                 UsedCount     = user.MonthlyQuestionCount,
-                Remaining     = remaining,
+                Remaining     = remainingMonth,
+                MonthlyResetDate = user.QuotaResetDate,
+
+                ShortTermLimit = limit,
+                ShortTermUsedCount = user.ShortTermQuestionCount,
+                ShortTermRemaining = remaining,
+                ResetDate = user.ShortTermResetDate,
+
                 Expiry        = user.SubscriptionExpiry,
-                IsActive      = planActive,
-                ResetDate     = user.QuotaResetDate
+                IsActive      = planActive
             };
         }
 
@@ -82,7 +109,9 @@ namespace BussinessLayer.Services
             }
 
             user.MonthlyQuestionCount = 0;
-            user.QuotaResetDate = null;
+            user.QuotaResetDate = DateTime.UtcNow.AddDays(30);
+            user.ShortTermQuestionCount = 0;
+            user.ShortTermResetDate = DateTime.UtcNow.AddHours(5);
 
             await _userRepository.UpdateUserAsync(user);
             return true;
@@ -98,14 +127,27 @@ namespace BussinessLayer.Services
 
             if (user.QuotaResetDate == null)
             {
-                user.QuotaResetDate = now.AddHours(5);
+                user.QuotaResetDate = now.AddDays(30);
                 user.MonthlyQuestionCount = 0;
                 changed = true;
             }
             else if (now >= user.QuotaResetDate.Value)
             {
-                user.QuotaResetDate = now.AddHours(5);
+                user.QuotaResetDate = now.AddDays(30);
                 user.MonthlyQuestionCount = 0;
+                changed = true;
+            }
+
+            if (user.ShortTermResetDate == null)
+            {
+                user.ShortTermResetDate = now.AddHours(5);
+                user.ShortTermQuestionCount = 0;
+                changed = true;
+            }
+            else if (now >= user.ShortTermResetDate.Value)
+            {
+                user.ShortTermResetDate = now.AddHours(5);
+                user.ShortTermQuestionCount = 0;
                 changed = true;
             }
 
@@ -141,7 +183,9 @@ namespace BussinessLayer.Services
 
             // Reset Quota ngay lập tức
             user.MonthlyQuestionCount = 0;
-            user.QuotaResetDate = null;
+            user.QuotaResetDate = DateTime.UtcNow.AddDays(30);
+            user.ShortTermQuestionCount = 0;
+            user.ShortTermResetDate = DateTime.UtcNow.AddHours(5);
 
             await _userRepository.UpdateUserAsync(user);
             return true;
@@ -160,7 +204,8 @@ namespace BussinessLayer.Services
                 string effectivePlan = planActive ? u.SubscriptionPlan : "Basic";
                 if (effectivePlan == "Free") effectivePlan = "Basic";
 
-                int limit = GetMonthlyLimit(effectivePlan);
+                int limit = GetShortTermLimit(effectivePlan);
+                int limitMonth = GetMonthlyLimit(effectivePlan);
                 return new UserSubscriptionDto
                 {
                     UserId               = u.Id,
@@ -169,9 +214,15 @@ namespace BussinessLayer.Services
                     Role                 = u.Role,
                     SubscriptionPlan     = effectivePlan,
                     SubscriptionExpiry   = u.SubscriptionExpiry,
+                    
                     MonthlyQuestionCount = u.MonthlyQuestionCount,
-                    MonthlyLimit         = limit,
+                    MonthlyLimit         = limitMonth,
                     QuotaResetDate       = u.QuotaResetDate,
+
+                    ShortTermQuestionCount = u.ShortTermQuestionCount,
+                    ShortTermLimit         = limit,
+                    ShortTermResetDate     = u.ShortTermResetDate,
+
                     IsActive             = planActive
                 };
             }).ToList();
@@ -194,7 +245,9 @@ namespace BussinessLayer.Services
             if (user == null) return false;
 
             user.MonthlyQuestionCount = 0;
-            user.QuotaResetDate = null;
+            user.QuotaResetDate = DateTime.UtcNow.AddDays(30);
+            user.ShortTermQuestionCount = 0;
+            user.ShortTermResetDate = DateTime.UtcNow.AddHours(5);
             await _userRepository.UpdateUserAsync(user);
             return true;
         }
@@ -207,9 +260,12 @@ namespace BussinessLayer.Services
             user.SubscriptionPlan   = "Basic";
             user.SubscriptionExpiry = null;
             user.MonthlyQuestionCount = 0;
-            user.QuotaResetDate = null;
+            user.QuotaResetDate = DateTime.UtcNow.AddDays(30);
+            user.ShortTermQuestionCount = 0;
+            user.ShortTermResetDate = DateTime.UtcNow.AddHours(5);
             await _userRepository.UpdateUserAsync(user);
             return true;
         }
     }
 }
+

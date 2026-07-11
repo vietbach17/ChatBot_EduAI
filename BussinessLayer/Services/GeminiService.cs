@@ -14,6 +14,7 @@ namespace BussinessLayer.Services
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
+        private readonly string _defaultModel;
 
         public GeminiService(HttpClient httpClient, IConfiguration configuration)
         {
@@ -22,6 +23,10 @@ namespace BussinessLayer.Services
                       ?? configuration["GeminiAI:ApiKey"];
             
             _apiKey = key?.Trim() ?? throw new ArgumentNullException("GEMINI_API_KEY is not configured");
+            
+            _defaultModel = Environment.GetEnvironmentVariable("GEMINI_MODEL") 
+                            ?? configuration["GeminiAI:Model"] 
+                            ?? "gemini-1.5-flash";
         }
 
         public async Task<string> GenerateJsonContentAsync(string prompt, string? responseSchemaJson = null)
@@ -140,9 +145,7 @@ namespace BussinessLayer.Services
 
         public async Task<string> GenerateAnswerAsync(string prompt, string? modelName = null)
         {
-            modelName = string.IsNullOrWhiteSpace(modelName)
-                ? (Environment.GetEnvironmentVariable("GEMINI_MODEL") ?? "gemini-3.5-flash")
-                : modelName;
+            modelName = string.IsNullOrWhiteSpace(modelName) ? _defaultModel : modelName;
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:generateContent?key={_apiKey}";
 
             var requestBody = new

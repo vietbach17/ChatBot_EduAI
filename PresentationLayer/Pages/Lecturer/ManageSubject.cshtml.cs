@@ -104,15 +104,16 @@ namespace PresentationLayer.Pages.Lecturer
             {
                 var filesDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "files");
                 Directory.CreateDirectory(filesDir);
-                var filePath = Path.Combine(filesDir, UploadDocumentModel.File.FileName);
+                var fileName = Path.GetFileName(UploadDocumentModel.File.FileName);
+                var filePath = Path.Combine(filesDir, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await UploadDocumentModel.File.CopyToAsync(stream);
                 }
 
-                var fileUrl = $"/files/{UploadDocumentModel.File.FileName}";
-                var fileType = Path.GetExtension(UploadDocumentModel.File.FileName).TrimStart('.').ToLower();
+                var fileUrl = $"/files/{fileName}";
+                var fileType = Path.GetExtension(fileName).TrimStart('.').ToLower();
 
                 // Use FileTextExtractorService (supports txt, md, csv, pdf via PdfPig)
                 var extractedContent = _textExtractor.ExtractText(filePath);
@@ -130,15 +131,22 @@ namespace PresentationLayer.Pages.Lecturer
                     // Đọc ConnectionId từ Form (đề phòng BindProperty không bắt được do multipart)
                     var connId = Request.Form["UploadDocumentModel.ConnectionId"].FirstOrDefault() ?? UploadDocumentModel.ConnectionId;
 
-                    // Tự động băm và nhúng ngay lập tức với progress callback
-                    await _documentService.ProcessDocumentEmbeddingAsync(documentId, async (current, total) => 
+                    try 
                     {
-                        if (!string.IsNullOrEmpty(connId))
+                        // Tự động băm và nhúng ngay lập tức với progress callback
+                        await _documentService.ProcessDocumentEmbeddingAsync(documentId, async (current, total) => 
                         {
-                            int percent = (int)System.Math.Round((double)current / total * 100);
-                            await _hubContext.Clients.Client(connId).SendAsync("UploadProgress", percent);
-                        }
-                    });
+                            if (!string.IsNullOrEmpty(connId))
+                            {
+                                int percent = (int)System.Math.Round((double)current / total * 100);
+                                await _hubContext.Clients.Client(connId).SendAsync("UploadProgress", percent);
+                            }
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[Upload Warning]: Embedding failed: {ex.Message}");
+                    }
                     
                     if (uploaderId.HasValue)
                     {

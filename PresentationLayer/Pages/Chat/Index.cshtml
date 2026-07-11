@@ -875,6 +875,7 @@
                     err.innerHTML = `<div class="chat-avatar" style="background:#d93856;"><i class="fa-solid fa-robot"></i></div><div class="message-content" style="border-color:#d93856;"><div class="message-sender" style="color:#d93856;">Hệ thống</div><p class="message-text">⚠️ ${escapeHtml(data.message||'Lỗi')} ${data.outOfQuota?'<a href="/Subscription" style="color:#3b82f6;text-decoration:underline;">Nâng cấp gói</a>':''}</p></div>`;
                     chatMessages.appendChild(err);
                     chatMessages.scrollTop = chatMessages.scrollHeight;
+                    document.getElementById('messageInput').value = text;
                     return;
                 }
 
@@ -902,6 +903,7 @@
                 errDiv.innerHTML = `<div class="chat-avatar" style="background:#d93856;"><i class="fa-solid fa-robot"></i></div><div class="message-content" style="border-color:#d93856;"><div class="message-sender" style="color:#d93856;">Lỗi mạng</div><p class="message-text">⚠️ Không thể kết nối máy chủ.</p></div>`;
                 chatMessages.appendChild(errDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+                document.getElementById('messageInput').value = text;
             }
         }
 

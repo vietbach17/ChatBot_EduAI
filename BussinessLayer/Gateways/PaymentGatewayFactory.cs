@@ -1,9 +1,12 @@
+using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using BussinessLayer.IServices;
 
-namespace BussinessLayer.Services
+namespace BussinessLayer.Gateways
 {
     public class PaymentGatewayFactory
     {
@@ -25,3 +28,4 @@ namespace BussinessLayer.Services
         }
     }
 }
+

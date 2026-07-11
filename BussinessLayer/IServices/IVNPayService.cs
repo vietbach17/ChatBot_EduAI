@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using BussinessLayer.DTOs;
 
-namespace BussinessLayer.Services
+namespace BussinessLayer.IServices
 {
     public interface IVNPayService
     {

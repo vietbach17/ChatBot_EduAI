@@ -1,3 +1,6 @@
+using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -132,3 +135,4 @@ namespace PresentationLayer.Pages.Payment
         }
     }
 }
+

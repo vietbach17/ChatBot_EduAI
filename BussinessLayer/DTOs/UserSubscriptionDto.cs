@@ -13,6 +13,11 @@ namespace BussinessLayer.DTOs
         public int MonthlyQuestionCount { get; set; }
         public int MonthlyLimit { get; set; }
         public DateTime? QuotaResetDate { get; set; }
+
+        public int ShortTermQuestionCount { get; set; }
+        public int ShortTermLimit { get; set; }
+        public DateTime? ShortTermResetDate { get; set; }
+
         public bool IsActive { get; set; }
     }
 }
