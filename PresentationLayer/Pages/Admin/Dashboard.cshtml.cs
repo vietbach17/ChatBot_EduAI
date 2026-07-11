@@ -9,17 +9,17 @@ namespace PresentationLayer.Pages.Admin
     public class DashboardModel : PageModel
     {
         private readonly IUserService _userService;
-        private readonly ISubscriptionService _subscriptionService;
+        private readonly IPaymentHistoryService _paymentHistoryService;
 
         public int TotalUsers { get; set; }
         public int TotalSubjects { get; set; }
         public int TotalDocuments { get; set; }
         public decimal EstimatedRevenue { get; set; }
 
-        public DashboardModel(IUserService userService, ISubscriptionService subscriptionService)
+        public DashboardModel(IUserService userService, IPaymentHistoryService paymentHistoryService)
         {
             _userService = userService;
-            _subscriptionService = subscriptionService;
+            _paymentHistoryService = paymentHistoryService;
         }
 
         public async Task OnGetAsync()
@@ -31,14 +31,15 @@ namespace PresentationLayer.Pages.Admin
             TotalSubjects = 0;
             TotalDocuments = 0;
 
-            var subscriptions = await _subscriptionService.GetAllSubscriptionsAsync();
-            decimal revenue = 0;
-            foreach(var sub in subscriptions.Where(s => s.IsActive))
-            {
-                if(sub.SubscriptionPlan == "Basic") revenue += 50000;
-                else if(sub.SubscriptionPlan == "Premium") revenue += 100000;
-            }
-            EstimatedRevenue = revenue;
+            // Calculate monthly revenue from successful transactions
+            var currentMonth = System.DateTime.Now.Month;
+            var currentYear = System.DateTime.Now.Year;
+            
+            var allTransactions = await _paymentHistoryService.GetAllPaymentHistoriesAsync(status: "Success");
+            
+            EstimatedRevenue = allTransactions
+                .Where(t => t.Date.Month == currentMonth && t.Date.Year == currentYear)
+                .Sum(t => t.Amount);
         }
     }
 }

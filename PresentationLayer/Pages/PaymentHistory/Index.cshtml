@@ -5,7 +5,7 @@
 }
 
 <div class="main-wrapper" style="padding: 40px; background-color: var(--bg);">
-    <div style="max-width: 1000px; margin: 0 auto; width: 100%;">
+    <div style="max-width: 1200px; margin: 0 auto; width: 100%;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <h1 style="font-size: 32px; font-weight: 900; text-transform: uppercase; color: var(--black); text-shadow: 2px 2px 0px var(--white);">
                 <i class="fa-solid fa-file-invoice-dollar" style="color: var(--pink);"></i> Lịch sử thanh toán
@@ -46,10 +46,11 @@
         <div style="background: var(--white); border: var(--border); box-shadow: var(--shadow); overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>
-                    <tr style="background: var(--yellow); border-bottom: 3px solid var(--black);">
+                    <tr style="background: var(--yellow); border-bottom: 3px solid var(--black); white-space: nowrap;">
                         <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">MÃ GD</th>
                         <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">NGÀY TT</th>
                         <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">GÓI DỊCH VỤ</th>
+                        <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">PHÂN LOẠI</th>
                         <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">SỐ TIỀN</th>
                         <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">PHƯƠNG THỨC</th>
                         <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">TRẠNG THÁI</th>
@@ -61,13 +62,19 @@
                     {
                         foreach (var item in Model.Histories)
                         {
-                            <tr style="border-bottom: 2px solid var(--black); transition: 0.1s; cursor: default;" onmouseover="this.style.backgroundColor='#f9f9f9'" onmouseout="this.style.backgroundColor='transparent'">
+                            <tr style="border-bottom: 2px solid var(--black); transition: 0.1s; cursor: default; white-space: nowrap;" onmouseover="this.style.backgroundColor='#f9f9f9'" onmouseout="this.style.backgroundColor='transparent'">
                                 <td style="padding: 15px; font-weight: 900; font-size: 13px;">#@(string.IsNullOrEmpty(item.TransactionCode) ? "GD" + item.TransactionId : item.TransactionCode)</td>
                                 <td style="padding: 15px; font-weight: 700; font-size: 13px;">@item.Date.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td style="padding: 15px;">
                                     <span style="background: var(--blue); color: var(--white); padding: 4px 10px; font-size: 11px; font-weight: 900; border: 2px solid var(--black); box-shadow: 1px 1px 0 var(--black);">@item.PlanName.ToUpper()</span>
                                 </td>
-                                <td style="padding: 15px; font-weight: 900; color: var(--pink);">@item.Amount.ToString("N0") VNĐ</td>
+                                <td style="padding: 15px;">
+                                    @{
+                                        string classBg = item.Classification == "Gói mua thêm" ? "#f59e0b" : "#a855f7";
+                                    }
+                                    <span style="background: @classBg; color: var(--white); padding: 4px 10px; font-size: 11px; font-weight: 900; border: 2px solid var(--black); box-shadow: 1px 1px 0 var(--black); display: inline-block; white-space: nowrap;">@item.Classification.ToUpper()</span>
+                                </td>
+                                <td style="padding: 15px; font-weight: 900; color: var(--pink); white-space: nowrap;">@item.Amount.ToString("N0") VNĐ</td>
                                 <td style="padding: 15px;">
                                     @{
                                         string methodColor = item.Method == "VNPay" ? "var(--blue)" : (item.Method == "SePay" ? "var(--green)" : "var(--yellow)");

@@ -75,10 +75,11 @@
         <div style="background-color: var(--white); border: 4px solid var(--black); box-shadow: 8px 8px 0px var(--black); padding: 20px; overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
                 <thead>
-                    <tr style="border-bottom: 4px solid var(--black);">
+                    <tr style="border-bottom: 4px solid var(--black); white-space: nowrap;">
                         <th style="padding: 12px; text-align: left; font-weight: 900;">MÃ GD</th>
                         <th style="padding: 12px; text-align: left; font-weight: 900;">KHÁCH HÀNG</th>
                         <th style="padding: 12px; text-align: left; font-weight: 900;">GÓI</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 900;">PHÂN LOẠI</th>
                         <th style="padding: 12px; text-align: left; font-weight: 900;">SỐ TIỀN</th>
                         <th style="padding: 12px; text-align: center; font-weight: 900;">PHƯƠNG THỨC</th>
                         <th style="padding: 12px; text-align: center; font-weight: 900;">TRẠNG THÁI</th>
@@ -91,11 +92,17 @@
                     {
                         foreach (var item in Model.Histories)
                         {
-                            <tr style="border-bottom: 2px dashed #ccc; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                            <tr style="border-bottom: 2px dashed #ccc; transition: background 0.2s; white-space: nowrap;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
                                 <td style="padding: 12px; font-weight: 900; color: #555;">#@(string.IsNullOrEmpty(item.TransactionCode) ? "GD" + item.TransactionId : item.TransactionCode)</td>
                                 <td style="padding: 12px; font-weight: 800; color: var(--black);">@item.UserName</td>
                                 <td style="padding: 12px; font-weight: 800; color: var(--blue);">@item.PlanName</td>
-                                <td style="padding: 12px; font-weight: 900; color: #dc2626;">@item.Amount.ToString("N0")đ</td>
+                                <td style="padding: 12px;">
+                                    @{
+                                        string classBg = item.Classification == "Gói mua thêm" ? "#f59e0b" : "#a855f7";
+                                    }
+                                    <span style="background: @classBg; color: var(--white); padding: 4px 10px; font-size: 11px; font-weight: 900; border: 2px solid var(--black); box-shadow: 1px 1px 0 var(--black); display: inline-block; white-space: nowrap;">@item.Classification.ToUpper()</span>
+                                </td>
+                                <td style="padding: 12px; font-weight: 900; color: #dc2626; white-space: nowrap;">@item.Amount.ToString("N0")đ</td>
                                 <td style="padding: 12px; text-align: center; font-weight: 800;">@item.Method</td>
                                 <td style="padding: 12px; text-align: center;">
                                     @if (item.Status == "Success") { <span class="status-badge status-success">THÀNH CÔNG</span> }

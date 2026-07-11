@@ -27,10 +27,11 @@ namespace BussinessLayer.Services
                 TransactionId = t.Id,
                 TransactionCode = t.TransactionCode,
                 UserName = t.User != null ? t.User.Username : "Unknown",
-                PlanName = t.SubscriptionPlan != null ? t.SubscriptionPlan.Name : "Unknown",
+                PlanName = t.AddonId.HasValue && t.AddonPackage != null ? t.AddonPackage.Name : (t.SubscriptionPlan != null ? t.SubscriptionPlan.Name : "Unknown"),
                 Amount = t.Amount,
                 Method = t.PaymentMethod,
                 Status = t.Status,
+                Classification = t.AddonId.HasValue ? "Gói mua thêm" : "Gói hội viên",
                 Date = t.CreatedAt
             }).OrderByDescending(x => x.Date).ToList();
         }
@@ -57,15 +58,16 @@ namespace BussinessLayer.Services
                 query = query.Where(t => t.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
             }
 
-            return query.Select(t => new PaymentHistoryDto
+        return query.Select(t => new PaymentHistoryDto
             {
                 TransactionId = t.Id,
                 TransactionCode = t.TransactionCode,
                 UserName = t.User != null ? t.User.Username : "Unknown",
-                PlanName = t.SubscriptionPlan != null ? t.SubscriptionPlan.Name : "Unknown",
+                PlanName = t.AddonId.HasValue && t.AddonPackage != null ? t.AddonPackage.Name : (t.SubscriptionPlan != null ? t.SubscriptionPlan.Name : "Unknown"),
                 Amount = t.Amount,
                 Method = t.PaymentMethod,
                 Status = t.Status,
+                Classification = t.AddonId.HasValue ? "Gói mua thêm" : "Gói hội viên",
                 Date = t.CreatedAt
             }).OrderByDescending(x => x.Date).ToList();
         }
@@ -83,10 +85,11 @@ namespace BussinessLayer.Services
                 TransactionCode = t.TransactionCode,
                 UserName = t.User?.Username ?? "Unknown",
                 UserEmail = t.User?.Email ?? "Unknown",
-                PlanName = t.SubscriptionPlan?.Name ?? "Unknown",
+                PlanName = t.AddonId.HasValue && t.AddonPackage != null ? t.AddonPackage.Name : (t.SubscriptionPlan?.Name ?? "Unknown"),
                 Amount = t.Amount,
                 PaymentMethod = t.PaymentMethod,
                 Status = t.Status,
+                Classification = t.AddonId.HasValue ? "Gói mua thêm" : "Gói hội viên",
                 PaymentDate = t.CreatedAt,
                 ExpiryDate = t.ExpiryDate
             };

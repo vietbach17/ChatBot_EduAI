@@ -74,3 +74,21 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/courseHub")
+            .build();
+
+        connection.on("PaymentStatusUpdated", function (transactionId, newStatus) {
+            if (newStatus === "Success") {
+                window.location.reload();
+            }
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+    </script>
+}

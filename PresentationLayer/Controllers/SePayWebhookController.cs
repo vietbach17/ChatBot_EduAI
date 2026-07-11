@@ -5,6 +5,8 @@ using System.Text.Json;
 using BussinessLayer.IServices;
 using BussinessLayer.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using PresentationLayer.SignalR;
 
 namespace PresentationLayer.Controllers
 {
@@ -16,15 +18,18 @@ namespace PresentationLayer.Controllers
         private readonly IConfiguration _configuration;
         private readonly IPaymentService _paymentService;
         private readonly ISubscriptionService _subscriptionService;
+        private readonly IHubContext<SignalRHub> _hubContext;
 
         public SePayWebhookController(
             IConfiguration configuration,
             IPaymentService paymentService,
-            ISubscriptionService subscriptionService)
+            ISubscriptionService subscriptionService,
+            IHubContext<SignalRHub> hubContext)
         {
             _configuration = configuration;
             _paymentService = paymentService;
             _subscriptionService = subscriptionService;
+            _hubContext = hubContext;
         }
 
         // POST: api/sepay/webhook
@@ -97,6 +102,7 @@ namespace PresentationLayer.Controllers
             
             if (processed)
             {
+                await _hubContext.Clients.All.SendAsync("PaymentStatusUpdated", transactionId, "Success");
                 return Ok(new { success = true, message = "Payment processed successfully" });
             }
             else

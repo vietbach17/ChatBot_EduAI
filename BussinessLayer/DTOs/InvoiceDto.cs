@@ -12,6 +12,7 @@ namespace BussinessLayer.DTOs
         public decimal Amount { get; set; }
         public string PaymentMethod { get; set; }
         public string Status { get; set; }
+        public string Classification { get; set; }
         public DateTime PaymentDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
     }
