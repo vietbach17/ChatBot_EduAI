@@ -1,0 +1,1146 @@
+@page
+@model PresentationLayer.Pages.Lecturer.QuestionBankModel
+@using System.Web
+@{
+    ViewData["Title"] = "Ngân Hàng Câu Hỏi";
+}
+
+@section Styles {
+    <style>
+        .page-container {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            width: 100%;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 5px solid var(--black);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brutal-card {
+            background: var(--white);
+            border: 3px solid var(--black);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 10px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .brutal-input, .brutal-select {
+            padding: 10px 12px;
+            font-weight: 700;
+            font-family: inherit;
+            border: 3px solid var(--black);
+            background: var(--white);
+            color: var(--black);
+            outline: none;
+            transition: 0.1s;
+        }
+
+        .brutal-input:focus, .brutal-select:focus {
+            box-shadow: 2px 2px 0px 0px var(--black);
+            transform: translate(-1px, -1px);
+        }
+
+        .btn-brutal {
+            padding: 10px 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 3px solid var(--black);
+            box-shadow: 3px 3px 0px 0px var(--black);
+            background: var(--white);
+            cursor: pointer;
+            transition: 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--black);
+        }
+
+        .btn-brutal:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px 0px var(--black);
+        }
+
+        .btn-brutal:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px 0px var(--black);
+        }
+
+        .btn-pink { background: var(--pink); color: var(--white); }
+        .btn-yellow { background: var(--yellow); }
+        .btn-blue { background: var(--blue); color: var(--white); }
+        .btn-green { background: var(--green); color: var(--white); }
+
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 3px solid var(--black);
+            box-shadow: var(--shadow);
+            font-weight: 800;
+        }
+
+        .stat-card .num {
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        /* Question List */
+        .question-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .question-table th, .question-table td {
+            border: 3px solid var(--black);
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .question-table th {
+            background: var(--black);
+            color: var(--white);
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .question-table tr {
+            background: var(--white);
+        }
+
+        .question-table tr:hover {
+            background: #fafafc;
+        }
+
+        .question-content {
+            font-weight: 700;
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+
+        .question-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        .brutal-badge {
+            padding: 3px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            border: 2px solid var(--black);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--white);
+            color: var(--black);
+        }
+
+        .badge-easy { background: var(--green); color: var(--white); }
+        .badge-medium { background: var(--yellow); }
+        .badge-hard { background: var(--pink); color: var(--white); }
+        .badge-ai { border-style: dashed; background: #e0f2fe; }
+
+        /* Options list */
+        .options-list {
+            list-style: none;
+            margin: 8px 0 0 10px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        @@media (max-width: 768px) {
+            .options-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .options-list li {
+            padding: 4px 8px;
+            border: 2px solid #ddd;
+            background: #f9f9f9;
+        }
+
+        .options-list li.correct {
+            border-color: var(--black);
+            background: #d4edda;
+            font-weight: 700;
+        }
+
+        /* Modal */
+        .brutal-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .brutal-modal-content {
+            background: var(--white);
+            border: 4px solid var(--black);
+            box-shadow: 8px 8px 0px 0px var(--black);
+            width: 100%;
+            max-width: 650px;
+            max-height: 90%;
+            overflow-y: auto;
+            position: relative;
+            animation: modalOpen 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @@keyframes modalOpen {
+            from { transform: scale(0.9) translate(10px, 10px); opacity: 0; }
+            to { transform: scale(1) translate(0, 0); opacity: 1; }
+        }
+
+        .modal-header {
+            background: var(--black);
+            color: var(--white);
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            color: var(--white);
+            background: none;
+            border: none;
+            font-size: 24px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 3px solid var(--black);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .option-input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Status Banner */
+        .status-banner {
+            padding: 12px 20px;
+            border: 3px solid var(--black);
+            box-shadow: var(--shadow);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .status-success { background: var(--green); color: var(--white); }
+        .status-error { background: var(--pink); color: var(--white); }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .page-num {
+            font-weight: 800;
+            font-size: 16px;
+            border: 3px solid var(--black);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--white);
+        }
+        .page-num.active {
+            background: var(--black);
+            color: var(--white);
+        }
+    </style>
+}
+
+<div class="main-wrapper">
+<div class="page-container">
+    
+    <!-- Title -->
+    <div class="header-title">
+        <span><i class="fa-solid fa-database"></i> Ngân hàng câu hỏi</span>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-brutal btn-pink" onclick="openTrashModal()"><i class="fa-solid fa-trash-can"></i> Thùng rác</button>
+            <button class="btn-brutal btn-yellow" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Thêm thủ công</button>
+        </div>
+    </div>
+
+    <!-- Status Message -->
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        var isError = Model.StatusMessage.StartsWith("Error");
+        var displayMsg = Model.StatusMessage.Substring(Model.StatusMessage.IndexOf(":") + 1).Trim();
+        <div class="status-banner @(isError ? "status-error" : "status-success")">
+            <span><i class="fa-solid @(isError ? "fa-circle-exclamation" : "fa-circle-check")"></i> @displayMsg</span>
+            <button style="background:none; border:none; color:inherit; font-weight:900; cursor:pointer;" onclick="this.parentElement.remove()">X</button>
+        </div>
+    }
+
+    <!-- Filters Brutal Card -->
+    <div class="brutal-card">
+        <form method="get" class="filter-grid">
+            <div class="form-group">
+                <label>Môn học</label>
+                <select asp-for="SubjectId" class="brutal-select">
+                    <option value="0">--- Tất cả môn học ---</option>
+                    @foreach (var sub in Model.Subjects)
+                    {
+                        <option value="@sub.Id">[@sub.Code] @sub.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Độ khó</label>
+                <select asp-for="Difficulty" class="brutal-select">
+                    <option value="">Tất cả độ khó</option>
+                    <option value="Easy">Dễ (Easy)</option>
+                    <option value="Medium">Trung bình (Medium)</option>
+                    <option value="Hard">Khó (Hard)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Loại câu hỏi</label>
+                <select asp-for="Type" class="brutal-select">
+                    <option value="">Tất cả loại</option>
+                    <option value="MultipleChoice">Trắc nghiệm</option>
+                    <option value="TrueFalse">Đúng / Sai</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Tìm kiếm nội dung</label>
+                <input type="text" asp-for="Search" class="brutal-input" placeholder="Nhập từ khóa tìm kiếm..." />
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-brutal btn-pink" style="flex: 1;"><i class="fa-solid fa-filter"></i> Lọc</button>
+                <a href="/Lecturer/QuestionBank" class="btn-brutal" title="Xóa bộ lọc"><i class="fa-solid fa-arrow-rotate-left"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Questions Table -->
+    <div class="brutal-card" style="padding:0; overflow-x: auto;">
+        <table class="question-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;">ID</th>
+                    <th style="width: 130px;">Môn học</th>
+                    <th>Nội dung câu hỏi</th>
+                    <th style="width: 150px; text-align: center;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Questions.Any())
+                {
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 30px; font-weight: 800; font-size: 16px;">
+                            <i class="fa-solid fa-folder-open" style="font-size: 32px; display: block; margin-bottom: 10px;"></i>
+                            Không tìm thấy câu hỏi nào phù hợp với bộ lọc.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var q in Model.Questions)
+                    {
+                        var optionsList = new List<string>();
+                        if (q.QuestionType == "MultipleChoice" && !string.IsNullOrEmpty(q.OptionsJson))
+                        {
+                            try {
+                                optionsList = System.Text.Json.JsonSerializer.Deserialize<List<string>>(q.OptionsJson) ?? new List<string>();
+                            } catch { }
+                        }
+                        
+                        <tr>
+                            <td style="text-align: center; font-weight: 900;">@q.Id</td>
+                            <td style="font-weight: 800; font-size: 12px;">
+                                <span style="display:block; color:var(--pink);">@q.SubjectCode</span>
+                                <span style="font-size:10px; color:#555;">@q.SubjectName</span>
+                            </td>
+                            <td>
+                                <div class="question-content">@q.Content</div>
+                                
+                                <!-- Show Options if Multiple Choice -->
+                                @if (q.QuestionType == "MultipleChoice" && optionsList.Any())
+                                {
+                                    <ul class="options-list">
+                                        @for (int i = 0; i < optionsList.Count; i++)
+                                        {
+                                            var optionLetter = ((char)('A' + i)).ToString();
+                                            var isCorrect = q.CorrectAnswer.Equals(optionLetter, StringComparison.OrdinalIgnoreCase);
+                                            <li class="@(isCorrect ? "correct" : "")">
+                                                <strong>@optionLetter.</strong> @optionsList[i]
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else if (q.QuestionType == "TrueFalse")
+                                {
+                                    <span style="font-size:12px; margin-left:10px;">
+                                        Đáp án đúng: 
+                                        <strong class="brutal-badge @(q.CorrectAnswer == "True" ? "badge-easy" : "badge-hard")">
+                                            @(q.CorrectAnswer == "True" ? "ĐÚNG" : "SAI")
+                                        </strong>
+                                    </span>
+                                }
+
+                                <div class="question-meta">
+                                    <span class="brutal-badge @(q.Difficulty == "Easy" ? "badge-easy" : (q.Difficulty == "Medium" ? "badge-medium" : "badge-hard"))">
+                                        @q.Difficulty
+                                    </span>
+                                    <span class="brutal-badge">
+                                        @(q.QuestionType == "MultipleChoice" ? "Trắc nghiệm" : "Đúng/Sai")
+                                    </span>
+                                    @if (q.IsAIGenerated)
+                                    {
+                                        <span class="brutal-badge badge-ai"><i class="fa-solid fa-robot"></i> AI Generated</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(q.Tags))
+                                    {
+                                        foreach (var tag in q.Tags.Split(','))
+                                        {
+                                            <span class="brutal-badge" style="background:#e9ecef; border-color:#aaa;">#@tag.Trim()</span>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                            <td style="text-align: center; vertical-align: middle;">
+                                <div style="display: flex; gap: 8px; justify-content: center;">
+                                    <button class="btn-brutal btn-blue" style="padding: 5px 10px; font-size:12px;" 
+                                            onclick="openEditModal(@q.Id, @q.SubjectId, '@HttpUtility.JavaScriptStringEncode(q.Content)', '@q.QuestionType', '@HttpUtility.JavaScriptStringEncode(q.OptionsJson ?? "[]")', '@q.CorrectAnswer', '@q.Difficulty', '@HttpUtility.JavaScriptStringEncode(q.Tags ?? "")')">
+                                        <i class="fa-solid fa-pen"></i> Sửa
+                                    </button>
+                                    <button type="button" class="btn-brutal btn-pink" style="padding: 5px 10px; font-size:12px;" onclick="confirmDeleteQuestion(@q.Id)">
+                                        <i class="fa-solid fa-trash"></i> Xóa
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination-container">
+            @if (Model.CurrentPage > 1)
+            {
+                <a href="?SubjectId=@Model.SubjectId&Difficulty=@Model.Difficulty&Type=@Model.Type&Search=@Model.Search&CurrentPage=@(Model.CurrentPage - 1)" class="btn-brutal">&laquo; Trước</a>
+            }
+            
+            <span class="page-num active">@Model.CurrentPage / @Model.TotalPages</span>
+            
+            @if (Model.CurrentPage < Model.TotalPages)
+            {
+                <a href="?SubjectId=@Model.SubjectId&Difficulty=@Model.Difficulty&Type=@Model.Type&Search=@Model.Search&CurrentPage=@(Model.CurrentPage + 1)" class="btn-brutal">Sau &raquo;</a>
+            }
+        </div>
+    }
+
+</div>
+
+<!-- ADD QUESTION MODAL -->
+<div id="addModal" class="brutal-modal">
+    <div class="brutal-modal-content">
+        <div class="modal-header" style="position: relative; display: flex; justify-content: space-between; align-items: center; padding-right: 15px;">
+            <span>Thêm câu hỏi thủ công</span>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button type="button" class="btn-brutal btn-pink" id="btnSuggestAI" style="padding: 6px 12px; font-size: 11px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; width: auto; box-shadow: 2px 2px 0px 0px var(--black); transform: none;" onclick="suggestSingleQuestionByAI()"><i class="fa-solid fa-robot"></i> AI Tự Điền</button>
+            </div>
+            <button type="button" class="modal-close" style="position: static; font-size: 28px; background: none; border: none; cursor: pointer;" onclick="closeAddModal()">&times;</button>
+        </div>
+        <form method="post" asp-page-handler="Add">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Môn học</label>
+                    <select asp-for="NewQuestion.SubjectId" class="brutal-select" required>
+                        <option value="">-- Chọn môn học --</option>
+                        @foreach (var sub in Model.Subjects)
+                        {
+                            <option value="@sub.Id">[@sub.Code] @sub.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Nội dung câu hỏi</label>
+                    <textarea asp-for="NewQuestion.Content" class="brutal-input" rows="3" placeholder="Nhập câu hỏi..." required></textarea>
+                </div>
+
+                <div class="option-input-grid">
+                    <div class="form-group">
+                        <label>Loại câu hỏi</label>
+                        <select asp-for="NewQuestion.QuestionType" id="addType" class="brutal-select" onchange="toggleAddOptions()" required>
+                            <option value="MultipleChoice">Trắc nghiệm (4 tùy chọn)</option>
+                            <option value="TrueFalse">Đúng / Sai</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Độ khó</label>
+                        <select asp-for="NewQuestion.Difficulty" class="brutal-select" required>
+                            <option value="Easy">Dễ (Easy)</option>
+                            <option value="Medium">Trung bình (Medium)</option>
+                            <option value="Hard">Khó (Hard)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Multiple Choice Options Group -->
+                <div id="addMcOptions" class="brutal-card" style="margin-top: 10px; box-shadow: none;">
+                    <h4 style="margin-bottom:10px; font-weight:800; font-size:12px; text-transform:uppercase;">Tùy chọn câu trả lời</h4>
+                    <div class="option-input-grid">
+                        <div class="form-group">
+                            <label>Tùy chọn A</label>
+                            <input type="text" id="addOptA" class="brutal-input add-mc-opt" placeholder="Đáp án A" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Tùy chọn B</label>
+                            <input type="text" id="addOptB" class="brutal-input add-mc-opt" placeholder="Đáp án B" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Tùy chọn C</label>
+                            <input type="text" id="addOptC" class="brutal-input add-mc-opt" placeholder="Đáp án C" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Tùy chọn D</label>
+                            <input type="text" id="addOptD" class="brutal-input add-mc-opt" placeholder="Đáp án D" required />
+                        </div>
+                    </div>
+                    <input type="hidden" asp-for="NewQuestion.OptionsJson" id="addOptionsJson" />
+                </div>
+
+                <div class="form-group">
+                    <label>Đáp án đúng</label>
+                    <div id="addCorrectMc" style="display: flex; gap: 20px;">
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="addCorrectAnsRadio" value="A" checked /> A</label>
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="addCorrectAnsRadio" value="B" /> B</label>
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="addCorrectAnsRadio" value="C" /> C</label>
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="addCorrectAnsRadio" value="D" /> D</label>
+                    </div>
+                    <div id="addCorrectTf" style="display: none; gap: 20px;">
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="addCorrectAnsRadioTf" value="True" checked /> ĐÚNG (True)</label>
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="addCorrectAnsRadioTf" value="False" /> SAI (False)</label>
+                    </div>
+                    <input type="hidden" asp-for="NewQuestion.CorrectAnswer" id="addCorrectAnswer" value="A" />
+                </div>
+
+                <div class="form-group">
+                    <label>Thẻ phân loại (ngăn cách bởi dấu phẩy)</label>
+                    <input type="text" asp-for="NewQuestion.Tags" class="brutal-input" placeholder="OOP, Syntax, Logic..." />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-brutal" onclick="closeAddModal()">Hủy</button>
+                <button type="submit" class="btn-brutal btn-green" onclick="prepareAddSubmit()"><i class="fa-solid fa-save"></i> Lưu lại</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- TRASH BIN MODAL -->
+<div id="trashModal" class="brutal-modal">
+    <div class="brutal-modal-content" style="max-width: 900px; width: 90%; border: 3px solid var(--black); box-shadow: 5px 5px 0px 0px var(--black);">
+        <div class="modal-header">
+            <span><i class="fa-solid fa-trash-can"></i> Thùng rác câu hỏi</span>
+            <button type="button" class="modal-close" onclick="closeTrashModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+            <div id="trashLoading" style="text-align: center; padding: 20px; font-weight: bold;">
+                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải câu hỏi đã xóa...
+            </div>
+            <div id="trashEmpty" style="display: none; text-align: center; padding: 40px; font-weight: bold; font-size: 16px;">
+                <i class="fa-solid fa-trash-arrow-up" style="font-size: 40px; margin-bottom: 10px; display: block; color: var(--dark-pink);"></i>
+                Thùng rác trống!
+            </div>
+            <div id="trashContent" style="display: none;">
+                <table class="brutal-table" style="font-size: 13px; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%; text-align: center;">ID</th>
+                            <th style="width: 22%;">Môn học</th>
+                            <th style="width: 48%;">Nội dung câu hỏi</th>
+                            <th style="width: 22%; text-align: center;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trashTableBody">
+                    </tbody>
+                </table>
+                <div id="trashPagination" class="pagination-container" style="margin-top: 15px; justify-content: center; gap: 5px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CUSTOM CONFIRMATION MODAL -->
+<div id="customConfirmModal" class="brutal-modal" style="z-index: 10000; display: none;">
+    <div class="brutal-modal-content" style="max-width: 450px; text-align: center; padding: 25px; border: 3px solid var(--black); box-shadow: 5px 5px 0px 0px var(--black);">
+        <div class="modal-header" style="border-bottom: none; padding-bottom: 0; justify-content: center;">
+            <span style="font-size: 20px; font-weight: 900; text-transform: uppercase;"><i class="fa-solid fa-circle-question"></i> Xác nhận</span>
+        </div>
+        <div class="modal-body" style="padding-top: 15px; padding-bottom: 15px;">
+            <p id="customConfirmMessage" style="font-weight: 700; font-size: 14px; margin-bottom: 0; line-height: 1.5;"></p>
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center; padding-top: 10px;">
+            <button type="button" class="btn-brutal" id="btnCustomConfirmCancel" style="padding: 6px 16px;">Hủy</button>
+            <button type="button" class="btn-brutal btn-pink" id="btnCustomConfirmOK" style="padding: 6px 16px; box-shadow: 3px 3px 0px 0px var(--black);">Đồng ý</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden forms for POST requests -->
+<form id="deleteForm" method="post" asp-page-handler="Delete">
+    <input type="hidden" name="id" id="deleteQuestionIdVal" />
+</form>
+
+<form id="restoreForm" method="post" asp-page-handler="Restore">
+    <input type="hidden" name="id" id="restoreQuestionIdVal" />
+</form>
+
+<form id="hardDeleteForm" method="post" asp-page-handler="HardDelete">
+    <input type="hidden" name="id" id="hardDeleteQuestionIdVal" />
+</form>
+
+<!-- EDIT QUESTION MODAL -->
+<div id="editModal" class="brutal-modal">
+    <div class="brutal-modal-content">
+        <div class="modal-header">
+            <span>Sửa câu hỏi</span>
+            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <form id="editQuestionForm" method="post" asp-page-handler="Edit">
+            <input type="hidden" asp-for="EditQuestionId" id="editQuestionId" />
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Môn học</label>
+                    <select asp-for="EditQuestion.SubjectId" id="editSubjectId" class="brutal-select" required>
+                        <option value="">-- Chọn môn học --</option>
+                        @foreach (var sub in Model.Subjects)
+                        {
+                            <option value="@sub.Id">[@sub.Code] @sub.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Nội dung câu hỏi</label>
+                    <textarea asp-for="EditQuestion.Content" id="editContent" class="brutal-input" rows="3" required></textarea>
+                </div>
+
+                <div class="option-input-grid">
+                    <div class="form-group">
+                        <label>Loại câu hỏi</label>
+                        <select asp-for="EditQuestion.QuestionType" id="editType" class="brutal-select" onchange="toggleEditOptions()" required>
+                            <option value="MultipleChoice">Trắc nghiệm (4 tùy chọn)</option>
+                            <option value="TrueFalse">Đúng / Sai</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Độ khó</label>
+                        <select asp-for="EditQuestion.Difficulty" id="editDifficulty" class="brutal-select" required>
+                            <option value="Easy">Dễ (Easy)</option>
+                            <option value="Medium">Trung bình (Medium)</option>
+                            <option value="Hard">Khó (Hard)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Multiple Choice Options Group -->
+                <div id="editMcOptions" class="brutal-card" style="margin-top: 10px; box-shadow: none;">
+                    <h4 style="margin-bottom:10px; font-weight:800; font-size:12px; text-transform:uppercase;">Tùy chọn câu trả lời</h4>
+                    <div class="option-input-grid">
+                        <div class="form-group">
+                            <label>Tùy chọn A</label>
+                            <input type="text" id="editOptA" class="brutal-input edit-mc-opt" placeholder="Đáp án A" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Tùy chọn B</label>
+                            <input type="text" id="editOptB" class="brutal-input edit-mc-opt" placeholder="Đáp án B" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Tùy chọn C</label>
+                            <input type="text" id="editOptC" class="brutal-input edit-mc-opt" placeholder="Đáp án C" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Tùy chọn D</label>
+                            <input type="text" id="editOptD" class="brutal-input edit-mc-opt" placeholder="Đáp án D" required />
+                        </div>
+                    </div>
+                    <input type="hidden" asp-for="EditQuestion.OptionsJson" id="editOptionsJson" />
+                </div>
+
+                <div class="form-group">
+                    <label>Đáp án đúng</label>
+                    <div id="editCorrectMc" style="display: flex; gap: 20px;">
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="editCorrectAnsRadio" value="A" /> A</label>
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="editCorrectAnsRadio" value="B" /> B</label>
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="editCorrectAnsRadio" value="C" /> C</label>
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="editCorrectAnsRadio" value="D" /> D</label>
+                    </div>
+                    <div id="editCorrectTf" style="display: none; gap: 20px;">
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="editCorrectAnsRadioTf" value="True" /> ĐÚNG (True)</label>
+                        <label style="display:flex; align-items:center; gap:5px; font-weight:700;"><input type="radio" name="editCorrectAnsRadioTf" value="False" /> SAI (False)</label>
+                    </div>
+                    <input type="hidden" asp-for="EditQuestion.CorrectAnswer" id="editCorrectAnswer" />
+                </div>
+
+                <div class="form-group">
+                    <label>Thẻ phân loại (ngăn cách bởi dấu phẩy)</label>
+                    <input type="text" asp-for="EditQuestion.Tags" id="editTags" class="brutal-input" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-brutal" onclick="closeEditModal()">Hủy</button>
+                <button type="button" class="btn-brutal btn-green" onclick="confirmUpdateQuestion()"><i class="fa-solid fa-save"></i> Cập nhật</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Modal Add handlers
+        function openAddModal() {
+            document.getElementById('addModal').style.display = 'flex';
+            toggleAddOptions();
+        }
+        function closeAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        // Toggle inputs in Add modal based on type
+        function toggleAddOptions() {
+            const type = document.getElementById('addType').value;
+            const mcOptions = document.getElementById('addMcOptions');
+            const mcCorrect = document.getElementById('addCorrectMc');
+            const tfCorrect = document.getElementById('addCorrectTf');
+            const inputs = document.querySelectorAll('.add-mc-opt');
+
+            if (type === 'MultipleChoice') {
+                mcOptions.style.display = 'block';
+                mcCorrect.style.display = 'flex';
+                tfCorrect.style.display = 'none';
+                inputs.forEach(i => i.setAttribute('required', 'required'));
+            } else {
+                mcOptions.style.display = 'none';
+                mcCorrect.style.display = 'none';
+                tfCorrect.style.display = 'flex';
+                inputs.forEach(i => i.removeAttribute('required'));
+            }
+        }
+
+        // Prepare JSON & Answer before submit Add Form
+        function prepareAddSubmit() {
+            const type = document.getElementById('addType').value;
+            if (type === 'MultipleChoice') {
+                const optA = document.getElementById('addOptA').value;
+                const optB = document.getElementById('addOptB').value;
+                const optC = document.getElementById('addOptC').value;
+                const optD = document.getElementById('addOptD').value;
+
+                const options = [optA, optB, optC, optD];
+                document.getElementById('addOptionsJson').value = JSON.stringify(options);
+
+                const correctRadio = document.querySelector('input[name="addCorrectAnsRadio"]:checked');
+                document.getElementById('addCorrectAnswer').value = correctRadio ? correctRadio.value : 'A';
+            } else {
+                const tfRadio = document.querySelector('input[name="addCorrectAnsRadioTf"]:checked');
+                document.getElementById('addCorrectAnswer').value = tfRadio ? tfRadio.value : 'True';
+            }
+        }
+
+        // Modal Edit handlers
+        function openEditModal(id, subjectId, content, type, optionsJson, correctAnswer, difficulty, tags) {
+            document.getElementById('editQuestionId').value = id;
+            document.getElementById('editSubjectId').value = subjectId;
+            document.getElementById('editContent').value = content;
+            document.getElementById('editType').value = type;
+            document.getElementById('editDifficulty').value = difficulty;
+            document.getElementById('editTags').value = tags;
+
+            toggleEditOptions();
+
+            if (type === 'MultipleChoice') {
+                try {
+                    const opts = JSON.parse(optionsJson);
+                    if (opts.length >= 4) {
+                        document.getElementById('editOptA').value = opts[0];
+                        document.getElementById('editOptB').value = opts[1];
+                        document.getElementById('editOptC').value = opts[2];
+                        document.getElementById('editOptD').value = opts[3];
+                    }
+                } catch (e) { }
+
+                // Check correct radio button
+                const mcRadios = document.querySelectorAll('input[name="editCorrectAnsRadio"]');
+                mcRadios.forEach(r => {
+                    r.checked = (r.value === correctAnswer);
+                });
+            } else {
+                // Check true/false radio
+                const tfRadios = document.querySelectorAll('input[name="editCorrectAnsRadioTf"]');
+                tfRadios.forEach(r => {
+                    r.checked = (r.value === correctAnswer);
+                });
+            }
+
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function toggleEditOptions() {
+            const type = document.getElementById('editType').value;
+            const mcOptions = document.getElementById('editMcOptions');
+            const mcCorrect = document.getElementById('editCorrectMc');
+            const tfCorrect = document.getElementById('editCorrectTf');
+            const inputs = document.querySelectorAll('.edit-mc-opt');
+
+            if (type === 'MultipleChoice') {
+                mcOptions.style.display = 'block';
+                mcCorrect.style.display = 'flex';
+                tfCorrect.style.display = 'none';
+                inputs.forEach(i => i.setAttribute('required', 'required'));
+            } else {
+                mcOptions.style.display = 'none';
+                mcCorrect.style.display = 'none';
+                tfCorrect.style.display = 'flex';
+                inputs.forEach(i => i.removeAttribute('required'));
+            }
+        }
+
+        function prepareEditSubmit() {
+            const type = document.getElementById('editType').value;
+            if (type === 'MultipleChoice') {
+                const optA = document.getElementById('editOptA').value;
+                const optB = document.getElementById('editOptB').value;
+                const optC = document.getElementById('editOptC').value;
+                const optD = document.getElementById('editOptD').value;
+
+                const options = [optA, optB, optC, optD];
+                document.getElementById('editOptionsJson').value = JSON.stringify(options);
+
+                const correctRadio = document.querySelector('input[name="editCorrectAnsRadio"]:checked');
+                document.getElementById('editCorrectAnswer').value = correctRadio ? correctRadio.value : 'A';
+            } else {
+                const tfRadio = document.querySelector('input[name="editCorrectAnsRadioTf"]:checked');
+                document.getElementById('editCorrectAnswer').value = tfRadio ? tfRadio.value : 'True';
+            }
+        }
+
+        // Close on window click
+        window.onclick = function(event) {
+            const addModal = document.getElementById('addModal');
+            const editModal = document.getElementById('editModal');
+            const trashModal = document.getElementById('trashModal');
+            const confirmModal = document.getElementById('customConfirmModal');
+            if (event.target == addModal) {
+                closeAddModal();
+            }
+            if (event.target == editModal) {
+                closeEditModal();
+            }
+            if (event.target == trashModal) {
+                closeTrashModal();
+            }
+            if (event.target == confirmModal) {
+                confirmModal.style.display = 'none';
+            }
+        }
+
+        async function suggestSingleQuestionByAI() {
+            // Get selected subject
+            const subjectSelect = document.querySelector('select[name="NewQuestion.SubjectId"]');
+            const subjectId = subjectSelect.value;
+            if (!subjectId) {
+                alert("Vui lòng chọn môn học trước khi bấm AI Tự Điền!");
+                return;
+            }
+
+            const topic = prompt("Nhập từ khóa hoặc chủ đề muốn AI tạo câu hỏi:");
+            if (topic === null) return; // User cancelled
+            if (topic.trim() === "") {
+                alert("Vui lòng nhập chủ đề câu hỏi!");
+                return;
+            }
+
+            const btn = document.getElementById('btnSuggestAI');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI đang sinh...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`?handler=GenerateSingleQuestion&subjectId=${subjectId}&topic=${encodeURIComponent(topic)}`);
+                const result = await response.json();
+                if (result.success) {
+                    const q = result.question;
+                    
+                    // Fill content
+                    document.querySelector('textarea[name="NewQuestion.Content"]').value = q.content;
+                    
+                    // Set type
+                    const typeSelect = document.getElementById('addType');
+                    typeSelect.value = q.questionType;
+                    toggleAddOptions(); // Refresh the fields display
+
+                    // Set difficulty
+                    const diffSelect = document.querySelector('select[name="NewQuestion.Difficulty"]');
+                    diffSelect.value = q.difficulty;
+
+                    // Set tags
+                    const tagsInput = document.querySelector('input[name="NewQuestion.Tags"]');
+                    if (tagsInput) {
+                        tagsInput.value = q.tags;
+                    }
+
+                    if (q.questionType === 'MultipleChoice' && q.options && q.options.length >= 4) {
+                        document.getElementById('addOptA').value = q.options[0];
+                        document.getElementById('addOptB').value = q.options[1];
+                        document.getElementById('addOptC').value = q.options[2];
+                        document.getElementById('addOptD').value = q.options[3];
+
+                        // Set correct radio
+                        const radio = document.querySelector(`input[name="addCorrectAnsRadio"][value="${q.correctAnswer}"]`);
+                        if (radio) radio.checked = true;
+                    } else if (q.questionType === 'TrueFalse') {
+                        const radio = document.querySelector(`input[name="addCorrectAnsRadioTf"][value="${q.correctAnswer}"]`);
+                        if (radio) radio.checked = true;
+                    }
+                    
+                    // Trigger OptionsJson update
+                    prepareAddSubmit();
+                } else {
+                    alert("Lỗi từ AI: " + result.message);
+                }
+            } catch (err) {
+                alert("Lỗi khi kết nối với AI: " + err.message);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
+
+        // Custom Confirm Dialog
+        function showCustomConfirm(message, callback) {
+            document.getElementById('customConfirmMessage').innerText = message;
+            const modal = document.getElementById('customConfirmModal');
+            modal.style.display = 'flex';
+            
+            const btnOK = document.getElementById('btnCustomConfirmOK');
+            const btnCancel = document.getElementById('btnCustomConfirmCancel');
+            
+            btnCancel.onclick = function() {
+                modal.style.display = 'none';
+            };
+            btnOK.onclick = function() {
+                modal.style.display = 'none';
+                callback();
+            };
+        }
+
+        // Confirm Delete
+        function confirmDeleteQuestion(id) {
+            showCustomConfirm("Bạn có chắc chắn muốn xóa câu hỏi này? Câu hỏi sẽ được chuyển vào Thùng rác.", function() {
+                document.getElementById('deleteQuestionIdVal').value = id;
+                document.getElementById('deleteForm').submit();
+            });
+        }
+
+        // Confirm Update
+        function confirmUpdateQuestion() {
+            const form = document.getElementById('editQuestionForm');
+            // Run prepareEditSubmit to collect radio values & JSON
+            prepareEditSubmit();
+
+            // Check standard HTML5 validation
+            if (!form.reportValidity()) {
+                return; // Let browser show errors like 'required'
+            }
+
+            showCustomConfirm("Bạn có chắc chắn muốn cập nhật các thay đổi của câu hỏi này?", function() {
+                form.submit();
+            });
+        }
+
+        // Trash Bin JS logic
+        let currentTrashPage = 1;
+
+        function openTrashModal() {
+            document.getElementById('trashModal').style.display = 'flex';
+            loadTrashQuestions(1);
+        }
+
+        function closeTrashModal() {
+            document.getElementById('trashModal').style.display = 'none';
+        }
+
+        async function loadTrashQuestions(page) {
+            currentTrashPage = page;
+            const loading = document.getElementById('trashLoading');
+            const empty = document.getElementById('trashEmpty');
+            const content = document.getElementById('trashContent');
+            const tbody = document.getElementById('trashTableBody');
+            const pag = document.getElementById('trashPagination');
+
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            content.style.display = 'none';
+
+            try {
+                const response = await fetch(`?handler=DeletedQuestions&page=${page}`);
+                const data = await response.json();
+                if (data.success) {
+                    tbody.innerHTML = '';
+                    if (data.items.length === 0) {
+                        loading.style.display = 'none';
+                        empty.style.display = 'block';
+                        return;
+                    }
+
+                    data.items.forEach(q => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="text-align: center; font-weight: 800;">${q.id}</td>
+                            <td><span class="badge badge-purple">[${q.subjectCode}] ${q.subjectName}</span></td>
+                            <td style="font-weight: 700; white-space: normal; word-break: break-all;">${escapeHtml(q.content)}</td>
+                            <td style="text-align: center;">
+                                <div style="display: flex; gap: 8px; justify-content: center;">
+                                    <button type="button" class="btn-brutal btn-green" style="padding: 4px 8px; font-size:11px;" onclick="restoreQuestion(${q.id})"><i class="fa-solid fa-rotate-left"></i> Khôi phục</button>
+                                    <button type="button" class="btn-brutal btn-pink" style="padding: 4px 8px; font-size:11px;" onclick="confirmHardDelete(${q.id})"><i class="fa-solid fa-circle-xmark"></i> Vĩnh viễn</button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Pagination
+                    pag.innerHTML = '';
+                    if (data.totalPages > 1) {
+                        if (data.currentPage > 1) {
+                            pag.innerHTML += `<button type="button" class="btn-brutal" style="padding: 2px 8px;" onclick="loadTrashQuestions(${data.currentPage - 1})">&laquo;</button>`;
+                        }
+                        pag.innerHTML += `<span class="page-num active" style="padding: 2px 8px; margin: 0 5px;">${data.currentPage} / ${data.totalPages}</span>`;
+                        if (data.currentPage < data.totalPages) {
+                            pag.innerHTML += `<button type="button" class="btn-brutal" style="padding: 2px 8px;" onclick="loadTrashQuestions(${data.currentPage + 1})">&raquo;</button>`;
+                        }
+                    }
+
+                    loading.style.display = 'none';
+                    content.style.display = 'block';
+                } else {
+                    alert("Lỗi tải thùng rác: " + data.message);
+                }
+            } catch (err) {
+                alert("Lỗi kết nối thùng rác: " + err.message);
+            }
+        }
+
+        function restoreQuestion(id) {
+            showCustomConfirm("Bạn có muốn khôi phục câu hỏi này về Ngân hàng câu hỏi không?", function() {
+                document.getElementById('restoreQuestionIdVal').value = id;
+                document.getElementById('restoreForm').submit();
+            });
+        }
+
+        function confirmHardDelete(id) {
+            showCustomConfirm("CẢNH BÁO: Bạn có chắc chắn muốn xóa VĨNH VIỄN câu hỏi này? Hành động này KHÔNG THỂ khôi phục!", function() {
+                document.getElementById('hardDeleteQuestionIdVal').value = id;
+                document.getElementById('hardDeleteForm').submit();
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+}
