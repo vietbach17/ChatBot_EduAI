@@ -9,9 +9,13 @@
     bool isPro     = info.CurrentPlan == "Pro"     && info.IsActive;
     bool isUltra   = info.CurrentPlan == "Ultra"   && info.IsActive;
 
-    // Quota progress bar
-    double pct = info.MonthlyLimit == int.MaxValue ? 0 : (info.MonthlyLimit == 0 ? 100 : Math.Min(100.0, info.UsedCount * 100.0 / info.MonthlyLimit));
-    string barColor = pct >= 90 ? "var(--pink)" : pct >= 60 ? "#f59e0b" : "var(--green)";
+    // Quota progress bar (5h)
+    double pctShort = info.ShortTermLimit == int.MaxValue ? 0 : (info.ShortTermLimit == 0 ? 100 : Math.Min(100.0, info.ShortTermUsedCount * 100.0 / info.ShortTermLimit));
+    string barColorShort = pctShort >= 90 ? "var(--pink)" : pctShort >= 60 ? "#f59e0b" : "var(--green)";
+
+    // Quota progress bar (Monthly)
+    double pctMonth = info.MonthlyLimit == int.MaxValue ? 0 : (info.MonthlyLimit == 0 ? 100 : Math.Min(100.0, info.UsedCount * 100.0 / info.MonthlyLimit));
+    string barColorMonth = pctMonth >= 90 ? "var(--pink)" : pctMonth >= 60 ? "#f59e0b" : "var(--green)";
 
     var vnZone = TimeZoneInfo.FindSystemTimeZoneById(
         System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
@@ -108,24 +112,50 @@
                     </div>
                 }
             </div>
-            <div style="flex:2; min-width:220px;">
-                <div style="font-size:13px; font-weight:700; color:#555; margin-bottom:6px;">
-                    LƯỢT HỎI TRONG CHU KỲ 5 GIỜ
-                    <span style="float:right; color:var(--black);">
-                        @info.UsedCount / @(info.MonthlyLimit == int.MaxValue ? "∞" : info.MonthlyLimit.ToString())
-                    </span>
+            <div style="flex:2; min-width:220px; display:flex; flex-direction:column; gap:16px;">
+                
+                <!-- Quota 5 Giờ -->
+                <div>
+                    <div style="font-size:13px; font-weight:700; color:#555; margin-bottom:6px;">
+                        <i class="fa-solid fa-clock-rotate-left"></i> CHU KỲ 5 GIỜ
+                        <span style="float:right; color:var(--black);">
+                            @info.ShortTermUsedCount / @(info.ShortTermLimit == int.MaxValue ? "∞" : info.ShortTermLimit.ToString())
+                        </span>
+                    </div>
+                    <div class="quota-bar-bg">
+                        <div class="quota-bar-fill" style="width:@(pctShort.ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%; background:@barColorShort;"></div>
+                    </div>
+                    <div style="font-size:11px; font-weight:700; margin-top:4px; color:#555;">
+                        @if (info.ShortTermLimit == int.MaxValue)
+                        { <span style="color:var(--green);">Không giới hạn <i class="fa-solid fa-infinity"></i></span> }
+                        else if (info.ShortTermRemaining == 0)
+                        { <span style="color:var(--pink);">Đã hết lượt — reset vào @FmtDateTime(info.ResetDate)</span> }
+                        else
+                        { <span>Còn <strong>@info.ShortTermRemaining</strong> lượt — @(info.ResetDate != null ? $"reset vào {FmtDateTime(info.ResetDate)}" : "chu kỳ bắt đầu khi hỏi")</span> }
+                    </div>
                 </div>
-                <div class="quota-bar-bg">
-                    <div class="quota-bar-fill" style="width:@(pct.ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%; background:@barColor;"></div>
+
+                <!-- Quota Tháng -->
+                <div>
+                    <div style="font-size:13px; font-weight:700; color:#555; margin-bottom:6px;">
+                        <i class="fa-solid fa-calendar-check"></i> CHU KỲ THÁNG
+                        <span style="float:right; color:var(--black);">
+                            @info.UsedCount / @(info.MonthlyLimit == int.MaxValue ? "∞" : info.MonthlyLimit.ToString())
+                        </span>
+                    </div>
+                    <div class="quota-bar-bg">
+                        <div class="quota-bar-fill" style="width:@(pctMonth.ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%; background:@barColorMonth;"></div>
+                    </div>
+                    <div style="font-size:11px; font-weight:700; margin-top:4px; color:#555;">
+                        @if (info.MonthlyLimit == int.MaxValue)
+                        { <span style="color:var(--green);">Không giới hạn <i class="fa-solid fa-infinity"></i></span> }
+                        else if (info.Remaining == 0)
+                        { <span style="color:var(--pink);">Đã hết lượt — reset vào @FmtDateTime(info.MonthlyResetDate)</span> }
+                        else
+                        { <span>Còn <strong>@info.Remaining</strong> lượt — @(info.MonthlyResetDate != null ? $"reset vào {FmtDateTime(info.MonthlyResetDate)}" : "chu kỳ bắt đầu khi hỏi")</span> }
+                    </div>
                 </div>
-                <div style="font-size:12px; font-weight:700; margin-top:6px; color:#555;">
-                    @if (info.MonthlyLimit == int.MaxValue)
-                    { <span style="color:var(--green);">Không giới hạn số câu hỏi <i class="fa-solid fa-infinity"></i></span> }
-                    else if (info.Remaining == 0)
-                    { <span style="color:var(--pink);">Đã hết lượt — reset vào @FmtDateTime(info.ResetDate)</span> }
-                    else
-                    { <span>Còn <strong>@info.Remaining</strong> lượt hỏi — @(info.ResetDate != null ? $"reset vào {FmtDateTime(info.ResetDate)}" : "chu kỳ mới bắt đầu khi hỏi câu tiếp theo")</span> }
-                </div>
+
             </div>
         </div>
     </div>
@@ -203,7 +233,7 @@
     <!-- ── GHI CHÚ ── -->
     <div style="background:var(--white); border:2px dashed var(--black); padding:16px 20px; font-size:13px; font-weight:700; color:#555;">
         <i class="fa-solid fa-triangle-exclamation" style="color:var(--yellow);"></i>
-        <strong>Lưu ý về Quota:</strong> Lượt hỏi của gói cước được tự động tính theo chu kỳ 5 giờ bắt đầu từ khi bạn hỏi câu hỏi đầu tiên. Sau 5 giờ, lượt hỏi của bạn sẽ được thiết lập lại từ đầu.
+        <strong>Lưu ý về Quota:</strong> Hệ thống đếm giới hạn theo 2 chu kỳ: Chu kỳ ngắn hạn 5 Giờ (để chống spam server) và Chu kỳ dài hạn 1 Tháng. Lượt hỏi sẽ được tự động thiết lập lại khi chu kỳ tương ứng kết thúc.
     </div>
 
 </div>

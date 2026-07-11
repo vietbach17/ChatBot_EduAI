@@ -33,6 +33,10 @@ namespace DataAccessLayer.Entities
         public int MonthlyQuestionCount { get; set; } = 0; // số câu đã hỏi trong tháng
 
         public DateTime? QuotaResetDate { get; set; } // ngày reset quota (đầu tháng tiếp theo)
+
+        public int ShortTermQuestionCount { get; set; } = 0; // số câu đã hỏi trong chu kỳ 5 giờ
+
+        public DateTime? ShortTermResetDate { get; set; } // thời điểm reset chu kỳ 5 giờ
         // ========================
         
         // ===== FORGOT PASSWORD =====
