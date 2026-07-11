@@ -32,6 +32,7 @@ builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<IDocumentActivityLogRepository, DocumentActivityLogRepository>();
 builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
+builder.Services.AddScoped<IAddonPackageRepository, AddonPackageRepository>();
 
 // Services
 builder.Services.AddHttpClient();

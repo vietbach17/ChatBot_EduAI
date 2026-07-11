@@ -78,18 +78,86 @@
 
             <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; margin-bottom: 24px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
-                    <span>Gói đăng ký:</span>
-                    <span style="font-size: 18px; color: var(--blue);">@Model.Plan.Name.ToUpper()</span>
+                    <span style="color: #555;">Khách hàng:</span>
+                    <span style="font-size: 16px; color: var(--black);">@User.Identity?.Name</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
-                    <span>Thời hạn:</span>
-                    <span>@Model.Plan.DurationDays ngày</span>
+                @if (Model.Plan != null)
+                {
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                        <span style="color: #555;">Gói đăng ký:</span>
+                        <span style="font-size: 16px; color: var(--blue);">@Model.Plan.Name.ToUpper()</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                        <span style="color: #555;">Thời hạn:</span>
+                        <span style="font-size: 16px; color: var(--black);">@Model.Plan.DurationDays ngày</span>
+                    </div>
+                    <hr style="border-top: 2px dashed #cbd5e1; margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px;">
+                        <span>Tổng tiền:</span>
+                        <span style="color: var(--pink);">@Model.Plan.Price.ToString("N0") đ</span>
+                    </div>
+                }
+                else if (Model.Addon != null)
+                {
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                        <span style="color: #555;">Gói mua thêm:</span>
+                        <span style="font-size: 16px; color: var(--blue);">@Model.Addon.Name.ToUpper()</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                        <span style="color: #555;">Số lượng:</span>
+                        <span style="font-size: 16px; color: var(--black);">+@Model.Addon.QuotaAmount câu hỏi</span>
+                    </div>
+                    <hr style="border-top: 2px dashed #cbd5e1; margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px;">
+                        <span>Tổng tiền:</span>
+                        <span style="color: var(--pink);">@Model.Addon.Price.ToString("N0") đ</span>
+                    </div>
+                }
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <div style="font-weight: 800; font-size: 14px; margin-bottom: 10px; color: var(--black); text-transform: uppercase;">
+                    <i class="fa-solid fa-gift" style="color: var(--pink);"></i> Quyền lợi nhận được:
                 </div>
-                <hr style="border-top: 2px dashed #cbd5e1; margin: 15px 0;">
-                <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px;">
-                    <span>Tổng tiền:</span>
-                    <span style="color: var(--pink);">@Model.Plan.Price.ToString("N0") đ</span>
+                <div style="background: #fdf2f8; border-left: 4px solid var(--pink); padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;">
+                    @if (Model.Plan != null)
+                    {
+                        @foreach(var feature in Model.Plan.FeatureList)
+                        {
+                            if (feature.Contains("Hỗ trợ tài liệu đính kèm", StringComparison.OrdinalIgnoreCase))
+                                continue;
+
+                            <div style="font-size: 13px; font-weight: 700; color: #555;">
+                                <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> @feature
+                            </div>
+                        }
+                        var realLimit = BussinessLayer.Services.ChatService.GetMonthlyLimit(Model.Plan.Name);
+                        string displayFeature = realLimit == int.MaxValue || realLimit == -1 
+                            ? "Không giới hạn câu hỏi / tháng" 
+                            : $"Tối đa {realLimit:N0} câu hỏi / tháng";
+                        
+                        <div style="font-size: 13px; font-weight: 700; color: #555;">
+                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> @displayFeature
+                        </div>
+                    }
+                    else if (Model.Addon != null)
+                    {
+                        <div style="font-size: 13px; font-weight: 700; color: #555;">
+                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Cộng thêm <b>@Model.Addon.QuotaAmount</b> lượt hỏi dự phòng.
+                        </div>
+                        <div style="font-size: 13px; font-weight: 700; color: #555;">
+                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Lượt hỏi <b>KHÔNG BAO GIỜ</b> hết hạn.
+                        </div>
+                        <div style="font-size: 13px; font-weight: 700; color: #555;">
+                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Không bị ảnh hưởng bởi chu kỳ của gói Hội viên.
+                        </div>
+                    }
                 </div>
+            </div>
+
+            <div style="font-size: 13px; font-weight: 700; color: #64748b; display: flex; flex-direction: column; gap: 8px;">
+                <div><i class="fa-solid fa-shield-halved" style="color: var(--green);"></i> Thanh toán an toàn, bảo mật 100%</div>
+                <div><i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Kích hoạt gói tự động ngay lập tức</div>
             </div>
 
             <div style="margin-top: auto; padding-top: 20px; text-align: center;">
@@ -109,20 +177,36 @@
             </h3>
 
             <form method="post" style="display: flex; flex-direction: column; flex: 1;">
-                <input type="hidden" name="planId" value="@Model.Plan.Id" />
+                @if (Model.Plan != null)
+                {
+                    <input type="hidden" name="planId" value="@Model.Plan.Id" />
+                }
+                else if (Model.Addon != null)
+                {
+                    <input type="hidden" name="addonId" value="@Model.Addon.Id" />
+                }
 
                 <label class="payment-option">
                     <input type="radio" name="paymentMethod" value="VNPay" checked />
+                    <div style="width: 70px; display: flex; justify-content: center; margin: 0 10px;">
+                        <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/6/0oxhzjmxbksr1686814746087.png" alt="VNPay" style="height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'" />
+                    </div>
                     <span style="font-weight: 800;">Cổng VNPay</span>
                 </label>
 
                 <label class="payment-option">
                     <input type="radio" name="paymentMethod" value="PayOS" />
+                    <div style="width: 70px; display: flex; justify-content: center; margin: 0 10px;">
+                        <img src="/images/payos.png" alt="PayOS" style="height: 28px; object-fit: contain;" onerror="this.style.display='none'" />
+                    </div>
                     <span style="font-weight: 800;">Cổng PayOS</span>
                 </label>
 
                 <label class="payment-option">
                     <input type="radio" name="paymentMethod" value="SePay" />
+                    <div style="width: 70px; display: flex; justify-content: center; margin: 0 10px;">
+                        <img src="/images/sepay.png" alt="SePay" style="height: 28px; object-fit: contain;" onerror="this.style.display='none'" />
+                    </div>
                     <span style="font-weight: 800;">Cổng SePay</span>
                 </label>
 

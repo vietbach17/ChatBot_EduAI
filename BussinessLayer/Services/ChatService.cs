@@ -103,6 +103,7 @@ namespace BussinessLayer.Services
                 var remainingAfter = int.MaxValue;
                 var remainingMonthAfter = int.MaxValue;
                 var remainingShortAfter = int.MaxValue;
+                bool isUsingExtraQuota = false;
 
                 if (user != null)
                 {
@@ -130,33 +131,52 @@ namespace BussinessLayer.Services
                     remainingBefore = remainingShortBefore;
                     remainingAfter = remainingShortAfter;
 
+                    bool outOfStandardQuota = false;
+                    string outOfQuotaMessage = "";
+
                     // Kiểm tra Quota Tháng trước
                     if (limitMonth != int.MaxValue && user.MonthlyQuestionCount >= limitMonth)
                     {
-                        return new ChatResponseDto
-                        {
-                            Success = false,
-                            OutOfQuota = true,
-                            Remaining = remainingBefore,
-                            Message = $"Bạn đã dùng hết {limitMonth} câu hỏi trong tháng này. Vui lòng chờ sang tháng sau hoặc nâng cấp gói để tiếp tục."
-                        };
+                        outOfStandardQuota = true;
+                        outOfQuotaMessage = $"Bạn đã dùng hết {limitMonth} câu hỏi trong tháng này. Vui lòng chờ sang tháng sau hoặc nâng cấp gói để tiếp tục.";
                     }
-
-                    // Kiểm tra Quota 5 Giờ
-                    if (limitShort != int.MaxValue && user.ShortTermQuestionCount >= limitShort)
+                    else if (limitShort != int.MaxValue && user.ShortTermQuestionCount >= limitShort)
                     {
+                        outOfStandardQuota = true;
                         var remainingTime = user.ShortTermResetDate.HasValue ? (user.ShortTermResetDate.Value - now) : TimeSpan.Zero;
                         var hours = Math.Max(0, (int)Math.Ceiling(remainingTime.TotalHours));
+                        outOfQuotaMessage = effectivePlan == "Basic"
+                            ? $"Bạn đã đạt giới hạn {limitShort} câu hỏi trong 5 giờ. Vui lòng chờ thêm {hours} giờ để tiếp tục hỏi."
+                            : $"Bạn đã đạt giới hạn {limitShort} câu hỏi trong 5 giờ của gói {effectivePlan}. Vui lòng chờ thêm {hours} giờ để tiếp tục hỏi.";
+                    }
 
-                        return new ChatResponseDto
+                    if (outOfStandardQuota)
+                    {
+                        if (user.UseExtraQuota && user.ExtraQuestionQuota > 0)
                         {
-                            Success = false,
-                            OutOfQuota = true,
-                            Remaining = remainingBefore,
-                            Message = effectivePlan == "Basic"
-                                ? $"Bạn đã đạt giới hạn {limitShort} câu hỏi trong 5 giờ. Vui lòng chờ thêm {hours} giờ để tiếp tục hỏi."
-                                : $"Bạn đã đạt giới hạn {limitShort} câu hỏi trong 5 giờ của gói {effectivePlan}. Vui lòng chờ thêm {hours} giờ để tiếp tục hỏi."
-                        };
+                            isUsingExtraQuota = true;
+                            remainingBefore = user.ExtraQuestionQuota;
+                            remainingAfter = user.ExtraQuestionQuota - 1;
+                        }
+                        else
+                        {
+                            if (user.ExtraQuestionQuota > 0)
+                            {
+                                outOfQuotaMessage += " Bạn vẫn còn lượt hỏi dự phòng, hãy BẬT công tắc 'Sử dụng lượt dự phòng' để tiếp tục.";
+                            }
+                            else
+                            {
+                                outOfQuotaMessage += " Bạn đã hết lượt hỏi. Vui lòng vào mục Gói Hội Viên để mua thêm Gói nạp lượt dự phòng để tiếp tục hỏi ngay lập tức.";
+                            }
+
+                            return new ChatResponseDto
+                            {
+                                Success = false,
+                                OutOfQuota = true,
+                                Remaining = remainingBefore,
+                                Message = outOfQuotaMessage
+                            };
+                        }
                     }
                 }
 
@@ -293,8 +313,15 @@ namespace BussinessLayer.Services
 
                 if (user != null)
                 {
-                    user.ShortTermQuestionCount++;
-                    user.MonthlyQuestionCount++;
+                    if (isUsingExtraQuota)
+                    {
+                        user.ExtraQuestionQuota--;
+                    }
+                    else
+                    {
+                        user.ShortTermQuestionCount++;
+                        user.MonthlyQuestionCount++;
+                    }
                     await _userRepository.UpdateUserAsync(user);
                 }
 

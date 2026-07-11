@@ -132,7 +132,59 @@
     <!-- MAIN CONTENT -->
     @RenderBody()
 
+    <!-- GLOBAL BRUTAL CONFIRM MODAL -->
+    <div id="brutalConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
+        <div style="background: var(--white); border: 4px solid var(--black); box-shadow: 8px 8px 0px var(--black); width: 400px; max-width: 90%; text-align: center; display: flex; flex-direction: column;">
+            <div style="background: var(--yellow); padding: 15px; border-bottom: 4px solid var(--black);">
+                <h3 style="margin: 0; font-weight: 900; font-size: 20px; text-transform: uppercase; color: var(--black);">
+                    <i class="fa-solid fa-triangle-exclamation"></i> XÁC NHẬN
+                </h3>
+            </div>
+            <div style="padding: 30px 20px;">
+                <p id="brutalConfirmMessage" style="font-weight: 800; font-size: 16px; color: var(--black); margin: 0; line-height: 1.5;"></p>
+            </div>
+            <div style="padding: 20px; border-top: 4px solid var(--black); background: var(--bg); display: flex; justify-content: center; gap: 15px;">
+                <button type="button" onclick="__brutalConfirmNo()" class="brutal-btn" style="background: #ccc; color: var(--black); border: 2px solid var(--black); padding: 10px 20px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); cursor: pointer;">HỦY BỎ</button>
+                <button type="button" onclick="__brutalConfirmYes()" class="brutal-btn" style="background: var(--pink); color: var(--white); border: 2px solid var(--black); padding: 10px 20px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); cursor: pointer;">XÁC NHẬN</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.12/signalr.min.js"></script>
+    <script>
+        // Global Brutal Confirm Logic
+        window.__brutalConfirmCallback = null;
+        function brutalConfirm(message, callback) {
+            document.getElementById('brutalConfirmMessage').innerText = message;
+            document.getElementById('brutalConfirmModal').style.display = 'flex';
+            window.__brutalConfirmCallback = callback;
+        }
+        function __brutalConfirmYes() {
+            document.getElementById('brutalConfirmModal').style.display = 'none';
+            if (window.__brutalConfirmCallback) {
+                window.__brutalConfirmCallback();
+                window.__brutalConfirmCallback = null;
+            }
+        }
+        function __brutalConfirmNo() {
+            document.getElementById('brutalConfirmModal').style.display = 'none';
+            window.__brutalConfirmCallback = null;
+        }
+
+        // Intercept all forms with data-confirm
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            const msg = form.getAttribute('data-confirm');
+            if (msg) {
+                e.preventDefault();
+                brutalConfirm(msg, function() {
+                    form.removeAttribute('data-confirm');
+                    form.submit();
+                });
+            }
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

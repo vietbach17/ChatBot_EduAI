@@ -19,21 +19,28 @@ namespace PresentationLayer.Pages.Chat
         private readonly IChatService _chatService;
         private readonly IGeminiService _geminiService;
 
-        public IndexModel(IDocumentService documentService, IChatService chatService, IGeminiService geminiService)
+        private readonly ISubscriptionService _subscriptionService;
+
+        public IndexModel(IDocumentService documentService, IChatService chatService, IGeminiService geminiService, ISubscriptionService subscriptionService)
         {
             _documentService = documentService;
             _chatService = chatService;
             _geminiService = geminiService;
+            _subscriptionService = subscriptionService;
         }
 
         public List<DocumentDto> Documents { get; set; } = new List<DocumentDto>();
         public List<ChatSessionDto> ChatSessions { get; set; } = new List<ChatSessionDto>();
+        public SubscriptionInfoDto Info { get; set; } = new();
 
         public async Task OnGetAsync()
         {
             var userId = GetUserId();
             Documents = (await _documentService.GetAllDocumentsAsync()).ToList();
-            // ChatSessions is loaded asynchronously via OnGetSessionsAsync by frontend JS
+            if (userId > 0)
+            {
+                Info = await _subscriptionService.GetSubscriptionInfoAsync(userId);
+            }
         }
 
         public async Task<IActionResult> OnGetSessionsAsync()

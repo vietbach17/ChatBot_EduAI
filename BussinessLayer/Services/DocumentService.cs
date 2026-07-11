@@ -119,7 +119,8 @@ namespace BussinessLayer.Services
                 UploaderId = doc.UploaderId,
                 UploaderName = doc.Uploader?.Username,
                 SubjectName = doc.Subject?.Name,
-                ChapterTitle = doc.Chapter?.Title
+                ChapterTitle = doc.Chapter?.Title,
+                IsDeleted = doc.IsDeleted
             };
         }
 

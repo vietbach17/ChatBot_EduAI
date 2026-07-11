@@ -2,125 +2,180 @@
 @model PresentationLayer.Pages.Admin.PaymentHistoryModel
 @{
     ViewData["Title"] = "Quản lý Giao dịch";
+    ViewBag.ActiveMenu = "AdminPaymentHistory";
 }
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Quản lý Giao dịch</h2>
-    </div>
+@section Styles {
+    <style>
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-weight: 800; font-size: 12px; text-transform: uppercase; }
+        .form-group input, .form-group select {
+            border: 2px solid var(--black); padding: 10px; font-weight: 700; outline: none;
+        }
+        .modal {
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(2px);
+        }
+        .modal-content {
+            background-color: var(--white); border: 4px solid var(--black); box-shadow: 8px 8px 0px var(--black);
+            width: 450px; position: relative;
+        }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; font-weight: 900; cursor: pointer; color: var(--black); }
+        
+        .status-badge { display: inline-block; padding: 4px 10px; font-weight: 900; font-size: 11px; border: 2px solid var(--black); box-shadow: 2px 2px 0px var(--black); }
+        .status-success { background-color: var(--green); color: white; }
+        .status-failed { background-color: var(--pink); color: white; }
+        .status-pending { background-color: var(--yellow); color: var(--black); }
+    </style>
+}
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Tìm kiếm (Tên/Email)</label>
-                    <input type="text" name="SearchTerm" class="form-control" placeholder="Nhập từ khóa..." value="@Model.SearchTerm" />
+<div class="main-wrapper">
+    <div style="padding: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="color: var(--pink); font-weight: 900; font-size: 28px; text-transform: uppercase;">
+                <i class="fa-solid fa-file-invoice-dollar"></i> LỊCH SỬ GIAO DỊCH (ADMIN)
+            </h1>
+        </div>
+
+        <!-- BỘ LỌC -->
+        <div style="background-color: var(--white); border: 4px solid var(--black); box-shadow: 6px 6px 0px var(--black); padding: 20px; margin-bottom: 30px;">
+            <form method="get" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 200px;">
+                    <label>Tìm kiếm (Tên/Email)</label>
+                    <input type="text" name="SearchTerm" placeholder="Nhập từ khóa..." value="@Model.SearchTerm" />
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Cổng thanh toán</label>
-                    <select name="SelectedMethod" class="form-select" asp-for="SelectedMethod">
+                <div class="form-group" style="flex: 1; min-width: 150px;">
+                    <label>Cổng thanh toán</label>
+                    <select name="SelectedMethod" asp-for="SelectedMethod">
                         <option value="">Tất cả cổng</option>
                         <option value="VNPay">VNPay</option>
                         <option value="PayOS">PayOS</option>
                         <option value="SePay">SePay</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Trạng thái</label>
-                    <select name="SelectedStatus" class="form-select" asp-for="SelectedStatus">
+                <div class="form-group" style="flex: 1; min-width: 150px;">
+                    <label>Trạng thái</label>
+                    <select name="SelectedStatus" asp-for="SelectedStatus">
                         <option value="">Tất cả trạng thái</option>
                         <option value="Success">Thành công</option>
                         <option value="Pending">Đang xử lý</option>
                         <option value="Failed">Thất bại</option>
+                        <option value="Cancelled">Đã hủy</option>
                     </select>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Tìm kiếm</button>
+                <div class="form-group">
+                    <button type="submit" class="brutal-btn" style="background-color: var(--blue); color: var(--white); border: 2px solid var(--black); padding: 10px 20px; font-weight: 900; box-shadow: 2px 2px 0px var(--black);">
+                        <i class="fa-solid fa-magnifying-glass"></i> TÌM KIẾM
+                    </button>
                 </div>
             </form>
         </div>
-    </div>
 
-    <div class="table-responsive bg-white rounded shadow-sm">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Mã GD</th>
-                    <th>Khách hàng</th>
-                    <th>Ngày TT</th>
-                    <th>Gói</th>
-                    <th>Số tiền</th>
-                    <th>Phương thức</th>
-                    <th>Trạng thái</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.Histories != null && Model.Histories.Any())
-                {
-                    foreach (var item in Model.Histories)
+        <!-- BẢNG LỊCH SỬ -->
+        <div style="background-color: var(--white); border: 4px solid var(--black); box-shadow: 8px 8px 0px var(--black); padding: 20px; overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                <thead>
+                    <tr style="border-bottom: 4px solid var(--black);">
+                        <th style="padding: 12px; text-align: left; font-weight: 900;">MÃ GD</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 900;">KHÁCH HÀNG</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 900;">GÓI</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 900;">SỐ TIỀN</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 900;">PHƯƠNG THỨC</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 900;">TRẠNG THÁI</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 900;">NGÀY TT</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 900;">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Histories != null && Model.Histories.Any())
+                    {
+                        foreach (var item in Model.Histories)
+                        {
+                            <tr style="border-bottom: 2px dashed #ccc; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                                <td style="padding: 12px; font-weight: 900; color: #555;">#@(string.IsNullOrEmpty(item.TransactionCode) ? "GD" + item.TransactionId : item.TransactionCode)</td>
+                                <td style="padding: 12px; font-weight: 800; color: var(--black);">@item.UserName</td>
+                                <td style="padding: 12px; font-weight: 800; color: var(--blue);">@item.PlanName</td>
+                                <td style="padding: 12px; font-weight: 900; color: #dc2626;">@item.Amount.ToString("N0")đ</td>
+                                <td style="padding: 12px; text-align: center; font-weight: 800;">@item.Method</td>
+                                <td style="padding: 12px; text-align: center;">
+                                    @if (item.Status == "Success") { <span class="status-badge status-success">THÀNH CÔNG</span> }
+                                    else if (item.Status == "Failed") { <span class="status-badge status-failed" style="background:gray;color:white;">THẤT BẠI</span> }
+                                    else if (item.Status == "Cancelled") { <span class="status-badge" style="background:var(--pink);color:white;">ĐÃ HỦY</span> }
+                                    else { <span class="status-badge status-pending">ĐANG XỬ LÝ</span> }
+                                </td>
+                                <td style="padding: 12px; text-align: center; font-weight: 700; font-size: 13px;">@item.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td style="padding: 12px; text-align: center;">
+                                    <button type="button" class="brutal-btn" style="background-color: var(--white); color: var(--black); border: 2px solid var(--black); padding: 5px 10px; font-weight: 900; font-size: 12px; box-shadow: 2px 2px 0px var(--black); cursor: pointer;"
+                                            onclick="document.getElementById('invoiceModal-@item.TransactionId').style.display='flex'">
+                                        CHI TIẾT
+                                    </button>
+
+                                    <!-- Modal Chi Tiết -->
+                                    <div id="invoiceModal-@item.TransactionId" class="modal" style="text-align: left;">
+                                        <div class="modal-content">
+                                            <span class="close-btn" onclick="document.getElementById('invoiceModal-@item.TransactionId').style.display='none'">&times;</span>
+                                            <div style="background-color: var(--blue); padding: 15px; border-bottom: 4px solid var(--black);">
+                                                <h3 style="margin: 0; font-weight: 900; font-size: 18px; color: var(--white); text-transform: uppercase;">
+                                                    CHI TIẾT GIAO DỊCH #@(string.IsNullOrEmpty(item.TransactionCode) ? "GD" + item.TransactionId : item.TransactionCode)
+                                                </h3>
+                                            </div>
+                                            <div style="padding: 20px;">
+                                                <div style="margin-bottom: 10px; font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 2px dashed #ccc; padding-bottom: 5px;">
+                                                    <span style="color: #666;">Khách hàng:</span> <span style="color: var(--black);">@item.UserName</span>
+                                                </div>
+                                                <div style="margin-bottom: 10px; font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 2px dashed #ccc; padding-bottom: 5px;">
+                                                    <span style="color: #666;">Gói dịch vụ:</span> <span style="color: var(--blue);">@item.PlanName</span>
+                                                </div>
+                                                <div style="margin-bottom: 10px; font-weight: 900; font-size: 16px; display: flex; justify-content: space-between; border-bottom: 2px dashed #ccc; padding-bottom: 5px;">
+                                                    <span style="color: #666;">Số tiền:</span> <span style="color: #dc2626;">@item.Amount.ToString("N0") VNĐ</span>
+                                                </div>
+                                                <div style="margin-bottom: 10px; font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 2px dashed #ccc; padding-bottom: 5px;">
+                                                    <span style="color: #666;">Phương thức:</span> <span>@item.Method</span>
+                                                </div>
+                                                <div style="margin-bottom: 10px; font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 2px dashed #ccc; padding-bottom: 5px;">
+                                                    <span style="color: #666;">Trạng thái:</span>
+                                                    <span>
+                                                        @if (item.Status == "Success") { <span style="color: var(--green);">THÀNH CÔNG</span> }
+                                                        else if (item.Status == "Failed") { <span style="color: gray;">THẤT BẠI</span> }
+                                                        else if (item.Status == "Cancelled") { <span style="color: var(--pink);">ĐÃ HỦY</span> }
+                                                        else { <span style="color: var(--yellow);">ĐANG XỬ LÝ</span> }
+                                                    </span>
+                                                </div>
+                                                <div style="font-weight: 800; font-size: 14px; display: flex; justify-content: space-between;">
+                                                    <span style="color: #666;">Ngày GD:</span> <span>@item.Date.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td><span class="text-muted">#@item.TransactionCode</span></td>
-                            <td class="fw-bold">@item.UserName</td>
-                            <td>@item.Date.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td><span class="badge bg-secondary">@item.PlanName</span></td>
-                            <td class="text-danger fw-bold">@item.Amount.ToString("N0") đ</td>
-                            <td>@item.Method</td>
-                            <td>
-                                @if (item.Status == "Success") { <span class="badge bg-success">Thành công</span> }
-                                else if (item.Status == "Failed") { <span class="badge bg-danger">Thất bại</span> }
-                                else { <span class="badge bg-warning text-dark">Đang xử lý</span> }
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-light border" data-bs-toggle="modal" data-bs-target="#adminInvoiceModal-@item.TransactionId">
-                                    Chi tiết
-                                </button>
-
-                                <!-- Modal Admin Chi Tiết -->
-                                <div class="modal fade" id="adminInvoiceModal-@item.TransactionId" tabindex="-1" aria-hidden="true">
-                                  <div class="modal-dialog">
-                                    <div class="modal-content">
-                                      <div class="modal-header bg-dark text-white">
-                                        <h5 class="modal-title">Giao dịch #@item.TransactionCode</h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                      </div>
-                                      <div class="modal-body">
-                                        <ul class="list-group list-group-flush">
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                Khách hàng: <span class="fw-bold">@item.UserName</span>
-                                            </li>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                Gói dịch vụ: <span class="badge bg-primary rounded-pill">@item.PlanName</span>
-                                            </li>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                Số tiền: <span class="text-danger fw-bold">@item.Amount.ToString("N0") VNĐ</span>
-                                            </li>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                Cổng thanh toán: <span>@item.Method</span>
-                                            </li>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                Trạng thái: <span>@item.Status</span>
-                                            </li>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                Ngày GD: <span>@item.Date.ToString("dd/MM/yyyy HH:mm:ss")</span>
-                                            </li>
-                                        </ul>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                            </td>
+                            <td colspan="8" style="padding: 30px; text-align: center; font-weight: 800; color: #888; font-style: italic;">Không tìm thấy giao dịch nào phù hợp.</td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="8" class="text-center py-5 text-muted">Không tìm thấy giao dịch nào</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/courseHub")
+            .build();
+
+        connection.on("PaymentStatusUpdated", function (transactionId, newStatus) {
+            // Khi có sự kiện thanh toán cập nhật, tự động tải lại trang
+            window.location.reload();
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+    </script>
+}

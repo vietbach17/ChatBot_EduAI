@@ -37,6 +37,10 @@ namespace DataAccessLayer.Entities
         public int ShortTermQuestionCount { get; set; } = 0; // số câu đã hỏi trong chu kỳ 5 giờ
 
         public DateTime? ShortTermResetDate { get; set; } // thời điểm reset chu kỳ 5 giờ
+        
+        public int ExtraQuestionQuota { get; set; } = 0; // số lượt hỏi dự phòng mua thêm
+        
+        public bool UseExtraQuota { get; set; } = false; // bật tắt việc tiêu thụ lượt dự phòng
         // ========================
         
         // ===== FORGOT PASSWORD =====

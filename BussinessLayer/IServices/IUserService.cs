@@ -13,6 +13,7 @@ namespace BussinessLayer.IServices
         Task<UserDto?> GetUserByUsernameAsync(string username);
         Task<bool> CreateUserAsync(string username, string password, string role, string? email);
         Task<bool> UpdateUserAsync(int id, string username, string role, string? email, string? password);
+        Task<bool> UpdateUseExtraQuotaAsync(int userId, bool useExtraQuota);
         Task<bool> ChangePasswordAsync(string username, string currentPassword, string newPassword);
         Task<bool> SoftDeleteUserAsync(int id);
         Task<bool> RestoreUserAsync(int id);

@@ -167,22 +167,20 @@
                                     <i class="fa-solid fa-pen"></i> SỬA GÓI
                                 </button>
                                 <!-- Khôi phục lượt -->
-                                <form method="post" asp-page-handler="ResetQuota" style="display:inline;">
+                                <form method="post" asp-page-handler="ResetQuota" style="display:inline;" data-confirm="Khôi phục lại toàn bộ lượt hỏi cho @sub.Username?">
                                     <input type="hidden" name="userId" value="@sub.UserId" />
                                     <button type="submit" class="brutal-btn"
-                                            style="background:var(--yellow); color:var(--black); border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);"
-                                            onclick="return confirm('Khôi phục lại toàn bộ lượt hỏi cho @sub.Username?')">
+                                            style="background:var(--yellow); color:var(--black); border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);">
                                         <i class="fa-solid fa-rotate-left"></i> RESET
                                     </button>
                                 </form>
                                 <!-- Thu hồi về Free -->
                                 @if(sub.SubscriptionPlan != "Free")
                                 {
-                                    <form method="post" asp-page-handler="Revoke" style="display:inline;">
+                                    <form method="post" asp-page-handler="Revoke" style="display:inline;" data-confirm="Thu hồi gói của @sub.Username về Free?">
                                         <input type="hidden" name="userId" value="@sub.UserId" />
                                         <button type="submit" class="brutal-btn"
-                                                style="background:#ff4d4f; color:white; border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);"
-                                                onclick="return confirm('Thu hồi gói của @sub.Username về Free?')">
+                                                style="background:#ff4d4f; color:white; border:2px solid var(--black); padding:5px 10px; font-weight:800; font-size:12px; box-shadow:2px 2px 0 var(--black);">
                                             <i class="fa-solid fa-ban"></i> THU HỒI
                                         </button>
                                     </form>

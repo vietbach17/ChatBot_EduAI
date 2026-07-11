@@ -1,4 +1,4 @@
-﻿using DataAccessLayer.Entities;
+using DataAccessLayer.Entities;
 using DataAccessLayer.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using Pgvector;
@@ -137,6 +137,7 @@ namespace DataAccessLayer.Repositories
         public async Task<Document?> GetDocumentByIdWithUploaderAsync(int id)
         {
             return await _context.Documents
+                .IgnoreQueryFilters()
                 .Include(d => d.Uploader)
                 .Include(d => d.Subject)
                 .Include(d => d.Chapter)

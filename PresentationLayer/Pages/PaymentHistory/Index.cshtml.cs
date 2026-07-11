@@ -5,6 +5,8 @@ using BussinessLayer.DTOs;
 using BussinessLayer.IServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
+using PresentationLayer.SignalR;
 // using Microsoft.AspNetCore.Authorization; // Un-comment when TV1 sets up auth
 
 namespace PresentationLayer.Pages.PaymentHistory
@@ -13,11 +15,12 @@ namespace PresentationLayer.Pages.PaymentHistory
     public class IndexModel : PageModel
     {
         private readonly IPaymentHistoryService _historyService;
-        // private readonly IEmailService _emailService; // In reality, we'd inject this to resend email
+        private readonly IHubContext<SignalRHub> _hubContext;
 
-        public IndexModel(IPaymentHistoryService historyService)
+        public IndexModel(IPaymentHistoryService historyService, IHubContext<SignalRHub> hubContext)
         {
             _historyService = historyService;
+            _hubContext = hubContext;
         }
 
         public IEnumerable<PaymentHistoryDto> Histories { get; set; }
@@ -59,6 +62,28 @@ namespace PresentationLayer.Pages.PaymentHistory
         {
             // TODO: Fetch transaction by id and call _emailService.SendInvoiceEmailAsync
             TempData["SuccessMessage"] = "Đã gửi lại email hóa đơn thành công!";
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostCancelPaymentAsync(int id)
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            if (!int.TryParse(userIdClaim, out int currentUserId))
+            {
+                currentUserId = 1; // Dự phòng
+            }
+
+            var success = await _historyService.CancelPaymentAsync(id, currentUserId);
+            if (success)
+            {
+                await _hubContext.Clients.All.SendAsync("PaymentStatusUpdated", id, "Cancelled");
+                TempData["SuccessMessage"] = "Đã hủy thanh toán thành công!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Không thể hủy thanh toán. Giao dịch có thể không tồn tại hoặc không ở trạng thái Chờ thanh toán.";
+            }
+
             return RedirectToPage();
         }
     }
