@@ -11,7 +11,12 @@ namespace DataAccessLayer.IRepositories
         Task<List<ChatSession>> GetUserSessionsAsync(int userId);
         Task AddMessageAsync(ChatMessage message);
         Task UpdateSessionTitleAsync(int sessionId, string title);
+        Task UpdateSessionUpdatedAtAsync(int sessionId);
         Task DeleteSessionAsync(int sessionId);
         Task ClearSessionAsync(int sessionId);
+
+        /// <summary>Lấy tin nhắn phân trang (mới nhất trước), dùng cho lazy loading.</summary>
+        Task<List<ChatMessage>> GetMessagesPagedAsync(int sessionId, int page, int pageSize);
     }
 }
+

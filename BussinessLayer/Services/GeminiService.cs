@@ -1,9 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using BussinessLayer.IServices;
@@ -19,48 +21,29 @@ namespace BussinessLayer.Services
         public GeminiService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            var key = Environment.GetEnvironmentVariable("GEMINI_API_KEY") 
+            var key = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
                       ?? configuration["GeminiAI:ApiKey"];
-            
             _apiKey = key?.Trim() ?? throw new ArgumentNullException("GEMINI_API_KEY is not configured");
-            
-            _defaultModel = Environment.GetEnvironmentVariable("GEMINI_MODEL") 
-                            ?? configuration["GeminiAI:Model"] 
+            _defaultModel = Environment.GetEnvironmentVariable("GEMINI_MODEL")
+                            ?? configuration["GeminiAI:Model"]
                             ?? "gemini-1.5-flash";
         }
 
+        // ─── GenerateJsonContent ───────────────────────────────────────────────
         public async Task<string> GenerateJsonContentAsync(string prompt, string? responseSchemaJson = null)
         {
-            var model = Environment.GetEnvironmentVariable("GEMINI_MODEL")?.Trim();
-            if (string.IsNullOrEmpty(model))
-            {
-                model = "gemini-2.5-flash"; // Mô hình mặc định ổn định, hỗ trợ JSON Schema
-            }
+            var model = Environment.GetEnvironmentVariable("GEMINI_MODEL")?.Trim()
+                        ?? "gemini-2.5-flash";
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={_apiKey}";
 
             object? schemaObj = null;
             if (!string.IsNullOrEmpty(responseSchemaJson))
-            {
                 schemaObj = JsonSerializer.Deserialize<object>(responseSchemaJson);
-            }
 
             var payload = new
             {
-                contents = new[]
-                {
-                    new
-                    {
-                        parts = new[]
-                        {
-                            new { text = prompt }
-                        }
-                    }
-                },
-                generationConfig = new
-                {
-                    responseMimeType = "application/json",
-                    responseSchema = schemaObj
-                }
+                contents = new[] { new { parts = new[] { new { text = prompt } } } },
+                generationConfig = new { responseMimeType = "application/json", responseSchema = schemaObj }
             };
 
             var jsonOptions = new JsonSerializerOptions
@@ -78,23 +61,20 @@ namespace BussinessLayer.Services
             }
 
             var responseBody = await response.Content.ReadAsStringAsync();
-            
             using var doc = JsonDocument.Parse(responseBody);
             var root = doc.RootElement;
-            
-            if (root.TryGetProperty("candidates", out var candidates) && 
+            if (root.TryGetProperty("candidates", out var candidates) &&
                 candidates.GetArrayLength() > 0 &&
-                candidates[0].TryGetProperty("content", out var candidateContent) &&
-                candidateContent.TryGetProperty("parts", out var parts) &&
-                parts.GetArrayLength() > 0 &&
-                parts[0].TryGetProperty("text", out var text))
-            {
-                return text.GetString() ?? string.Empty;
-            }
+                candidates[0].TryGetProperty("content", out var cc) &&
+                cc.TryGetProperty("parts", out var pp) &&
+                pp.GetArrayLength() > 0 &&
+                pp[0].TryGetProperty("text", out var textEl))
+                return textEl.GetString() ?? string.Empty;
 
-            throw new InvalidOperationException($"Không thể phân tích kết quả trả về từ Gemini API. Response: {responseBody}");
+            throw new InvalidOperationException($"Cannot parse Gemini response: {responseBody}");
         }
 
+        // ─── PostWithRetry ────────────────────────────────────────────────────
         private async Task<HttpResponseMessage> PostWithRetryAsync(string url, string requestBody, int maxRetries = 3, int delayMs = 1500)
         {
             HttpResponseMessage? response = null;
@@ -102,173 +82,182 @@ namespace BussinessLayer.Services
             {
                 var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
                 response = await _httpClient.PostAsync(url, content);
-                
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode) return response;
+                if ((response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable ||
+                     response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
+                     (int)response.StatusCode == 429 || (int)response.StatusCode == 503) &&
+                    i < maxRetries - 1)
                 {
-                    return response;
+                    await Task.Delay(delayMs * (i + 1));
+                    continue;
                 }
-                
-                if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable || 
-                    response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
-                    (int)response.StatusCode == 429 || (int)response.StatusCode == 503)
-                {
-                    if (i < maxRetries - 1)
-                    {
-                        await Task.Delay(delayMs * (i + 1));
-                        continue;
-                    }
-                }
-                
                 break;
             }
             return response ?? new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable);
         }
 
+        // ─── Embeddings ───────────────────────────────────────────────────────
         public async Task<float[]> GetEmbeddingAsync(string text)
         {
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key={_apiKey}";
-            
             var requestBody = new
             {
                 model = "models/gemini-embedding-001",
-                content = new
-                {
-                    parts = new[]
-                    {
-                        new { text = text }
-                    }
-                }
+                content = new { parts = new[] { new { text } } }
             };
-
             var response = await PostWithRetryAsync(url, JsonSerializer.Serialize(requestBody));
             if (!response.IsSuccessStatusCode)
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Gemini API Error: {response.StatusCode} - {errorBody}");
+                throw new Exception($"Gemini Embedding Error: {response.StatusCode} - {errorBody}");
             }
-
             var responseString = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<JsonElement>(responseString);
-
-            var values = result.GetProperty("embedding").GetProperty("values").EnumerateArray()
-                .Select(x => x.GetSingle())
-                .Take(768)
-                .ToArray();
-
-            return values;
+            return result.GetProperty("embedding").GetProperty("values").EnumerateArray()
+                .Select(x => x.GetSingle()).Take(768).ToArray();
         }
 
         public async Task<List<float[]>> GetEmbeddingsAsync(List<string> texts)
         {
             var results = new List<float[]>();
-            foreach (var text in texts)
-            {
-                results.Add(await GetEmbeddingAsync(text));
-            }
+            foreach (var t in texts) results.Add(await GetEmbeddingAsync(t));
             return results;
         }
 
+        // ─── GenerateAnswer (blocking) ─────────────────────────────────────────
         public async Task<string> GenerateAnswerAsync(string prompt, string? modelName = null)
         {
             modelName = string.IsNullOrWhiteSpace(modelName) ? _defaultModel : modelName;
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:generateContent?key={_apiKey}";
-
-            var requestBody = new
-            {
-                contents = new[] { new { parts = new[] { new { text = prompt } } } }
-            };
+            var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
 
             const int maxRetries = 3;
             for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
                 var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(url, jsonContent);
-
                 if (response.IsSuccessStatusCode)
                 {
                     var responseString = await response.Content.ReadAsStringAsync();
                     using var result = JsonDocument.Parse(responseString);
-                    var candidates = result.RootElement.GetProperty("candidates");
-                    if (candidates.GetArrayLength() == 0) return string.Empty;
-                    var parts = candidates[0].GetProperty("content").GetProperty("parts");
+                    var cands = result.RootElement.GetProperty("candidates");
+                    if (cands.GetArrayLength() == 0) return string.Empty;
+                    var parts = cands[0].GetProperty("content").GetProperty("parts");
                     if (parts.GetArrayLength() == 0) return string.Empty;
                     return parts[0].GetProperty("text").GetString() ?? string.Empty;
                 }
-
                 var statusCode = (int)response.StatusCode;
-
-                // Retry trên 429 hoặc 503
                 if ((statusCode == 429 || statusCode == 503) && attempt < maxRetries)
                 {
-                    var delay = attempt * 6000; // 6s, 12s
-                    await Task.Delay(delay);
+                    await Task.Delay(attempt * 6000);
                     continue;
                 }
-
-                // Trả về thông báo thân thiện thay vì dump lỗi kỹ thuật
-                if (statusCode == 429)
-                    return " Trợ lý AI hiện đang quá tải, vui lòng thử lại sau vài giây.";
-                if (statusCode == 503)
-                    return " Dịch vụ AI tạm thời không khả dụng, vui lòng thử lại sau.";
-
+                if (statusCode == 429) return "⚠️ Trợ lý AI đang quá tải, vui lòng thử lại sau vài giây.";
+                if (statusCode == 503) return "⚠️ Dịch vụ AI tạm thời không khả dụng.";
                 var errorBody = await response.Content.ReadAsStringAsync();
                 return $"Lỗi khi gọi AI: {response.StatusCode} - {errorBody}";
             }
-
-            return " Không thể kết nối đến dịch vụ AI sau nhiều lần thử. Vui lòng thử lại sau.";
+            return "⚠️ Không thể kết nối đến dịch vụ AI sau nhiều lần thử.";
         }
 
+        // ─── GenerateStreamingAnswer (SSE) ─────────────────────────────────────
+        /// <inheritdoc/>
+        public async IAsyncEnumerable<string> GenerateStreamingAnswerAsync(
+            string prompt,
+            string? modelName = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            modelName = string.IsNullOrWhiteSpace(modelName) ? _defaultModel : modelName;
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:streamGenerateContent?alt=sse&key={_apiKey}";
+            var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
+            var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response;
+            try
+            {
+                var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = jsonContent };
+                response = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            }
+            catch (OperationCanceledException) { yield break; }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var sc = (int)response.StatusCode;
+                if (sc == 429) yield return "⚠️ Trợ lý AI đang quá tải, vui lòng thử lại sau vài giây.";
+                else if (sc == 503) yield return "⚠️ Dịch vụ AI tạm thời không khả dụng.";
+                else yield return $"⚠️ Lỗi kết nối AI ({sc}).";
+                yield break;
+            }
+
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var reader = new System.IO.StreamReader(stream);
+
+            while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
+            {
+                string? line;
+                try { line = await reader.ReadLineAsync(); }
+                catch (OperationCanceledException) { yield break; }
+
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                if (!line.StartsWith("data: ")) continue;
+                var jsonStr = line.Substring("data: ".Length).Trim();
+                if (jsonStr == "[DONE]") break;
+
+                string? chunkText = null;
+                try
+                {
+                    using var doc = JsonDocument.Parse(jsonStr);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("candidates", out var cands) &&
+                        cands.GetArrayLength() > 0 &&
+                        cands[0].TryGetProperty("content", out var content) &&
+                        content.TryGetProperty("parts", out var parts) &&
+                        parts.GetArrayLength() > 0 &&
+                        parts[0].TryGetProperty("text", out var tp))
+                        chunkText = tp.GetString();
+                }
+                catch { /* bỏ qua chunk lỗi parse */ }
+
+                if (!string.IsNullOrEmpty(chunkText))
+                    yield return chunkText;
+            }
+        }
+
+        // ─── GetAvailableModels ───────────────────────────────────────────────
         public async Task<List<GeminiModelInfo>> GetAvailableModelsAsync()
         {
             var defaultList = new List<GeminiModelInfo>
             {
-                new("gemini-3.5-flash", "Gemini 3.5 Flash"),
+                new("gemini-2.5-flash", "Gemini 2.5 Flash"),
                 new("gemini-2.0-flash", "Gemini 2.0 Flash"),
                 new("gemini-2.0-flash-lite", "Gemini 2.0 Flash Lite"),
                 new("gemini-1.5-pro", "Gemini 1.5 Pro"),
                 new("gemini-1.5-flash", "Gemini 1.5 Flash"),
                 new("gemini-pro", "Gemini Pro"),
             };
-
             try
             {
                 var url = $"https://generativelanguage.googleapis.com/v1beta/models?key={_apiKey}&pageSize=50";
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode) return defaultList;
-
                 var json = await response.Content.ReadAsStringAsync();
-                using var doc = System.Text.Json.JsonDocument.Parse(json);
-
+                using var doc = JsonDocument.Parse(json);
                 var models = new List<GeminiModelInfo>();
                 foreach (var model in doc.RootElement.GetProperty("models").EnumerateArray())
                 {
-                    var name = model.GetProperty("name").GetString() ?? string.Empty; // "models/gemini-..."
+                    var name = model.GetProperty("name").GetString() ?? string.Empty;
                     var id = name.Replace("models/", "");
-
-                    // Chỉ lấy các model hỗ trợ generateContent
                     bool supportsGenerate = false;
                     if (model.TryGetProperty("supportedGenerationMethods", out var methods))
-                    {
                         foreach (var m in methods.EnumerateArray())
-                        {
                             if (m.GetString() == "generateContent") { supportsGenerate = true; break; }
-                        }
-                    }
                     if (!supportsGenerate) continue;
-
-                    var displayName = model.TryGetProperty("displayName", out var dn)
-                        ? dn.GetString() ?? id
-                        : id;
-
+                    var displayName = model.TryGetProperty("displayName", out var dn) ? dn.GetString() ?? id : id;
                     models.Add(new GeminiModelInfo(id, displayName));
                 }
-
                 return models.Count > 0 ? models : defaultList;
             }
-            catch
-            {
-                return defaultList;
-            }
+            catch { return defaultList; }
         }
     }
 }
