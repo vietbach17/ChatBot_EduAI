@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 
-namespace BussinessLayer.Services
+namespace BussinessLayer.IServices
 {
     public interface ISubscriptionService
     {

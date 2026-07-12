@@ -22,6 +22,12 @@
                 <div>
                     <h1 style="color: var(--pink); font-weight: 900; margin-bottom: 10px; font-size: 24px; text-transform: uppercase;">
                         @Model.Document?.Title
+                        @if (Model.Document?.IsDeleted == true)
+                        {
+                            <span style="background: #dc2626; color: white; padding: 4px 8px; font-size: 14px; vertical-align: middle; margin-left: 10px; border: 2px solid var(--black); box-shadow: 2px 2px 0px var(--black);">
+                                <i class="fa-solid fa-trash"></i> ĐÃ XÓA TẠM
+                            </span>
+                        }
                     </h1>
                     <div style="font-weight: 700; font-size: 14px; color: #555; display: flex; gap: 20px; flex-wrap: wrap;">
                         <span>

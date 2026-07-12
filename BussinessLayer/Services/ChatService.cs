@@ -23,12 +23,20 @@ namespace BussinessLayer.Services
         private readonly IUserRepository _userRepository;
         private readonly ISubscriptionService _subscriptionService;
 
-        public static int GetMonthlyLimit(string plan) => plan switch
+        public static int GetShortTermLimit(string plan) => plan switch
         {
-            "Basic" => 5,
+            "Basic" => 10,
             "Pro" => 20,
             "Ultra" => int.MaxValue,
-            _ => 5
+            _ => 10
+        };
+
+        public static int GetMonthlyLimit(string plan) => plan switch
+        {
+            "Basic" => 50,
+            "Pro" => 500,
+            "Ultra" => int.MaxValue,
+            _ => 50
         };
 
         public ChatService(
@@ -93,6 +101,9 @@ namespace BussinessLayer.Services
                 var limit = GetMonthlyLimit("Basic");
                 var remainingBefore = int.MaxValue;
                 var remainingAfter = int.MaxValue;
+                var remainingMonthAfter = int.MaxValue;
+                var remainingShortAfter = int.MaxValue;
+                bool isUsingExtraQuota = false;
 
                 if (user != null)
                 {
@@ -108,24 +119,64 @@ namespace BussinessLayer.Services
                     effectivePlan = planActive ? user.SubscriptionPlan : "Basic";
                     if (effectivePlan == "Free") effectivePlan = "Basic";
 
-                    limit = GetMonthlyLimit(effectivePlan);
-                    remainingBefore = limit == int.MaxValue ? int.MaxValue : Math.Max(0, limit - user.MonthlyQuestionCount);
-                    remainingAfter = remainingBefore == int.MaxValue ? int.MaxValue : Math.Max(0, remainingBefore - 1);
+                    var limitShort = GetShortTermLimit(effectivePlan);
+                    var limitMonth = GetMonthlyLimit(effectivePlan);
 
-                    if (limit != int.MaxValue && user.MonthlyQuestionCount >= limit)
+                    var remainingShortBefore = limitShort == int.MaxValue ? int.MaxValue : Math.Max(0, limitShort - user.ShortTermQuestionCount);
+                    remainingShortAfter = remainingShortBefore == int.MaxValue ? int.MaxValue : Math.Max(0, remainingShortBefore - 1);
+
+                    var remainingMonthBefore = limitMonth == int.MaxValue ? int.MaxValue : Math.Max(0, limitMonth - user.MonthlyQuestionCount);
+                    remainingMonthAfter = remainingMonthBefore == int.MaxValue ? int.MaxValue : Math.Max(0, remainingMonthBefore - 1);
+
+                    remainingBefore = remainingShortBefore;
+                    remainingAfter = remainingShortAfter;
+
+                    bool outOfStandardQuota = false;
+                    string outOfQuotaMessage = "";
+
+                    // Kiểm tra Quota Tháng trước
+                    if (limitMonth != int.MaxValue && user.MonthlyQuestionCount >= limitMonth)
                     {
-                        var remainingTime = user.QuotaResetDate.HasValue ? (user.QuotaResetDate.Value - now) : TimeSpan.Zero;
+                        outOfStandardQuota = true;
+                        outOfQuotaMessage = $"Bạn đã dùng hết {limitMonth} câu hỏi trong tháng này. Vui lòng chờ sang tháng sau hoặc nâng cấp gói để tiếp tục.";
+                    }
+                    else if (limitShort != int.MaxValue && user.ShortTermQuestionCount >= limitShort)
+                    {
+                        outOfStandardQuota = true;
+                        var remainingTime = user.ShortTermResetDate.HasValue ? (user.ShortTermResetDate.Value - now) : TimeSpan.Zero;
                         var hours = Math.Max(0, (int)Math.Ceiling(remainingTime.TotalHours));
+                        outOfQuotaMessage = effectivePlan == "Basic"
+                            ? $"Bạn đã đạt giới hạn {limitShort} câu hỏi trong 5 giờ. Vui lòng chờ thêm {hours} giờ để tiếp tục hỏi."
+                            : $"Bạn đã đạt giới hạn {limitShort} câu hỏi trong 5 giờ của gói {effectivePlan}. Vui lòng chờ thêm {hours} giờ để tiếp tục hỏi.";
+                    }
 
-                        return new ChatResponseDto
+                    if (outOfStandardQuota)
+                    {
+                        if (user.UseExtraQuota && user.ExtraQuestionQuota > 0)
                         {
-                            Success = false,
-                            OutOfQuota = true,
-                            Remaining = remainingBefore,
-                            Message = effectivePlan == "Basic"
-                                ? $"Bạn đã đạt giới hạn {limit} câu hỏi trong 5 giờ. Vui lòng nâng cấp gói hoặc chờ thêm {hours} giờ để tiếp tục hỏi."
-                                : $"Bạn đã đạt giới hạn {limit} câu hỏi trong 5 giờ của gói {effectivePlan}. Vui lòng nâng cấp gói hoặc chờ thêm {hours} giờ để tiếp tục hỏi."
-                        };
+                            isUsingExtraQuota = true;
+                            remainingBefore = user.ExtraQuestionQuota;
+                            remainingAfter = user.ExtraQuestionQuota - 1;
+                        }
+                        else
+                        {
+                            if (user.ExtraQuestionQuota > 0)
+                            {
+                                outOfQuotaMessage += " Bạn vẫn còn lượt hỏi dự phòng, hãy BẬT công tắc 'Sử dụng lượt dự phòng' để tiếp tục.";
+                            }
+                            else
+                            {
+                                outOfQuotaMessage += " Bạn đã hết lượt hỏi. Vui lòng vào mục Gói Hội Viên để mua thêm Gói nạp lượt dự phòng để tiếp tục hỏi ngay lập tức.";
+                            }
+
+                            return new ChatResponseDto
+                            {
+                                Success = false,
+                                OutOfQuota = true,
+                                Remaining = remainingBefore,
+                                Message = outOfQuotaMessage
+                            };
+                        }
                     }
                 }
 
@@ -210,7 +261,7 @@ namespace BussinessLayer.Services
                     }
                 }
 
-                var prompt = BuildPrompt(request.Message, conversationHistory, contextText, request.RestrictToDocs, effectivePlan, remainingAfter);
+                var prompt = BuildPrompt(request.Message, conversationHistory, contextText, request.RestrictToDocs, effectivePlan, remainingShortAfter, remainingMonthAfter);
                 var replyText = await _geminiService.GenerateAnswerAsync(prompt, request.ModelName);
 
                 if (string.IsNullOrWhiteSpace(replyText))
@@ -262,7 +313,15 @@ namespace BussinessLayer.Services
 
                 if (user != null)
                 {
-                    user.MonthlyQuestionCount++;
+                    if (isUsingExtraQuota)
+                    {
+                        user.ExtraQuestionQuota--;
+                    }
+                    else
+                    {
+                        user.ShortTermQuestionCount++;
+                        user.MonthlyQuestionCount++;
+                    }
                     await _userRepository.UpdateUserAsync(user);
                 }
 
@@ -462,21 +521,29 @@ namespace BussinessLayer.Services
             string contextText,
             bool restrictToDocs,
             string planName,
-            int remainingQueries)
+            int remainingShortQueries,
+            int remainingMonthQueries)
         {
             var promptSections = new List<string>();
 
             // Thêm thông tin hệ thống về gói cước và số lượt hỏi còn lại
-            if (remainingQueries != int.MaxValue)
+            if (remainingShortQueries != int.MaxValue || remainingMonthQueries != int.MaxValue)
             {
+                var shortText = remainingShortQueries != int.MaxValue ? $"còn {remainingShortQueries} lượt trong chu kỳ 5 giờ" : "không giới hạn trong 5 giờ";
+                var monthText = remainingMonthQueries != int.MaxValue ? $"còn {remainingMonthQueries} lượt trong tháng" : "không giới hạn trong tháng";
+
                 promptSections.Add(
-                    $"[THÔNG TIN HỆ THỐNG]\nNgười dùng đang sử dụng gói: {planName}.\nSố lượt hỏi còn lại trong tháng sau câu hỏi này: {remainingQueries} lượt.\n(Nếu người dùng hỏi về số lượt còn lại, hoặc liên quan đến giới hạn, hãy dùng thông tin này để trả lời hoặc nhắc nhở. Không cần nhắc đến nếu không liên quan).");
+                    $"[THÔNG TIN HỆ THỐNG]\nNgười dùng đang sử dụng gói: {planName}.\nSố lượt hỏi còn lại sau câu hỏi này: {shortText}, và {monthText}.\n(Nếu người dùng hỏi về số lượt còn lại, hoặc liên quan đến giới hạn, hãy dùng thông tin chi tiết này để trả lời theo đúng từng chu kỳ. Không cần nhắc đến nếu không liên quan).");
             }
             else
             {
                 promptSections.Add(
                     $"[THÔNG TIN HỆ THỐNG]\nNgười dùng đang sử dụng gói: {planName} (Không giới hạn số lượt hỏi).");
             }
+
+            // Ngăn AI tiết lộ thông tin về Model (Gemini/OpenAI/Claude...)
+            promptSections.Add(
+                "[QUAN TRỌNG VỀ DANH TÍNH CỦA BẠN]\nNếu người dùng hỏi bạn là ai, bạn được tạo ra bởi ai, hoặc bạn đang sử dụng mô hình/ngôn ngữ/AI nào (ví dụ: GPT, Gemini, Claude, LLaMA, v.v.), hãy TUYỆT ĐỐI KHÔNG tiết lộ mô hình thực sự của bạn. Thay vào đó, hãy trả lời một cách lịch sự rằng: 'Tôi là trợ lý AI được phát triển và tích hợp độc quyền bởi hệ thống ChatEdu để hỗ trợ bạn trong học tập.' Không cung cấp thêm thông tin kỹ thuật nào về bản chất AI của bạn.");
 
             if (!string.IsNullOrWhiteSpace(conversationHistory))
             {

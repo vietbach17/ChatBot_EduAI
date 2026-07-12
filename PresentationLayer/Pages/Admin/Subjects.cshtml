@@ -86,7 +86,7 @@
                                     </button>
                                     @if(!subject.IsDeleted)
                                     {
-                                        <form method="post" asp-page-handler="DeleteSubject">
+                                        <form method="post" asp-page-handler="DeleteSubject" data-confirm="Bạn có chắc chắn muốn xóa môn học này?">
                                             <input type="hidden" name="id" value="@subject.Id" />
                                             <button type="submit" class="brutal-btn" style="background-color: #ff4d4f; color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black);">
                                                 <i class="fa-solid fa-trash"></i> XÓA
@@ -95,7 +95,7 @@
                                     }
                                     else
                                     {
-                                        <form method="post" asp-page-handler="RestoreSubject">
+                                        <form method="post" asp-page-handler="RestoreSubject" data-confirm="Bạn có chắc chắn muốn khôi phục môn học này?">
                                             <input type="hidden" name="id" value="@subject.Id" />
                                             <button type="submit" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0px var(--black);">
                                                 <i class="fa-solid fa-rotate-left"></i> KHÔI PHỤC

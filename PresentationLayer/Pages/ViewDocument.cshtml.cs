@@ -39,12 +39,42 @@ namespace PresentationLayer.Pages
                 return NotFound();
             }
 
+            var role = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
+
+            if (doc.IsDeleted)
+            {
+                if (role == "Admin")
+                {
+                    // Admin can view deleted
+                }
+                else if (role == "Lecturer" && doc.SubjectId.HasValue)
+                {
+                    var uIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+                    if (int.TryParse(uIdClaim, out int uid))
+                    {
+                        var subject = await _subjectService.GetSubjectByIdAsync(doc.SubjectId.Value);
+                        if (subject == null || subject.LecturerId != uid)
+                        {
+                            return Forbid();
+                        }
+                    }
+                    else
+                    {
+                        return Forbid();
+                    }
+                }
+                else
+                {
+                    return Forbid();
+                }
+            }
+
             Document = doc;
             TextContent = doc.Content ?? await _documentService.GetDocumentTextAsync(id);
             if (string.IsNullOrWhiteSpace(TextContent))
                 TextContent = "Không có nội dung dạng text cho file này.";
 
-            var role = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
+            role = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
             
             CanViewChunks = false;
             if (role == "Admin")

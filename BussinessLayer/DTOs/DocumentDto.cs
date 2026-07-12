@@ -17,6 +17,7 @@ namespace BussinessLayer.DTOs
         public string? UploaderName { get; set; }
         public System.DateTime UploadedAt { get; set; }
         public string? Content { get; set; }
+        public bool IsDeleted { get; set; }
     }
 
     public enum DocumentStatus

@@ -448,14 +448,34 @@
                 </div>
             </div>
 
-            <!-- Hạn chế trả lời (Phần còn lại ở đáy) -->
-            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 4px;">
-                <div class="section-title" style="font-size: 14px; margin: 0;">Hạn chế trả lời</div>
-                <div class="toggle-group" style="margin-bottom: 2px; width: fit-content; display: flex;">
-                    <button class="toggle-btn" style="font-size: 11px; padding: 4px 10px;">Tất cả</button>
-                    <button class="toggle-btn active" style="font-size: 11px; padding: 4px 10px;">Trong phạm vi tài liệu</button>
+        <!-- Hạn chế trả lời & Quota dự phòng -->
+            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px; background: #fefefe; padding: 12px; border: var(--border); box-shadow: 2px 2px 0px var(--black);">
+                
+                <!-- Toggle Extra Quota -->
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: #333;">Lượt dự phòng: <span style="color:var(--blue); font-weight:900; font-size:16px;">@Model.Info.ExtraQuota</span></div>
+                        <div style="font-size: 10px; color: #777;">Chỉ dùng khi hết hạn mức</div>
+                    </div>
+                    <label class="switch" style="position:relative; display:inline-block; width:44px; height:20px;">
+                        <input type="checkbox" id="toggleExtraQuotaChat" @(Model.Info.UseExtraQuota ? "checked" : "") style="opacity:0; width:0; height:0;">
+                        <span class="slider round" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:34px;">
+                            <span class="slider-btn" style="position:absolute; content:''; height:14px; width:14px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%; @(Model.Info.UseExtraQuota ? "transform:translateX(24px);" : "")"></span>
+                        </span>
+                    </label>
                 </div>
-                <div class="restriction-hint" style="font-size: 10px; color: #555; font-weight: 700;">Hạn chế: Chỉ trả lời ĐÚNG phạm vi tài liệu.</div>
+
+                <div style="height: 1px; background: #e5e5e5; margin: 2px 0;"></div>
+
+                <!-- Hạn chế trả lời -->
+                <div>
+                    <div class="section-title" style="font-size: 13px; margin: 0 0 4px 0;">Phạm vi kiến thức</div>
+                    <div class="toggle-group" style="margin-bottom: 4px; width: 100%; display: flex;">
+                        <button class="toggle-btn" style="font-size: 11px; padding: 4px; flex: 1;">Tất cả</button>
+                        <button class="toggle-btn active" style="font-size: 11px; padding: 4px; flex: 1;">Trong tài liệu</button>
+                    </div>
+                    <div class="restriction-hint" style="font-size: 10px; color: #555; font-weight: 700;">Hạn chế: Chỉ trả lời ĐÚNG phạm vi tài liệu.</div>
+                </div>
             </div>
         </div>
 
@@ -551,6 +571,46 @@
     <!-- SCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
+        // ========== TOGGLE EXTRA QUOTA ==========
+        const toggleExtraQuotaChat = document.getElementById('toggleExtraQuotaChat');
+        if (toggleExtraQuotaChat) {
+            // Initialize color
+            if(toggleExtraQuotaChat.checked) {
+                toggleExtraQuotaChat.nextElementSibling.style.backgroundColor = 'var(--pink)';
+            }
+            toggleExtraQuotaChat.addEventListener('change', function(e) {
+                const isChecked = e.target.checked;
+                const sliderBtn = e.target.nextElementSibling.querySelector('.slider-btn');
+                
+                // UI update
+                if(isChecked) {
+                    sliderBtn.style.transform = 'translateX(24px)';
+                    e.target.nextElementSibling.style.backgroundColor = 'var(--pink)';
+                } else {
+                    sliderBtn.style.transform = 'translateX(0)';
+                    e.target.nextElementSibling.style.backgroundColor = '#ccc';
+                }
+
+                // API call
+                fetch('/api/user/toggle-extra-quota', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ UseExtraQuota: isChecked })
+                }).then(res => {
+                    if(!res.ok) throw new Error('Network error');
+                }).catch(err => {
+                    e.target.checked = !isChecked;
+                    if(!isChecked) {
+                        sliderBtn.style.transform = 'translateX(24px)';
+                        e.target.nextElementSibling.style.backgroundColor = 'var(--pink)';
+                    } else {
+                        sliderBtn.style.transform = 'translateX(0)';
+                        e.target.nextElementSibling.style.backgroundColor = '#ccc';
+                    }
+                });
+            });
+        }
+
         // ========== TOGGLE RESTRICT ==========
         let restrictToDocs = true;
         document.querySelectorAll('.toggle-btn').forEach(btn => {
@@ -820,19 +880,24 @@
             renderSessionsList(); renderMessages();
         }
         async function deleteSession(id) {
-            if (sessions.length <= 1) { alert('Cần giữ ít nhất một cuộc hội thoại.'); return; }
-            if (!confirm('Xóa cuộc hội thoại này?')) return;
-            await apiPost('?handler=DeleteSession', { sessionId: id });
-            sessions = sessions.filter(s => s.id !== id);
-            if (currentSessionId === id) currentSessionId = sessions[0]?.id || null;
-            renderSessionsList(); renderMessages();
+            brutalConfirm('Xóa cuộc hội thoại này?', async () => {
+                await apiPost('?handler=DeleteSession', { sessionId: id });
+                sessions = sessions.filter(s => s.id !== id);
+                if (sessions.length === 0) {
+                    await createNewSession();
+                } else {
+                    if (currentSessionId === id) currentSessionId = sessions[0]?.id || null;
+                    renderSessionsList(); renderMessages();
+                }
+            });
         }
         async function clearChatHistory() {
-            if (!confirm('Xóa toàn bộ tin nhắn trong cuộc hội thoại này?')) return;
-            await apiPost('?handler=ClearSession', { sessionId: currentSessionId });
-            const s = sessions.find(x => x.id === currentSessionId);
-            if (s) { s.messages = []; s.title = 'Cuộc trò chuyện mới'; }
-            renderSessionsList(); renderMessages();
+            brutalConfirm('Xóa toàn bộ tin nhắn trong cuộc hội thoại này?', async () => {
+                await apiPost('?handler=ClearSession', { sessionId: currentSessionId });
+                const s = sessions.find(x => x.id === currentSessionId);
+                if (s) { s.messages = []; s.title = 'Cuộc trò chuyện mới'; }
+                renderSessionsList(); renderMessages();
+            });
         }
 
         async function sendMessage() {
@@ -868,13 +933,12 @@
                 removeTypingIndicator();
 
                 if (!data.success) {
-                    s.messages.pop();
-                    renderMessages();
                     const err = document.createElement('div');
                     err.className = 'message message-bot';
                     err.innerHTML = `<div class="chat-avatar" style="background:#d93856;"><i class="fa-solid fa-robot"></i></div><div class="message-content" style="border-color:#d93856;"><div class="message-sender" style="color:#d93856;">Hệ thống</div><p class="message-text">⚠️ ${escapeHtml(data.message||'Lỗi')} ${data.outOfQuota?'<a href="/Subscription" style="color:#3b82f6;text-decoration:underline;">Nâng cấp gói</a>':''}</p></div>`;
                     chatMessages.appendChild(err);
                     chatMessages.scrollTop = chatMessages.scrollHeight;
+                    document.getElementById('messageInput').value = text;
                     return;
                 }
 
@@ -895,13 +959,12 @@
                 }
             } catch(err) {
                 removeTypingIndicator();
-                s.messages.pop();
-                renderMessages();
                 const errDiv = document.createElement('div');
                 errDiv.className = 'message message-bot';
                 errDiv.innerHTML = `<div class="chat-avatar" style="background:#d93856;"><i class="fa-solid fa-robot"></i></div><div class="message-content" style="border-color:#d93856;"><div class="message-sender" style="color:#d93856;">Lỗi mạng</div><p class="message-text">⚠️ Không thể kết nối máy chủ.</p></div>`;
                 chatMessages.appendChild(errDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+                document.getElementById('messageInput').value = text;
             }
         }
 

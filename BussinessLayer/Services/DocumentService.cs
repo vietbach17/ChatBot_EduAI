@@ -1,3 +1,6 @@
+using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
 using BussinessLayer.DTOs;
 
 using DataAccessLayer.IRepositories;
@@ -117,7 +120,8 @@ namespace BussinessLayer.Services
                 UploaderId = doc.UploaderId,
                 UploaderName = doc.Uploader?.Username,
                 SubjectName = doc.Subject?.Name,
-                ChapterTitle = doc.Chapter?.Title
+                ChapterTitle = doc.Chapter?.Title,
+                IsDeleted = doc.IsDeleted
             };
         }
 
@@ -304,3 +308,4 @@ namespace BussinessLayer.Services
         }
     }
 }
+

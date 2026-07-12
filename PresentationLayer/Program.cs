@@ -1,3 +1,6 @@
+using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
 using BussinessLayer.Services;
 using BussinessLayer.IServices;
 using DataAccessLayer;
@@ -13,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddControllers();
 builder.Services.AddSignalR();
 
 // DbContext setup
@@ -30,6 +34,7 @@ builder.Services.AddScoped<IDocumentActivityLogRepository, DocumentActivityLogRe
 builder.Services.AddScoped<IQuestionBankRepository, QuestionBankRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
+builder.Services.AddScoped<IAddonPackageRepository, AddonPackageRepository>();
 
 // Services
 builder.Services.AddHttpClient();
@@ -81,6 +86,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapControllers();
 app.MapHub<PresentationLayer.SignalR.SignalRHub>("/courseHub");
 
 app.Run();
+

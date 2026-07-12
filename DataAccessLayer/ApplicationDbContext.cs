@@ -16,6 +16,7 @@ namespace DataAccessLayer
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<Chapter> Chapters { get; set; }
         public DbSet<DocumentChunk> DocumentChunks { get; set; }
+        public DbSet<AddonPackage> AddonPackages { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         public DbSet<DocumentActivityLog> DocumentActivityLogs { get; set; }
         public DbSet<QuestionBank> QuestionBanks { get; set; }
@@ -45,6 +46,33 @@ namespace DataAccessLayer
                 new User { Id = 1, Username = "student", PasswordHash = "student123", Role = "Student" },
                 new User { Id = 2, Username = "lecturer", PasswordHash = "lecturer123", Role = "Lecturer" },
                 new User { Id = 3, Username = "admin", PasswordHash = "admin123", Role = "Admin" }
+            );
+
+            modelBuilder.Entity<AddonPackage>().HasData(
+                new AddonPackage
+                {
+                    Id = 1,
+                    Name = "Gói Mini (Cấp tốc)",
+                    Price = 10000,
+                    QuotaAmount = 15,
+                    IsActive = true
+                },
+                new AddonPackage
+                {
+                    Id = 2,
+                    Name = "Gói Standard (Cứu cánh)",
+                    Price = 20000,
+                    QuotaAmount = 40,
+                    IsActive = true
+                },
+                new AddonPackage
+                {
+                    Id = 3,
+                    Name = "Gói Premium (Chạy nước rút)",
+                    Price = 50000,
+                    QuotaAmount = 120,
+                    IsActive = true
+                }
             );
 
             modelBuilder.Entity<Subject>()
