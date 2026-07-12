@@ -103,6 +103,8 @@
             <a asp-page="/Lecturer/MySubjects" class="nav-item @(ViewBag.ActiveMenu == "LecturerSubjects" ? "active" : "")"><i class="fa-solid fa-chalkboard-user"></i> MÔN PHỤ TRÁCH</a>
             <a asp-page="/Lecturer/AllSubjects" class="nav-item @(ViewBag.ActiveMenu == "LecturerAllSubjects" ? "active" : "")"><i class="fa-solid fa-book-open"></i> TẤT CẢ MÔN HỌC</a>
             <a asp-page="/Lecturer/MyDocuments" class="nav-item @(ViewBag.ActiveMenu == "LecturerDocuments" ? "active" : "")"><i class="fa-regular fa-file-lines"></i> TÀI LIỆU CỦA TÔI</a>
+            <a asp-page="/Lecturer/QuestionBank" class="nav-item @(ViewBag.ActiveMenu == "QuestionBank" ? "active" : "")"><i class="fa-solid fa-database"></i> NGÂN HÀNG CÂU HỎI</a>
+            <a asp-page="/Lecturer/AIGenerateQuestions" class="nav-item @(ViewBag.ActiveMenu == "AIGenerateQuestions" ? "active" : "")"><i class="fa-solid fa-robot"></i> AI TẠO CÂU HỎI</a>
         }
         else
         {
