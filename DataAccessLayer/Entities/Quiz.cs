@@ -30,7 +30,7 @@ namespace DataAccessLayer.Entities
 
         public int TotalQuestions { get; set; } = 0;
 
-        public int QuestionsPerAttempt { get; set; } = 0;
+        //public int QuestionsPerAttempt { get; set; } = 0;
 
         public bool IsShuffled { get; set; } = false;
 
