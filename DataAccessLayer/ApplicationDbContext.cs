@@ -24,6 +24,8 @@ namespace DataAccessLayer
         public DbSet<QuizQuestion> QuizQuestions { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<AIGenerationLog> AIGenerationLogs { get; set; }
+        public DbSet<QuizAttempt> QuizAttempts { get; set; }
+        public DbSet<QuizAnswer> QuizAnswers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -205,6 +207,30 @@ namespace DataAccessLayer
                 .HasOne(l => l.Subject)
                 .WithMany()
                 .HasForeignKey(l => l.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuizAttempt>()
+                .HasOne(qa => qa.Quiz)
+                .WithMany()
+                .HasForeignKey(qa => qa.QuizId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuizAttempt>()
+                .HasOne(qa => qa.Student)
+                .WithMany()
+                .HasForeignKey(qa => qa.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuizAnswer>()
+                .HasOne(qa => qa.Attempt)
+                .WithMany(a => a.Answers)
+                .HasForeignKey(qa => qa.AttemptId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuizAnswer>()
+                .HasOne(qa => qa.QuestionBank)
+                .WithMany()
+                .HasForeignKey(qa => qa.QuestionBankId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
