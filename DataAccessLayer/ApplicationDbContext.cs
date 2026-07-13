@@ -68,7 +68,7 @@ namespace DataAccessLayer
                 new AddonPackage
                 {
                     Id = 3,
-                    Name = "Gói Premium (Chạy nước rút)",
+                    Name = "Gói Ultra (Chạy nước rút)",
                     Price = 50000,
                     QuotaAmount = 120,
                     IsActive = true

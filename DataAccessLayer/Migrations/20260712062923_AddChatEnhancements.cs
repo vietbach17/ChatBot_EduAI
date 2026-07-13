@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -50,12 +50,6 @@ namespace DataAccessLayer.Migrations
                 principalTable: "Subjects",
                 principalColumn: "Id");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_PaymentTransactions_AddonPackages_AddonId",
-                table: "PaymentTransactions",
-                column: "AddonId",
-                principalTable: "AddonPackages",
-                principalColumn: "Id");
         }
 
         /// <inheritdoc />
@@ -64,10 +58,6 @@ namespace DataAccessLayer.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_ChatSessions_Subjects_SubjectId",
                 table: "ChatSessions");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_PaymentTransactions_AddonPackages_AddonId",
-                table: "PaymentTransactions");
 
             migrationBuilder.DropIndex(
                 name: "IX_ChatSessions_SubjectId",

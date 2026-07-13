@@ -245,6 +245,12 @@ namespace BussinessLayer.Services
 
             user.SubscriptionPlan   = plan;
             user.SubscriptionExpiry = (plan == "Basic" || plan == "Free") ? null : expiry;
+            
+            user.MonthlyQuestionCount = 0;
+            user.QuotaResetDate = DateTime.UtcNow.AddDays(30);
+            user.ShortTermQuestionCount = 0;
+            user.ShortTermResetDate = DateTime.UtcNow.AddHours(5);
+            
             await _userRepository.UpdateUserAsync(user);
             return true;
         }

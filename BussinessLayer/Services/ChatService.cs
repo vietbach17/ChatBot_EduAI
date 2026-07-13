@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +18,7 @@ namespace BussinessLayer.Services
 {
     public class ChatService : IChatService
     {
-        private const string DefaultSessionTitle = "Cuoc tro chuyen moi";
+        private const string DefaultSessionTitle = "Cuộc trò chuyện mới";
         private const int MaxMessageLength = 8000; // giới hạn độ dài tin nhắn (ký tự)
 
         private readonly IChatRepository _chatRepository;
@@ -131,9 +131,9 @@ namespace BussinessLayer.Services
                 if (request.RestrictToDocs)
                 {
                     if (request.SelectedDocIds == null || !request.SelectedDocIds.Any())
-                        return new ChatResponseDto { Success = false, Message = "Hay chon it nhat mot tai lieu truoc khi hoi trong che do han che theo tai lieu." };
+                        return new ChatResponseDto { Success = false, Message = "Hãy chọn ít nhất một tài liệu trước khi hỏi trong chế độ hạn chế theo tài liệu." };
                     if (string.IsNullOrWhiteSpace(contextText))
-                        return new ChatResponseDto { Success = false, Message = "Toi khong tim thay doan tai lieu phu hop de tra loi cau hoi nay trong cac tai lieu da chon." };
+                        return new ChatResponseDto { Success = false, Message = "Tôi không tìm thấy đoạn tài liệu phù hợp để trả lời câu hỏi này trong các tài liệu đã chọn." };
                 }
 
                 var prompt = BuildPrompt(request.Message, conversationHistory, contextText, request.RestrictToDocs, effectivePlan, remainingShortAfter, remainingMonthAfter);
@@ -146,15 +146,15 @@ namespace BussinessLayer.Services
                 }
                 catch (OperationCanceledException)
                 {
-                    return new ChatResponseDto { Success = false, Message = "Yeu cau AI vuot qua 60 giay, vui long thu lai sau." };
+                    return new ChatResponseDto { Success = false, Message = "Yêu cầu AI vượt quá 60 giây, vui lòng thử lại sau." };
                 }
 
                 if (string.IsNullOrWhiteSpace(replyText))
-                    return new ChatResponseDto { Success = false, Message = "AI khong tra ve noi dung hop le." };
+                    return new ChatResponseDto { Success = false, Message = "AI không trả về nội dung hợp lệ." };
 
                 var session = existingSession ?? await ResolveSessionAsync(userId, request.SessionId, request.Message, createIfMissing: true);
                 if (session == null)
-                    return new ChatResponseDto { Success = false, Message = "Khong the tao hoac tim thay phien chat." };
+                    return new ChatResponseDto { Success = false, Message = "Không thể tạo hoặc tìm thấy phiên chat." };
 
                 await SaveMessagesAndUpdateSessionAsync(session, request.Message, replyText, citations);
                 await UpdateQuotaAsync(user, isUsingExtraQuota);
@@ -171,7 +171,7 @@ namespace BussinessLayer.Services
             }
             catch (Exception ex)
             {
-                return new ChatResponseDto { Success = false, Message = "Loi he thong: " + ex.Message };
+                return new ChatResponseDto { Success = false, Message = "Lỗi hệ thống: " + ex.Message };
             }
         }
 
@@ -188,7 +188,7 @@ namespace BussinessLayer.Services
                     return new ChatResponseDto
                     {
                         Success = false,
-                        Message = $"Tin nhan qua dai ({request.Message.Length} ky tu). Gioi han la {MaxMessageLength} ky tu."
+                        Message = $"Tin nhắn quá dài ({request.Message.Length} ký tự). Giới hạn là {MaxMessageLength} ký tự."
                     };
 
                 var existingSession = await ResolveSessionAsync(userId, request.SessionId, request.Message, createIfMissing: false);
@@ -205,9 +205,9 @@ namespace BussinessLayer.Services
                 if (request.RestrictToDocs)
                 {
                     if (request.SelectedDocIds == null || !request.SelectedDocIds.Any())
-                        return new ChatResponseDto { Success = false, Message = "Hay chon it nhat mot tai lieu truoc khi hoi trong che do han che theo tai lieu." };
+                        return new ChatResponseDto { Success = false, Message = "Hãy chọn ít nhất một tài liệu trước khi hỏi trong chế độ hạn chế theo tài liệu." };
                     if (string.IsNullOrWhiteSpace(contextText))
-                        return new ChatResponseDto { Success = false, Message = "Toi khong tim thay doan tai lieu phu hop de tra loi cau hoi nay." };
+                        return new ChatResponseDto { Success = false, Message = "Tôi không tìm thấy đoạn tài liệu phù hợp để trả lời câu hỏi này." };
                 }
 
                 var prompt = BuildPrompt(request.Message, conversationHistory, contextText, request.RestrictToDocs, effectivePlan, remainingShortAfter, remainingMonthAfter);
@@ -226,11 +226,11 @@ namespace BussinessLayer.Services
 
                 var replyText = fullReply.ToString();
                 if (string.IsNullOrWhiteSpace(replyText))
-                    return new ChatResponseDto { Success = false, Message = "AI khong tra ve noi dung hop le." };
+                    return new ChatResponseDto { Success = false, Message = "AI không trả về nội dung hợp lệ." };
 
                 var session = existingSession ?? await ResolveSessionAsync(userId, request.SessionId, request.Message, createIfMissing: true);
                 if (session == null)
-                    return new ChatResponseDto { Success = false, Message = "Khong the tao hoac tim thay phien chat." };
+                    return new ChatResponseDto { Success = false, Message = "Không thể tạo hoặc tìm thấy phiên chat." };
 
                 await SaveMessagesAndUpdateSessionAsync(session, request.Message, replyText, citations);
                 await UpdateQuotaAsync(user, isUsingExtraQuota);
@@ -247,11 +247,11 @@ namespace BussinessLayer.Services
             }
             catch (OperationCanceledException)
             {
-                return new ChatResponseDto { Success = false, Message = "Yeu cau AI het thoi gian cho (90 giay), vui long thu lai." };
+                return new ChatResponseDto { Success = false, Message = "Yêu cầu AI hết thời gian chờ (90 giây), vui lòng thử lại." };
             }
             catch (Exception ex)
             {
-                return new ChatResponseDto { Success = false, Message = "Loi he thong: " + ex.Message };
+                return new ChatResponseDto { Success = false, Message = "Lỗi hệ thống: " + ex.Message };
             }
         }
 
@@ -296,7 +296,7 @@ namespace BussinessLayer.Services
             if (limitMonth != int.MaxValue && user.MonthlyQuestionCount >= limitMonth)
             {
                 outOfStandardQuota = true;
-                outOfQuotaMessage = $"Ban da dung het {limitMonth} cau hoi trong thang nay. Vui long cho sang thang sau hoac nang cap goi.";
+                outOfQuotaMessage = $"Bạn đã dùng hết {limitMonth} câu hỏi trong tháng này. Vui lòng chờ sang tháng sau hoặc nâng cấp gói.";
             }
             else if (limitShort != int.MaxValue && user.ShortTermQuestionCount >= limitShort)
             {
@@ -304,8 +304,8 @@ namespace BussinessLayer.Services
                 var remainingTime = user.ShortTermResetDate.HasValue ? (user.ShortTermResetDate.Value - now) : TimeSpan.Zero;
                 var hours = Math.Max(0, (int)Math.Ceiling(remainingTime.TotalHours));
                 outOfQuotaMessage = effectivePlan == "Basic"
-                    ? $"Ban da dat gioi han {limitShort} cau hoi trong 5 gio. Vui long cho them {hours} gio."
-                    : $"Ban da dat gioi han {limitShort} cau hoi trong 5 gio cua goi {effectivePlan}. Vui long cho them {hours} gio.";
+                    ? $"Bạn đã đạt giới hạn {limitShort} câu hỏi trong 5 giờ. Vui lòng chờ thêm {hours} giờ."
+                    : $"Bạn đã đạt giới hạn {limitShort} câu hỏi trong 5 giờ của gói {effectivePlan}. Vui lòng chờ thêm {hours} giờ.";
             }
 
             if (outOfStandardQuota)
@@ -318,9 +318,9 @@ namespace BussinessLayer.Services
                 else
                 {
                     if (user.ExtraQuestionQuota > 0)
-                        outOfQuotaMessage += " Ban van con luot hoi du phong, hay BAT cong tac 'Su dung luot du phong' de tiep tuc.";
+                        outOfQuotaMessage += " Bạn vẫn còn lượt hỏi dự phòng, hãy BẬT công tắc 'Sử dụng lượt dự phòng' để tiếp tục.";
                     else
-                        outOfQuotaMessage += " Ban da het luot hoi. Vui long vao muc Goi Hoi Vien de mua them luot du phong.";
+                        outOfQuotaMessage += " Bạn đã hết lượt hỏi. Vui lòng vào mục Gói Hội Viên để mua thêm lượt dự phòng.";
 
                     return (new ChatResponseDto { Success = false, OutOfQuota = true, Remaining = remainingShortBefore, Message = outOfQuotaMessage },
                         user, effectivePlan, remainingShortAfter, remainingMonthAfter, remainingAfter, isUsingExtraQuota);
@@ -351,12 +351,12 @@ namespace BussinessLayer.Services
             {
                 similarChunks = await RerankChunksAsync(request.Message, similarChunks, topN: 5);
                 contextText = string.Join("\n\n", similarChunks.Select((chunk, index) =>
-                    $"Nguon {index + 1}:\n" +
-                    $"Tai lieu: {chunk.Document.Title}\n" +
-                    $"Mon: {chunk.Document.Subject?.Name ?? "Khong ro"}\n" +
-                    $"Chuong: {chunk.Document.Chapter?.Title ?? "Khong ro"}\n" +
-                    $"Doan: {chunk.OrderIndex}\n" +
-                    $"Noi dung: {chunk.Content}"));
+                    $"Nguồn {index + 1}:\n" +
+                    $"Tài liệu: {chunk.Document.Title}\n" +
+                    $"Môn: {chunk.Document.Subject?.Name ?? "Không rõ"}\n" +
+                    $"Chương: {chunk.Document.Chapter?.Title ?? "Không rõ"}\n" +
+                    $"Đoạn: {chunk.OrderIndex}\n" +
+                    $"Nội dung: {chunk.Content}"));
 
                 citations = similarChunks.Select(chunk => new CitationDto
                 {
@@ -376,8 +376,8 @@ namespace BussinessLayer.Services
                 {
                     var snippet = BuildSnippet(doc.Content);
                     var fullCleaned = StripMarkdown(doc.Content ?? "");
-                    var fullContent = fullCleaned.Length > 3000 ? fullCleaned[..3000] + "...\n(Tai lieu qua dai)" : fullCleaned;
-                    contextText += $"Tai lieu: {doc.Title}\nNoi dung: {snippet}\n\n";
+                    var fullContent = fullCleaned.Length > 3000 ? fullCleaned[..3000] + "...\n(Tài liệu quá dài)" : fullCleaned;
+                    contextText += $"Tài liệu: {doc.Title}\nNội dung: {snippet}\n\n";
                     citations.Add(new CitationDto
                     {
                         DocumentId = doc.Id,
@@ -472,7 +472,7 @@ namespace BussinessLayer.Services
                 Id = session.Id,
                 Title = session.Title,
                 CreatedAt = session.CreatedAt,
-                Messages = session.Messages
+                Messages = (session.Messages ?? new List<ChatMessage>())
                     .OrderBy(m => m.Timestamp)
                     .Select(m => new ChatMessageDto
                     {
@@ -542,7 +542,7 @@ namespace BussinessLayer.Services
                 .TakeLast(maxMessages)
                 .Select(m =>
                 {
-                    var roleLabel = m.Role == "user" ? "Nguoi dung" : "Tro ly AI";
+                    var roleLabel = m.Role == "user" ? "Người dùng" : "Trợ lý AI";
                     // Truncate dài để tránh context quá lớn
                     var text = m.Text.Length > 500 ? m.Text[..500] + "..." : m.Text;
                     return $"{roleLabel}: {text}";
@@ -563,36 +563,36 @@ namespace BussinessLayer.Services
 
             if (remainingShortQueries != int.MaxValue || remainingMonthQueries != int.MaxValue)
             {
-                var shortText = remainingShortQueries != int.MaxValue ? $"con {remainingShortQueries} luot trong chu ky 5 gio" : "khong gioi han trong 5 gio";
-                var monthText = remainingMonthQueries != int.MaxValue ? $"con {remainingMonthQueries} luot trong thang" : "khong gioi han trong thang";
-                promptSections.Add($"[THONG TIN HE THONG]\nNguoi dung dang su dung goi: {planName}.\nSo luot hoi con lai sau cau hoi nay: {shortText}, va {monthText}.\n(Neu nguoi dung hoi ve so luot con lai, hay dung thong tin nay de tra loi. Khong can nhac den neu khong lien quan).");
+                var shortText = remainingShortQueries != int.MaxValue ? $"còn {remainingShortQueries} lượt trong chu kỳ 5 giờ" : "không giới hạn trong 5 giờ";
+                var monthText = remainingMonthQueries != int.MaxValue ? $"còn {remainingMonthQueries} lượt trong tháng" : "không giới hạn trong tháng";
+                promptSections.Add($"[THÔNG TIN HỆ THỐNG]\nNgười dùng đang sử dụng gói: {planName}.\nSố lượt hỏi còn lại sau câu hỏi này: {shortText}, và {monthText}.\n(Nếu người dùng hỏi về số lượt còn lại, hãy dùng thông tin này để trả lời. Không cần nhắc đến nếu không liên quan).");
             }
             else
             {
-                promptSections.Add($"[THONG TIN HE THONG]\nNguoi dung dang su dung goi: {planName} (Khong gioi han so luot hoi).");
+                promptSections.Add($"[THÔNG TIN HỆ THỐNG]\nNgười dùng đang sử dụng gói: {planName} (Không giới hạn số lượt hỏi).");
             }
 
-            promptSections.Add("[QUAN TRONG VE DANH TINH CUA BAN]\nNeu nguoi dung hoi ban la ai, ban duoc tao ra boi ai, hoac ban dang su dung mo hinh/ngon ngu/AI nao (vi du: GPT, Gemini, Claude, LLaMA, v.v.), hay TUYET DOI KHONG tiet lo mo hinh thuc su cua ban. Thay vao do, hay tra loi mot cach lich su rang: 'Toi la tro ly AI duoc phat trien va tich hop doc quyen boi he thong ChatEdu de ho tro ban trong hoc tap.'");
+            promptSections.Add("[QUAN TRỌNG VỀ DANH TÍNH CỦA BẠN]\nNếu người dùng hỏi bạn là ai, bạn được tạo ra bởi ai, hoặc bạn đang sử dụng mô hình/ngôn ngữ/AI nào (ví dụ: GPT, Gemini, Claude, LLaMA, v.v.), hãy TUYỆT ĐỐI KHÔNG tiết lộ mô hình thực sự của bạn. Thay vào đó, hãy trả lời một cách lịch sự rằng: 'Tôi là trợ lý AI được phát triển và tích hợp độc quyền bởi hệ thống ChatEdu để hỗ trợ bạn trong học tập.'");
 
             if (!string.IsNullOrWhiteSpace(conversationHistory))
             {
-                promptSections.Add("Lich su hoi thoai gan day:\n" + conversationHistory + "\n\nHay giu dung ngu canh hoi thoai khi tra loi cau hoi moi.");
+                promptSections.Add("Lịch sử hội thoại gần đây:\n" + conversationHistory + "\n\nHãy giữ đúng ngữ cảnh hội thoại khi trả lời câu hỏi mới.");
             }
 
             if (!string.IsNullOrWhiteSpace(contextText))
             {
-                var citationInstruction = "\n\nQUAN TRONG: Bat buoc phai trich dan nguon cho cac cau van co su dung thong tin tu tai lieu. Khi ban viet mot cau lay thong tin tu 'Nguon X', hay BAT BUOC chen [X] vao ngay cuoi cau do. Vi du: 'Trai dat hinh tron [1][2].' KHONG liet ke lai danh sach nguon o cuoi cau tra loi.";
+                var citationInstruction = "\n\nQUAN TRỌNG: Bắt buộc phải trích dẫn nguồn cho các câu văn có sử dụng thông tin từ tài liệu. Khi bạn viết một câu lấy thông tin từ 'Nguồn X', hãy BẮT BUỘC chèn [X] vào ngay cuối câu đó. Ví dụ: 'Trái đất hình tròn [1][2].' KHÔNG liệt kê lại danh sách nguồn ở cuối câu trả lời.";
                 if (restrictToDocs)
                 {
-                    promptSections.Add("Tai lieu lien quan:\n" + contextText + "\n\nChi su dung thong tin trong tai lieu tren de tra loi. Neu tai lieu khong du thong tin, hay noi ro rang." + citationInstruction);
+                    promptSections.Add("Tài liệu liên quan:\n" + contextText + "\n\nChỉ sử dụng thông tin trong tài liệu trên để trả lời. Nếu tài liệu không đủ thông tin, hãy nói rõ ràng." + citationInstruction);
                 }
                 else
                 {
-                    promptSections.Add("Tai lieu lien quan (co the tham khao):\n" + contextText + "\n\nHay uu tien su dung thong tin trong tai lieu nay. Neu tai lieu khong du thong tin, ban co the su dung kien thuc san co de tra loi." + citationInstruction);
+                    promptSections.Add("Tài liệu liên quan (có thể tham khảo):\n" + contextText + "\n\nHãy ưu tiên sử dụng thông tin trong tài liệu này. Nếu tài liệu không đủ thông tin, bạn có thể sử dụng kiến thức sẵn có để trả lời." + citationInstruction);
                 }
             }
 
-            promptSections.Add($"Cau hoi hien tai: {message}");
+            promptSections.Add($"Câu hỏi hiện tại: {message}");
             return string.Join("\n\n", promptSections);
         }
 
@@ -602,15 +602,15 @@ namespace BussinessLayer.Services
 
             var promptSections = new List<string>
             {
-                "Ban la mot he thong cham diem muc do lien quan cua tai lieu. Nhiem vu cua ban la chon ra cac doan tai lieu phu hop nhat voi cau hoi.",
-                $"Cau hoi: {query}",
-                "Danh sach cac doan tai lieu:"
+                "Bạn là một hệ thống chấm điểm mức độ liên quan của tài liệu. Nhiệm vụ của bạn là chọn ra các đoạn tài liệu phù hợp nhất với câu hỏi.",
+                $"Câu hỏi: {query}",
+                "Danh sách các đoạn tài liệu:"
             };
             for (int i = 0; i < chunks.Count; i++)
                 promptSections.Add($"[{i}] {chunks[i].Content}");
-            promptSections.Add($@"Vui long tra ve MANG JSON gom toi da {topN} chi so (index) cua cac doan tai lieu lien quan nhat den cau hoi, sap xep theo muc do phu hop giam dan.
-Vi du: [3, 0, 1, 5, 2]
-CHI TRA VE MANG JSON, KHONG GIAI THICH HOAC THEM BAT KY VAN BAN NAO KHAC.");
+            promptSections.Add($@"Vui lòng trả về MẢNG JSON gồm tối đa {topN} chỉ số (index) của các đoạn tài liệu liên quan nhất đến câu hỏi, sắp xếp theo mức độ phù hợp giảm dần.
+Ví dụ: [3, 0, 1, 5, 2]
+CHỈ TRẢ VỀ MẢNG JSON, KHÔNG GIẢI THÍCH HOẶC THÊM BẤT KỲ VĂN BẢN NÀO KHÁC.");
 
             var prompt = string.Join("\n\n", promptSections);
             try
