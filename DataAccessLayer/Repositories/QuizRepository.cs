@@ -50,6 +50,21 @@ namespace DataAccessLayer.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task AddQuestionsAsync(IEnumerable<QuizQuestion> questions)
+        {
+            await _context.QuizQuestions.AddRangeAsync(questions);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<QuizQuestion>> GetQuizQuestionsAsync(int quizId)
+        {
+            return await _context.QuizQuestions
+                .Include(q => q.QuestionBank)
+                .Where(q => q.QuizId == quizId)
+                .OrderBy(q => q.OrderIndex)
+                .ToListAsync();
+        }
+
         public async Task UpdateAsync(Quiz quiz)
         {
             _context.Quizzes.Update(quiz);
