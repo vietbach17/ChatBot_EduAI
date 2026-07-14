@@ -16,6 +16,9 @@ using BussinessLayer.IServices;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Trò chuyện AI (Chatbot). Quản lý phiên chat, gửi câu hỏi đến Gemini API, thực hiện tìm kiếm ngữ nghĩa (Semantic Search) trên tài liệu đã Embedding, và trả về câu trả lời kèm trích dẫn nguồn (Citation).
+    /// </summary>
     public class ChatService : IChatService
     {
         private const string DefaultSessionTitle = "Cuộc trò chuyện mới";
@@ -152,6 +155,9 @@ namespace BussinessLayer.Services
                 if (string.IsNullOrWhiteSpace(replyText))
                     return new ChatResponseDto { Success = false, Message = "AI không trả về nội dung hợp lệ." };
 
+                if (replyText.StartsWith("⚠️") || replyText.StartsWith("Lỗi khi gọi AI"))
+                    return new ChatResponseDto { Success = false, Message = replyText };
+
                 var session = existingSession ?? await ResolveSessionAsync(userId, request.SessionId, request.Message, createIfMissing: true);
                 if (session == null)
                     return new ChatResponseDto { Success = false, Message = "Không thể tạo hoặc tìm thấy phiên chat." };
@@ -227,6 +233,9 @@ namespace BussinessLayer.Services
                 var replyText = fullReply.ToString();
                 if (string.IsNullOrWhiteSpace(replyText))
                     return new ChatResponseDto { Success = false, Message = "AI không trả về nội dung hợp lệ." };
+
+                if (replyText.StartsWith("⚠️") || replyText.StartsWith("Lỗi khi gọi AI"))
+                    return new ChatResponseDto { Success = false, Message = replyText };
 
                 var session = existingSession ?? await ResolveSessionAsync(userId, request.SessionId, request.Message, createIfMissing: true);
                 if (session == null)
@@ -343,9 +352,19 @@ namespace BussinessLayer.Services
             if (_cache.TryGetValue(cacheKey, out (string ctx, List<CitationDto> cit) cached))
                 return (cached.ctx, cached.cit);
 
-            var questionEmbedding = await _geminiService.GetEmbeddingAsync(request.Message);
-            var similarChunks = await _documentRepository.SearchSimilarChunksAsync(
-                new Vector(questionEmbedding), request.SelectedDocIds, topK: 20);
+            List<DocumentChunk> similarChunks;
+            try
+            {
+                var questionEmbedding = await _geminiService.GetEmbeddingAsync(request.Message);
+                similarChunks = await _documentRepository.SearchSimilarChunksAsync(
+                    new Vector(questionEmbedding), request.SelectedDocIds, topK: 20);
+            }
+            catch
+            {
+                // Embedding bị lỗi (vd 429 hết quota) → không semantic search được,
+                // fallback dùng nội dung tài liệu trực tiếp thay vì làm hỏng cả câu chat.
+                similarChunks = new List<DocumentChunk>();
+            }
 
             if (similarChunks.Any())
             {
@@ -596,6 +615,10 @@ namespace BussinessLayer.Services
             return string.Join("\n\n", promptSections);
         }
 
+        /// <summary>
+        /// Rerank chunks bằng AI (gemini-1.5-flash) — model riêng để tránh xung đột quota với chat model.
+        /// Fallback về keyword scoring nếu AI bị lỗi hoặc 429.
+        /// </summary>
         private async Task<List<DocumentChunk>> RerankChunksAsync(string query, List<DocumentChunk> chunks, int topN)
         {
             if (chunks.Count <= topN) return chunks;
@@ -615,7 +638,15 @@ CHỈ TRẢ VỀ MẢNG JSON, KHÔNG GIẢI THÍCH HOẶC THÊM BẤT KỲ VĂN 
             var prompt = string.Join("\n\n", promptSections);
             try
             {
-                var reply = await _geminiService.GenerateAnswerAsync(prompt, "gemini-1.5-flash");
+                // Dùng gemini-2.0-flash riêng cho rerank → quota RPM độc lập với chat model
+                // (gemini-1.5-flash cũ đã bị Google khai tử, luôn trả 404).
+                // Truyền maxRetries = 1 (không retry, không fallback model) để nếu lỗi thì dùng keyword scoring ngay!
+                var reply = await _geminiService.GenerateAnswerAsync(prompt, "gemini-2.0-flash", maxRetries: 1);
+
+                // Bỏ qua nếu AI trả lỗi 429/503
+                if (reply.StartsWith("⚠️") || reply.StartsWith("Lỗi khi gọi AI"))
+                    return LocalKeywordRerank(query, chunks, topN);
+
                 var jsonStart = reply.IndexOf('[');
                 var jsonEnd = reply.LastIndexOf(']');
                 if (jsonStart >= 0 && jsonEnd > jsonStart)
@@ -635,9 +666,41 @@ CHỈ TRẢ VỀ MẢNG JSON, KHÔNG GIẢI THÍCH HOẶC THÊM BẤT KỲ VĂN 
                     }
                 }
             }
-            catch { /* fallback */ }
+            catch { /* fallback xuống keyword scoring */ }
 
-            return chunks.Take(topN).ToList();
+            return LocalKeywordRerank(query, chunks, topN);
+        }
+
+        /// <summary>
+        /// Fallback rerank cục bộ bằng keyword scoring khi AI bị lỗi/429.
+        /// </summary>
+        private static List<DocumentChunk> LocalKeywordRerank(string query, List<DocumentChunk> chunks, int topN)
+        {
+            var queryTokens = System.Text.RegularExpressions.Regex
+                .Replace(query.ToLowerInvariant(), @"[^\p{L}\p{N}\s]", " ")
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Where(t => t.Length > 1)
+                .ToHashSet();
+
+            if (queryTokens.Count == 0) return chunks.Take(topN).ToList();
+
+            return chunks.Select(chunk =>
+            {
+                var content = System.Text.RegularExpressions.Regex
+                    .Replace((chunk.Content ?? "").ToLowerInvariant(), @"[^\p{L}\p{N}\s]", " ");
+                double score = queryTokens.Sum(token =>
+                {
+                    int count = 0, pos = 0;
+                    while ((pos = content.IndexOf(token, pos, StringComparison.Ordinal)) >= 0)
+                    { count++; pos += token.Length; }
+                    return (double)count;
+                });
+                return (chunk, score);
+            })
+            .OrderByDescending(x => x.score)
+            .Take(topN)
+            .Select(x => x.chunk)
+            .ToList();
         }
     }
 }

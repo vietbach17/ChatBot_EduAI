@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +8,9 @@ using DataAccessLayer.IRepositories;
 
 namespace DataAccessLayer.Repositories
 {
+    /// <summary>
+    /// Repository truy vấn Phiên trò chuyện, Tin nhắn, và quản lý lịch sử chat.
+    /// </summary>
     public class ChatRepository : IChatRepository
     {
         private readonly ApplicationDbContext _context;

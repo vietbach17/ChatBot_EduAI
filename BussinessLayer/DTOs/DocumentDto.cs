@@ -1,7 +1,10 @@
-using System;
+﻿using System;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO hiển thị thông tin Tài liệu (tên, loại file, trạng thái, môn học).
+    /// </summary>
     public class DocumentDto
     {
         public int Id { get; set; }

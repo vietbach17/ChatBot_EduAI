@@ -9,6 +9,9 @@ using PresentationLayer.ViewModels.Admin;
 
 namespace PresentationLayer.Pages.Admin
 {
+    /// <summary>
+    /// PageModel trang Quan ly Nguoi dung cua Admin. Hien thi danh sach tai khoan, ho tro tim kiem, vo hieu hoa/kich hoat va doi vai tro.
+    /// </summary>
     public class UsersModel : PageModel
     {
         private readonly IUserService _userService;

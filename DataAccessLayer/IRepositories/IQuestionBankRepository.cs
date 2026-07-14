@@ -1,9 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataAccessLayer.Entities;
 
 namespace DataAccessLayer.IRepositories
 {
+    /// <summary>
+    /// Giao diện Repository truy vấn Ngân hàng Câu hỏi.
+    /// </summary>
     public interface IQuestionBankRepository
     {
         Task<QuestionBank?> GetByIdAsync(int id);

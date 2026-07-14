@@ -7,6 +7,9 @@ using PresentationLayer.ViewModels.Auth;
 namespace PresentationLayer.Pages.Auth
 {
     [Authorize]
+    /// <summary>
+    /// PageModel trang Ho so ca nhan. Hien thi thong tin tai khoan, cho phep cap nhat thong tin ca nhan va doi mat khau.
+    /// </summary>
     public class ProfileModel : PageModel
     {
         private readonly BussinessLayer.IServices.IUserService _userService;

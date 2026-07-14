@@ -12,6 +12,9 @@ using BussinessLayer.IServices;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dich vu trich xuat noi dung van ban tu cac loai file. Ho tro PDF (PdfPig), Word (DocX), TXT va cac dinh dang pho bien khac.
+    /// </summary>
     public class FileTextExtractorService : IFileTextExtractorService
     {
         /// <summary>

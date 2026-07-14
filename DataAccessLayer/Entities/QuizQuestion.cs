@@ -3,6 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể liên kết giữa Bài kiểm tra (Quiz) và Câu hỏi trong Ngân hàng (QuestionBank).
+    /// Mỗi bản ghi xác định câu hỏi nào thuộc đề nào (VariantIndex) và thứ tự hiển thị (OrderIndex).
+    /// </summary>
     public class QuizQuestion
     {
         [Key]

@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace PresentationLayer.Pages.Lecturer
 {
     [Authorize(Roles = "Lecturer")]
+    /// <summary>
+    /// PageModel trang Tai lieu cua toi (danh cho Giang vien). Hien thi danh sach tai lieu giang vien da upload, ho tro xoa va xem trang thai xu ly.
+    /// </summary>
     public class MyDocumentsModel : PageModel
     {
         private readonly IDocumentService _documentService;

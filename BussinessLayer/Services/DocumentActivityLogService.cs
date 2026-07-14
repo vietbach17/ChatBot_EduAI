@@ -1,4 +1,4 @@
-using BussinessLayer.IServices;
+﻿using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using BussinessLayer.DTOs;
@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ ghi nhật ký hoạt động Tài liệu. Lưu lại lịch sử các thao tác: Tải lên, Xóa, Di chuyển tài liệu.
+    /// </summary>
     public class DocumentActivityLogService : IDocumentActivityLogService
     {
         private readonly IDocumentActivityLogRepository _repository;

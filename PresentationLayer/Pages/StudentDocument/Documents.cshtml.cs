@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 namespace PresentationLayer.Pages.StudentDocument
 {
     [Authorize]
+    /// <summary>
+    /// PageModel trang xem Tai lieu theo Mon hoc (Student). Hien thi danh sach tai lieu cua mot chuong hoc cu the.
+    /// </summary>
     public class DocumentsModel : PageModel
     {
         private readonly IDocumentService _documentService;

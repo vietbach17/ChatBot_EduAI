@@ -10,6 +10,9 @@ using PresentationLayer.ViewModels.Admin;
 namespace PresentationLayer.Pages.Admin
 {
     [Authorize(Roles = "Admin")]
+    /// <summary>
+    /// PageModel trang Thong bao cua Admin. Hien thi danh sach thong bao he thong va cho phep admin xoa hoac danh dau da doc.
+    /// </summary>
     public class NotificationsModel : PageModel
     {
         private readonly IEmailService _emailService;

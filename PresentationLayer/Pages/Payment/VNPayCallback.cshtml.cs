@@ -14,6 +14,9 @@ using PresentationLayer.SignalR;
 namespace PresentationLayer.Pages.Payment
 {
     [Authorize]
+    /// <summary>
+    /// PageModel xu ly callback tu VNPay. Xac thuc chu ky tra ve, cap nhat trang thai giao dich va kich hoat goi dang ky.
+    /// </summary>
     public class VNPayCallbackModel : PageModel
     {
         private readonly PaymentGatewayFactory _gatewayFactory;
@@ -79,11 +82,17 @@ namespace PresentationLayer.Pages.Payment
 
                 var responseCode = Request.Query["vnp_ResponseCode"].ToString();
                 var transactionNo = Request.Query["vnp_TransactionNo"].ToString();
+                var bankCode = Request.Query["vnp_BankCode"].ToString();
+                var orderInfo = Request.Query["vnp_OrderInfo"].ToString();
 
                 if (responseCode == "00")
                 {
                     // Success! Process payment success
-                    var processed = await _subscriptionService.ProcessPaymentSuccessAsync(transactionId, transactionNo);
+                    var processed = await _subscriptionService.ProcessPaymentSuccessAsync(
+                        transactionId, 
+                        transactionNo, 
+                        bankCode, 
+                        orderInfo);
                     if (processed)
                     {
                         await _hubContext.Clients.All.SendAsync("PaymentStatusUpdated", transactionId, "Success");

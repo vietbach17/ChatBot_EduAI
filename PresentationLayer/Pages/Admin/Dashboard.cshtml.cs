@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace PresentationLayer.Pages.Admin
 {
+    /// <summary>
+    /// PageModel trang Dashboard cua Admin. Hien thi thong ke tong quan: so nguoi dung, doanh thu, cau hoi AI va cac giao dich gan nhat.
+    /// </summary>
     public class DashboardModel : PageModel
     {
         private readonly IUserService _userService;

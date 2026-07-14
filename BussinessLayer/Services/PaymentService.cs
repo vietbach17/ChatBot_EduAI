@@ -1,4 +1,4 @@
-using BussinessLayer.IServices;
+﻿using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using System;
@@ -9,6 +9,9 @@ using DataAccessLayer.IRepositories;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Thanh toán. Tạo giao dịch (PaymentTransaction), tạo URL thanh toán thông qua các cổng VNPay/PayOS/SePay, và cập nhật trạng thái giao dịch.
+    /// </summary>
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentTransactionRepository _transactionRepository;

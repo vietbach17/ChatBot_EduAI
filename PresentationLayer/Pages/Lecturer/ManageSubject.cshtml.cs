@@ -14,6 +14,9 @@ using PresentationLayer.ViewModels.Lecturer;
 
 namespace PresentationLayer.Pages.Lecturer
 {
+    /// <summary>
+    /// PageModel trang Quan ly Chi tiet Mon hoc (danh cho Giang vien). Cho phep giang vien them/sua/xoa chuong hoc va upload tai lieu.
+    /// </summary>
     public class ManageSubjectModel : PageModel
     {
         private readonly ISubjectService _subjectService;

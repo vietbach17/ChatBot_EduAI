@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DataAccessLayer.Entities;
@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLayer.Repositories
 {
+    /// <summary>
+    /// Repository truy vấn Môn học, Chương, quản lý phân công Giảng viên.
+    /// </summary>
     public class SubjectRepository : ISubjectRepository
     {
         private readonly ApplicationDbContext _context;

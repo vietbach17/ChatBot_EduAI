@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.IRepositories
 {
+    /// <summary>
+    /// Giao diện Repository truy vấn nhật ký hoạt động Tài liệu.
+    /// </summary>
     public interface IDocumentActivityLogRepository
     {
         Task AddLogAsync(DocumentActivityLog log);

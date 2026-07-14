@@ -1,7 +1,10 @@
-using System;
+﻿using System;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO hiển thị câu hỏi trong Ngân hàng câu hỏi.
+    /// </summary>
     public class QuestionBankDto
     {
         public int Id { get; set; }

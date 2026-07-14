@@ -1,4 +1,4 @@
-using DataAccessLayer.Entities;
+﻿using DataAccessLayer.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,9 @@ using DataAccessLayer.IRepositories;
 
 namespace DataAccessLayer.Repositories
 {
+    /// <summary>
+    /// Repository truy vấn và ghi nhật ký hoạt động Tài liệu.
+    /// </summary>
     public class DocumentActivityLogRepository : IDocumentActivityLogRepository
     {
         private readonly ApplicationDbContext _context;

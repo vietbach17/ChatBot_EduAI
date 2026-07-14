@@ -4,6 +4,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Ngân hàng Câu hỏi (Question Bank).
+    /// Mỗi câu hỏi thuộc một Môn học, có nội dung, loại (MultipleChoice/TrueFalse), các đáp án (OptionsJson),
+    /// đáp án đúng (CorrectAnswer), độ khó, và cờ đánh dấu có phải do AI sinh ra hay không (IsAIGenerated).
+    /// </summary>
     public class QuestionBank
     {
         [Key]

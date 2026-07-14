@@ -1,4 +1,4 @@
-using BussinessLayer.IServices;
+﻿using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using System.Collections.Generic;
@@ -11,6 +11,9 @@ using DataAccessLayer.IRepositories;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Quản lý danh mục Gói đăng ký và Gói mua thêm (Addon). Cung cấp CRUD cho các gói dịch vụ hiển thị trên trang Pricing.
+    /// </summary>
     public class SubscriptionPlanService : ISubscriptionPlanService
     {
         private readonly ISubscriptionPlanRepository _repo;

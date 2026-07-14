@@ -4,6 +4,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Giao dịch Thanh toán. Lưu trữ thông tin mỗi lần người dùng mua gói Subscription hoặc Addon.
+    /// Bao gồm: số tiền, phương thức (VNPay/PayOS/SePay), trạng thái (Pending/Success/Failed/Cancelled),
+    /// mã giao dịch từ cổng thanh toán, thông tin tài khoản người gửi, và nội dung chuyển khoản thực tế.
+    /// </summary>
     public class PaymentTransaction
     {
         [Key]
@@ -42,5 +47,11 @@ namespace DataAccessLayer.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? ExpiryDate { get; set; } // Ngày hết hạn dự kiến sau khi thanh toán thành công
+
+        [MaxLength(200)]
+        public string? SenderAccountInfo { get; set; } // Tài khoản ngân hàng người gửi (nếu có từ Webhook)
+
+        [MaxLength(500)]
+        public string? ActualTransferContent { get; set; } // Nội dung chuyển khoản thực tế (từ Webhook)
     }
 }

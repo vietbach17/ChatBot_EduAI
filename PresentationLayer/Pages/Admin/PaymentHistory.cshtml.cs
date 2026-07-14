@@ -9,13 +9,18 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace PresentationLayer.Pages.Admin
 {
     // [Authorize(Roles = "Admin")]
+    /// <summary>
+    /// PageModel trang Lich su Thanh toan cua Admin. Hien thi tat ca giao dich, ho tro loc theo trang thai va cap nhat thu cong trang thai thanh toan.
+    /// </summary>
     public class PaymentHistoryModel : PageModel
     {
         private readonly IPaymentHistoryService _historyService;
+        private readonly ISubscriptionService _subscriptionService;
 
-        public PaymentHistoryModel(IPaymentHistoryService historyService)
+        public PaymentHistoryModel(IPaymentHistoryService historyService, ISubscriptionService subscriptionService)
         {
             _historyService = historyService;
+            _subscriptionService = subscriptionService;
         }
 
         public IEnumerable<PaymentHistoryDto> Histories { get; set; }
@@ -33,6 +38,15 @@ namespace PresentationLayer.Pages.Admin
         {
             Histories = await _historyService.GetAllPaymentHistoriesAsync(SearchTerm, SelectedMethod, SelectedStatus);
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostMarkAsPaidAsync(int id)
+        {
+            // Call process payment success logic manually
+            // This will reset quota, extend expiry date, and send invoice email
+            await _subscriptionService.ProcessPaymentSuccessAsync(id, "MANUAL_APPROVAL", "Xác nhận thủ công bởi Admin", null);
+            
+            return RedirectToPage(new { SearchTerm, SelectedMethod, SelectedStatus });
         }
     }
 }

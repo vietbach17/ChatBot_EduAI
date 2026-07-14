@@ -1,7 +1,10 @@
-using System;
+﻿using System;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO thông tin gói đăng ký của người dùng (dành cho Admin quản lý).
+    /// </summary>
     public class UserSubscriptionDto
     {
         public int UserId { get; set; }

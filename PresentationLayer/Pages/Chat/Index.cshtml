@@ -122,19 +122,19 @@
         <i class="fa-solid fa-crown" style="color:#f59e0b;"></i>
         <span id="quotaPlanLabel">@Model.Info.CurrentPlan</span>
       </div>
-      <div style="font-size:11px;color:#555;">Lượt hỏi tháng này</div>
+      <div style="font-size:11px;color:#555;font-weight:800;text-transform:uppercase;">Usage của tài khoản</div>
       <div class="quota-bar-wrap">
         @{
-          var ml = Model.Info.MonthlyLimit > 0 ? Model.Info.MonthlyLimit : 1;
-          var pct = ml >= 999999 ? 0 : Math.Min(100,(int)((double)Model.Info.UsedCount/ml*100));
+          var sl = Model.Info.ShortTermLimit > 0 ? Model.Info.ShortTermLimit : 1;
+          var pct = sl >= 999999 ? 0 : Math.Min(100,(int)((double)Model.Info.ShortTermUsedCount/sl*100));
           var bc = pct>=90?"red":pct>=70?"orange":"green";
         }
         <div class="quota-bar-fill @bc" id="quotaBarFill" style="width:@(pct)%;"></div>
       </div>
-      <div id="quotaCountLabel" style="font-size:11px;color:#333;">
-        @Model.Info.UsedCount / @(Model.Info.MonthlyLimit>=999999?"∞":Model.Info.MonthlyLimit.ToString()) câu hỏi
+      <div id="quotaCountLabel" style="font-size:11px;color:#333;font-weight:700;">
+        @Model.Info.ShortTermUsedCount / @(Model.Info.ShortTermLimit>=999999?"∞":Model.Info.ShortTermLimit.ToString()) câu hỏi (chu kỳ 5h)
       </div>
-      @if(pct>=90){<div class="quota-warn">Sắp hết quota tháng!</div>}
+      @if(pct>=90){<div class="quota-warn">Sắp hết hạn mức 5h!</div>}
     </div>
 
     <!-- Nguon tai lieu -->
@@ -620,11 +620,11 @@ async function refreshQuota() {
     var extraCount=document.getElementById("extraQuotaCount");
     if (planLabel) planLabel.textContent=data.plan||"";
     if (countLabel) {
-      var lim=data.monthlyLimit>=999999?"∞":(data.monthlyLimit||0);
-      countLabel.textContent=(data.monthlyUsed||0)+" / "+lim+" cau hoi";
+      var lim=data.shortTermLimit>=999999?"∞":(data.shortTermLimit||0);
+      countLabel.textContent=(data.shortTermUsed||0)+" / "+lim+" câu hỏi (chu kỳ 5h)";
     }
-    if (barFill&&data.monthlyLimit>0&&data.monthlyLimit<999999) {
-      var pct=Math.min(100,Math.round((data.monthlyUsed||0)/data.monthlyLimit*100));
+    if (barFill&&data.shortTermLimit>0&&data.shortTermLimit<999999) {
+      var pct=Math.min(100,Math.round((data.shortTermUsed||0)/data.shortTermLimit*100));
       barFill.style.width=pct+"%";
       barFill.className="quota-bar-fill "+(pct>=90?"red":pct>=70?"orange":"green");
     }

@@ -1,5 +1,8 @@
-namespace BussinessLayer.DTOs
+﻿namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO yêu cầu tạo giao dịch thanh toán mới.
+    /// </summary>
     public class PaymentRequest
     {
         public int TransactionId { get; set; }

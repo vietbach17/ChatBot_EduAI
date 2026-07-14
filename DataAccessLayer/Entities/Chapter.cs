@@ -3,6 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Chương học thuộc một Môn học (Subject).
+    /// Dùng để phân loại và sắp xếp Tài liệu theo thứ tự logic (OrderIndex).
+    /// Hỗ trợ xóa mềm (Soft Delete).
+    /// </summary>
     public class Chapter
     {
         [Key]

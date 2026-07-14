@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace PresentationLayer.Pages.Auth
 {
+    /// <summary>
+    /// PageModel xu ly dang xuat. Xoa cookie xac thuc va chuyen huong nguoi dung ve trang dang nhap.
+    /// </summary>
     public class LogoutModel : PageModel
     {
         public async Task<IActionResult> OnGetAsync()

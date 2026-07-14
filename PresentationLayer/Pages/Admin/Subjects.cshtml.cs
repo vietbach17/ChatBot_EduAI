@@ -10,6 +10,9 @@ using System.Linq;
 
 namespace PresentationLayer.Pages.Admin
 {
+    /// <summary>
+    /// PageModel trang Quan ly Mon hoc cua Admin. Hien thi danh sach mon hoc, ho tro tao moi, sua, xoa mon hoc va chuong hoc.
+    /// </summary>
     public class SubjectsModel : PageModel
     {
         private readonly ISubjectService _subjectService = new MockSubjectService();

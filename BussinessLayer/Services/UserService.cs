@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
@@ -10,6 +10,9 @@ using BussinessLayer.IServices;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Quản lý Người dùng. Cung cấp các thao tác: lấy danh sách, tìm kiếm, cập nhật thông tin, đổi vai trò, và xóa mềm (Soft Delete).
+    /// </summary>
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;

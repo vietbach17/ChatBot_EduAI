@@ -4,6 +4,9 @@ using DataAccessLayer.Entities;
 
 namespace DataAccessLayer.IRepositories
 {
+    /// <summary>
+    /// Interface repository chat. Dinh nghia cac phuong thuc quan ly ChatSession va ChatMessage trong database.
+    /// </summary>
     public interface IChatRepository
     {
         Task<ChatSession> CreateSessionAsync(int userId, string title);

@@ -8,6 +8,9 @@ using PresentationLayer.ViewModels.Auth;
 
 namespace PresentationLayer.Pages.Auth
 {
+    /// <summary>
+    /// PageModel trang Dang ky tai khoan. Xu ly nhap thong tin, kiem tra dieu kien hop le va tao tai khoan moi trong he thong.
+    /// </summary>
     public class RegisterModel : PageModel
     {
         private readonly IAuthService _authService;

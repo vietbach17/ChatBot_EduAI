@@ -4,6 +4,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Bài kiểm tra (Quiz) do Giảng viên tạo từ Ngân hàng câu hỏi.
+    /// Hỗ trợ: trộn đề (IsShuffled), chia mã đề (NumVariants), giới hạn thời gian (TimeLimitMinutes),
+    /// và quản lý trạng thái (Draft/Open/Closed) cùng thời gian mở/đóng bài thi.
+    /// </summary>
     public class Quiz
     {
         [Key]

@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Gói mua thêm (Addon Package) cho phép người dùng mua thêm lượt hỏi dự phòng.
+    /// Mỗi gói có tên, giá tiền, và số lượng câu hỏi bổ sung (QuotaAmount).
+    /// </summary>
     public class AddonPackage
     {
         [Key]

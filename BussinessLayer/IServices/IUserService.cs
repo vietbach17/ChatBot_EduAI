@@ -1,10 +1,13 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 using DataAccessLayer.Entities;
 
 namespace BussinessLayer.IServices
 {
+    /// <summary>
+    /// Giao diện dịch vụ Quản lý Người dùng.
+    /// </summary>
     public interface IUserService
     {
         Task<IEnumerable<UserDto>> GetAllUsersAsync(bool includeDeleted = false);

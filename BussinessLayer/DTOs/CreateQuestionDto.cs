@@ -1,7 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO tạo mới câu hỏi trắc nghiệm vào Ngân hàng câu hỏi.
+    /// </summary>
     public class CreateQuestionDto
     {
         [Required(ErrorMessage = "Vui lòng chọn môn học.")]

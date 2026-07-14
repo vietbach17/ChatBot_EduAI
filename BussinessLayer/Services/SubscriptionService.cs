@@ -1,4 +1,4 @@
-using BussinessLayer.IServices;
+﻿using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using System;
@@ -11,17 +11,23 @@ using DataAccessLayer.IRepositories;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Quản lý Gói đăng ký (Subscription). Xử lý logic nâng cấp gói, kiểm tra và reset hạn mức câu hỏi (chu kỳ 5h và hàng tháng), xử lý thanh toán thành công, và các thao tác Admin.
+    /// </summary>
     public class SubscriptionService : ISubscriptionService
     {
         private readonly IUserRepository _userRepository;
         private readonly IPaymentTransactionRepository _paymentTransactionRepository;
+        private readonly IEmailService _emailService;
 
         public SubscriptionService(
             IUserRepository userRepository,
-            IPaymentTransactionRepository paymentTransactionRepository)
+            IPaymentTransactionRepository paymentTransactionRepository,
+            IEmailService emailService)
         {
             _userRepository = userRepository;
             _paymentTransactionRepository = paymentTransactionRepository;
+            _emailService = emailService;
         }
 
         private static int GetShortTermLimit(string plan) => plan switch
@@ -162,13 +168,25 @@ namespace BussinessLayer.Services
             return true;
         }
 
-        public async Task<bool> ProcessPaymentSuccessAsync(int transactionId, string transactionCode)
+        public async Task<bool> ProcessPaymentSuccessAsync(int transactionId, string transactionCode, string? senderAccountInfo = null, string? actualTransferContent = null)
         {
             var transaction = await _paymentTransactionRepository.GetByIdAsync(transactionId);
-            if (transaction == null || transaction.Status != "Pending") return false;
+            if (transaction == null) return false;
+            
+            // Nếu đã thành công trước đó (webhook gọi lại) thì báo OK luôn
+            if (transaction.Status == "Success") return true;
+            
+            if (transaction.Status != "Pending") return false;
 
             transaction.Status = "Success";
             transaction.TransactionCode = transactionCode;
+            
+            if (!string.IsNullOrEmpty(senderAccountInfo))
+                transaction.SenderAccountInfo = senderAccountInfo;
+                
+            if (!string.IsNullOrEmpty(actualTransferContent))
+                transaction.ActualTransferContent = actualTransferContent;
+
             await _paymentTransactionRepository.UpdateAsync(transaction);
 
             var user = await _userRepository.GetUserByIdAsync(transaction.UserId);
@@ -178,6 +196,8 @@ namespace BussinessLayer.Services
             {
                 user.ExtraQuestionQuota += transaction.AddonPackage.QuotaAmount;
                 await _userRepository.UpdateUserAsync(user);
+                
+                try { await _emailService.SendInvoiceEmailAsync(transaction); } catch { /* ignore email error */ }
                 return true;
             }
 
@@ -198,6 +218,8 @@ namespace BussinessLayer.Services
             user.ShortTermResetDate = DateTime.UtcNow.AddHours(5);
 
             await _userRepository.UpdateUserAsync(user);
+            
+            try { await _emailService.SendInvoiceEmailAsync(transaction); } catch { /* ignore email error */ }
             return true;
         }
 

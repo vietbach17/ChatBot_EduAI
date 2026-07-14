@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using System.Text.Json;
@@ -13,6 +13,9 @@ namespace PresentationLayer.Controllers
     [Route("api/sepay")]
     [ApiController]
     [AllowAnonymous] // Webhooks must be public
+    /// <summary>
+    /// API Controller xử lý Webhook từ SePay. Nhận thông báo chuyển khoản ngân hàng, xác thực API Key, trích xuất mã giao dịch, và tự động cấp quyền lợi.
+    /// </summary>
     public class SePayWebhookController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -53,7 +56,8 @@ namespace PresentationLayer.Controllers
             // 2. Validate payload
             if (payload == null || string.IsNullOrEmpty(payload.content))
             {
-                return BadRequest(new { success = false, message = "Invalid payload" });
+                // Return 200 OK for test webhooks to ensure SePay accepts the URL
+                return Ok(new { success = true, message = "Webhook connection test successful" });
             }
 
             // 3. Extract transaction ID from content (e.g., "EDU123" -> 123)
@@ -98,7 +102,11 @@ namespace PresentationLayer.Controllers
             }
 
             // 5. Success! Upgrade subscription
-            bool processed = await _subscriptionService.ProcessPaymentSuccessAsync(transactionId, payload.referenceCode);
+            bool processed = await _subscriptionService.ProcessPaymentSuccessAsync(
+                transactionId, 
+                payload.referenceCode, 
+                payload.subAccount, 
+                payload.content);
             
             if (processed)
             {
@@ -115,15 +123,15 @@ namespace PresentationLayer.Controllers
     public class SePayWebhookPayload
     {
         public int id { get; set; }
-        public string gateway { get; set; }
-        public string transactionDate { get; set; }
-        public string accountNumber { get; set; }
-        public string subAccount { get; set; }
-        public string content { get; set; }
-        public string transferType { get; set; } // "in" or "out"
+        public string? gateway { get; set; }
+        public string? transactionDate { get; set; }
+        public string? accountNumber { get; set; }
+        public string? subAccount { get; set; }
+        public string? content { get; set; }
+        public string? transferType { get; set; } // "in" or "out"
         public decimal transferAmount { get; set; }
         public decimal accumulated { get; set; }
-        public string channel { get; set; }
-        public string referenceCode { get; set; }
+        public string? channel { get; set; }
+        public string? referenceCode { get; set; }
     }
 }

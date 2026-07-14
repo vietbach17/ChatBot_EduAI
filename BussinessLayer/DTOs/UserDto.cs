@@ -1,7 +1,10 @@
-using System;
+﻿using System;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO thông tin người dùng cơ bản.
+    /// </summary>
     public class UserDto
     {
         public int Id { get; set; }

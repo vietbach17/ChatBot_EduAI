@@ -3,6 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Tài liệu được Giảng viên tải lên.
+    /// Hỗ trợ các định dạng PDF, DOCX, PPTX. Sau khi tải lên, hệ thống sẽ trích xuất nội dung văn bản (Content),
+    /// tạo Embedding AI và đánh dấu trạng thái "Indexed" để Sinh viên có thể sử dụng hỏi đáp với Chatbot.
+    /// </summary>
     public class Document
     {
         [Key]

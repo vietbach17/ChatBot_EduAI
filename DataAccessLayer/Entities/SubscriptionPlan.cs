@@ -2,6 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Gói đăng ký (Subscription Plan) định nghĩa các mức dịch vụ (Basic/Pro/Premium).
+    /// Mỗi gói có giá tiền, giới hạn câu hỏi hàng tháng, thời hạn (DurationDays),
+    /// và danh sách tính năng (Features) lưu dưới dạng JSON string.
+    /// </summary>
     public class SubscriptionPlan
     {
         [Key]

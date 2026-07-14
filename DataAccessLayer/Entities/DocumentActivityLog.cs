@@ -3,6 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể ghi lại nhật ký hoạt động liên quan đến Tài liệu (Document).
+    /// Theo dõi các hành động: Tải lên (Uploaded), Xóa (Deleted), Di chuyển (Moved),
+    /// kèm theo thông tin người thực hiện và thời gian.
+    /// </summary>
     public class DocumentActivityLog
     {
         [Key]

@@ -1,7 +1,10 @@
-using System;
+﻿using System;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO chi tiết Hóa đơn thanh toán gửi qua Email.
+    /// </summary>
     public class InvoiceDto
     {
         public int TransactionId { get; set; }

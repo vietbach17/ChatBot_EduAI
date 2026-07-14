@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -8,6 +8,9 @@ using BussinessLayer.IServices;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Gửi Email thông qua SMTP (Gmail). Hỗ trợ gửi: OTP đặt lại mật khẩu, Email chào mừng, và Hóa đơn thanh toán (Invoice).
+    /// </summary>
     public class EmailService : IEmailService
     {
         private readonly string _smtpHost;

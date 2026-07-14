@@ -139,6 +139,16 @@
                                                 <div style="margin-bottom: 10px; font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 2px dashed #ccc; padding-bottom: 5px;">
                                                     <span style="color: #666;">Phương thức:</span> <span>@item.Method</span>
                                                 </div>
+                                                @if(!string.IsNullOrEmpty(item.SenderAccountInfo)) {
+                                                <div style="margin-bottom: 10px; font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 2px dashed #ccc; padding-bottom: 5px;">
+                                                    <span style="color: #666;">Tài khoản gửi:</span> <span style="color: var(--black);">@item.SenderAccountInfo</span>
+                                                </div>
+                                                }
+                                                @if(!string.IsNullOrEmpty(item.ActualTransferContent)) {
+                                                <div style="margin-bottom: 10px; font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 2px dashed #ccc; padding-bottom: 5px;">
+                                                    <span style="color: #666;">Nội dung gốc:</span> <span style="color: var(--black);">@item.ActualTransferContent</span>
+                                                </div>
+                                                }
                                                 <div style="margin-bottom: 10px; font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 2px dashed #ccc; padding-bottom: 5px;">
                                                     <span style="color: #666;">Trạng thái:</span>
                                                     <span>
@@ -151,6 +161,16 @@
                                                 <div style="font-weight: 800; font-size: 14px; display: flex; justify-content: space-between;">
                                                     <span style="color: #666;">Ngày GD:</span> <span>@item.Date.ToString("dd/MM/yyyy HH:mm:ss")</span>
                                                 </div>
+                                                @if (item.Status == "Pending")
+                                                {
+                                                    <div style="margin-top: 20px; text-align: center;">
+                                                        <form method="post" asp-page-handler="MarkAsPaid" asp-route-id="@item.TransactionId" style="margin: 0;">
+                                                            <button type="submit" class="brutal-btn" style="background-color: var(--green); color: white; border: 2px solid var(--black); padding: 10px 15px; font-weight: 900; box-shadow: 2px 2px 0px var(--black);">
+                                                                <i class="fa-solid fa-check"></i> XÁC NHẬN ĐÃ THANH TOÁN
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                }
                                             </div>
                                         </div>
                                     </div>

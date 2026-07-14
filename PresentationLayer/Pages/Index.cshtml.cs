@@ -10,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace PresentationLayer.Pages
 {
+    /// <summary>
+    /// PageModel trang chu (Home). Hien thi thong tin gioi thieu ve he thong va nut dieu huong chinh.
+    /// </summary>
     public class IndexModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;

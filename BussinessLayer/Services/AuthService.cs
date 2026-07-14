@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 using DataAccessLayer.Entities;
 using DataAccessLayer.Repositories;
@@ -8,6 +8,9 @@ using BussinessLayer.IServices;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Xác thực và Phân quyền. Xử lý đăng nhập, đăng ký, tạo JWT Token, đổi mật khẩu, và quên mật khẩu (gửi OTP qua Email).
+    /// </summary>
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;

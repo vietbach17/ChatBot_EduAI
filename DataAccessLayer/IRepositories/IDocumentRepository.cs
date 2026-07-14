@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using Pgvector;
 namespace DataAccessLayer.IRepositories
 {
+    /// <summary>
+    /// Giao diện Repository truy vấn Tài liệu, DocumentChunk và Embedding.
+    /// </summary>
     public interface IDocumentRepository
     {
         Task<List<Document>> GetAllDocumentsAsync();

@@ -1,4 +1,4 @@
-using BussinessLayer.IServices;
+﻿using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using System.Collections.Generic;
@@ -10,6 +10,9 @@ using DataAccessLayer.IRepositories;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Quản lý Môn học. CRUD Môn học, Chương (Chapter), phân công Giảng viên, và đồng bộ real-time qua SignalR.
+    /// </summary>
     public class SubjectService : ISubjectService
     {
         private readonly ISubjectRepository _subjectRepository;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.SignalR;
 namespace PresentationLayer.SignalR
 {
     [Authorize]
+    /// <summary>
+    /// SignalR Hub xu ly ket noi realtime cho chuc nang chat streaming. Client ket noi va goi phuong thuc SendStreamingMessage de nhan phan hoi AI theo tung chunk (ReceiveChunk), hoan tat (StreamComplete) hoac loi (StreamError).
+    /// </summary>
     public class SignalRHub : Hub
     {
         private readonly IChatService _chatService;

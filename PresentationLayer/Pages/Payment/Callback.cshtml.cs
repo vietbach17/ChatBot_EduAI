@@ -9,6 +9,9 @@ using BussinessLayer.IServices;
 
 namespace PresentationLayer.Pages.Payment
 {
+    /// <summary>
+    /// PageModel xu ly callback tu cong thanh toan PayOS. Nhan ket qua giao dich, cap nhat trang thai don hang va kich hoat goi dang ky.
+    /// </summary>
     public class CallbackModel : PageModel
     {
         private readonly IVNPayService _vnPayService;

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO hiển thị nhật ký hoạt động tài liệu.
+    /// </summary>
     public class DocumentActivityLogDto
     {
         public int Id { get; set; }

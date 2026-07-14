@@ -1,4 +1,4 @@
-using BussinessLayer.IServices;
+﻿using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using System;
@@ -9,6 +9,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace BussinessLayer.Gateways
 {
+    /// <summary>
+    /// Cổng thanh toán SePay (Chuyển khoản ngân hàng). Tạo mã QR chuyển khoản với nội dung tự động nhận diện giao dịch.
+    /// </summary>
     public class SePayGateway : IPaymentGateway
     {
         private readonly IConfiguration _configuration;
@@ -28,12 +31,12 @@ namespace BussinessLayer.Gateways
             var bankId = _configuration["SePay:BankId"] ?? "MB";
             var accountNo = _configuration["SePay:AccountNumber"] ?? "0000000000";
             
-            // Generate checkout url using qr.sepay.vn
-            // Prefix the transaction ID with "EDU" for clarity
             var content = $"EDU{request.TransactionId}";
             var amount = Math.Floor(request.Amount); // Amount should be integer
-
-            var url = $"https://qr.sepay.vn/checkout.html?bank={bankId}&acc={accountNo}&amount={amount}&des={content}";
+            
+            // Redirect to our internal SePayCheckout page instead of external QR tool
+            string safeReturnUrl = request.ReturnUrl ?? "/";
+            var url = $"/Payment/SePayCheckout?bankId={bankId}&accountNo={accountNo}&amount={amount}&content={content}&returnUrl={Uri.EscapeDataString(safeReturnUrl)}";
             return Task.FromResult(url);
         }
 

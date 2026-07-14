@@ -1,8 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 
 namespace BussinessLayer.IServices
 {
+    /// <summary>
+    /// Giao diện dịch vụ Thanh toán: tạo giao dịch, tạo URL, cập nhật trạng thái.
+    /// </summary>
     public interface IPaymentService
     {
         Task<PaymentTransactionDto> CreateTransactionAsync(int userId, int planId, string paymentMethod);

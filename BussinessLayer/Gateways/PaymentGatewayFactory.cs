@@ -1,4 +1,4 @@
-using BussinessLayer.IServices;
+﻿using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using System;
@@ -8,6 +8,9 @@ using BussinessLayer.IServices;
 
 namespace BussinessLayer.Gateways
 {
+    /// <summary>
+    /// Factory Pattern tạo đối tượng Cổng thanh toán phù hợp (VNPay/PayOS/SePay) dựa trên tên phương thức thanh toán.
+    /// </summary>
     public class PaymentGatewayFactory
     {
         private readonly IEnumerable<IPaymentGateway> _gateways;

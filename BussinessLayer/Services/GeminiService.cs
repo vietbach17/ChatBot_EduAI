@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -12,11 +12,25 @@ using BussinessLayer.IServices;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ tương tác với Google Gemini API. Cung cấp: gọi Gemini để sinh nội dung (generateContent), tạo Embedding vector (embedContent), và sinh câu hỏi trắc nghiệm tự động.
+    /// </summary>
     public class GeminiService : IGeminiService
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly string _defaultModel;
+
+        /// <summary>
+        /// Danh sách model dự phòng khi model chính bị 429/503 (quota tính riêng theo từng model,
+        /// nên đổi model là có ngay quota mới). Thứ tự ưu tiên từ trên xuống.
+        /// </summary>
+        private static readonly string[] FallbackModels =
+        {
+            "gemini-flash-lite-latest",
+            "gemini-3.5-flash",
+            "gemini-2.0-flash",
+        };
 
         public GeminiService(HttpClient httpClient, IConfiguration configuration)
         {
@@ -26,14 +40,25 @@ namespace BussinessLayer.Services
             _apiKey = key?.Trim() ?? throw new ArgumentNullException("GEMINI_API_KEY is not configured");
             _defaultModel = Environment.GetEnvironmentVariable("GEMINI_MODEL")
                             ?? configuration["GeminiAI:Model"]
-                            ?? "gemini-1.5-flash";
+                            ?? "gemini-3.1-flash-lite";
+        }
+
+        /// <summary>
+        /// Chuỗi model để thử lần lượt: model chính trước, sau đó các model dự phòng (bỏ trùng).
+        /// </summary>
+        private static List<string> BuildModelChain(string primaryModel)
+        {
+            var chain = new List<string> { primaryModel };
+            foreach (var m in FallbackModels)
+                if (!chain.Contains(m, StringComparer.OrdinalIgnoreCase))
+                    chain.Add(m);
+            return chain;
         }
 
         // ─── GenerateJsonContent ───────────────────────────────────────────────
         public async Task<string> GenerateJsonContentAsync(string prompt, string? responseSchemaJson = null)
         {
-            var model = Environment.GetEnvironmentVariable("GEMINI_MODEL")?.Trim()
-                        ?? "gemini-2.5-flash";
+            var model = _defaultModel;
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={_apiKey}";
 
             object? schemaObj = null;
@@ -75,20 +100,34 @@ namespace BussinessLayer.Services
         }
 
         // ─── PostWithRetry ────────────────────────────────────────────────────
-        private async Task<HttpResponseMessage> PostWithRetryAsync(string url, string requestBody, int maxRetries = 3, int delayMs = 1500)
+        private async Task<HttpResponseMessage> PostWithRetryAsync(string url, string requestBody, int maxRetries = 4)
         {
             HttpResponseMessage? response = null;
+            // Exponential backoff: 5s, 15s, 45s
+            int[] backoffSeconds = { 5, 15, 45 };
             for (int i = 0; i < maxRetries; i++)
             {
                 var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
                 response = await _httpClient.PostAsync(url, content);
                 if (response.IsSuccessStatusCode) return response;
-                if ((response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable ||
-                     response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
-                     (int)response.StatusCode == 429 || (int)response.StatusCode == 503) &&
-                    i < maxRetries - 1)
+
+                var sc = (int)response.StatusCode;
+                bool isRetryable = sc == 429 || sc == 503 || sc == 500;
+                if (isRetryable && i < maxRetries - 1)
                 {
-                    await Task.Delay(delayMs * (i + 1));
+                    int waitMs;
+                    // Respect Retry-After header if present
+                    if (response.Headers.TryGetValues("Retry-After", out var retryAfterValues) &&
+                        int.TryParse(retryAfterValues.FirstOrDefault(), out int retryAfterSec))
+                    {
+                        // Cap 30s: nếu hết quota theo NGÀY thì Retry-After rất lớn, chờ cũng vô ích
+                        waitMs = Math.Min(retryAfterSec + 1, 30) * 1000;
+                    }
+                    else
+                    {
+                        waitMs = backoffSeconds[Math.Min(i, backoffSeconds.Length - 1)] * 1000;
+                    }
+                    await Task.Delay(waitMs);
                     continue;
                 }
                 break;
@@ -125,17 +164,24 @@ namespace BussinessLayer.Services
         }
 
         // ─── GenerateAnswer (blocking) ─────────────────────────────────────────
-        public async Task<string> GenerateAnswerAsync(string prompt, string? modelName = null)
+        public async Task<string> GenerateAnswerAsync(string prompt, string? modelName = null, int maxRetries = 4)
         {
             modelName = string.IsNullOrWhiteSpace(modelName) ? _defaultModel : modelName;
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:generateContent?key={_apiKey}";
             var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
+            var jsonBody = JsonSerializer.Serialize(requestBody);
 
-            const int maxRetries = 3;
-            for (int attempt = 1; attempt <= maxRetries; attempt++)
+            // maxRetries = 1 → chế độ "fail nhanh" (vd: rerank), không thử model dự phòng.
+            var models = maxRetries <= 1 ? new List<string> { modelName } : BuildModelChain(modelName);
+
+            HttpResponseMessage? response = null;
+            foreach (var model in models)
             {
-                var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync(url, jsonContent);
+                var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={_apiKey}";
+                // Khi có model dự phòng: mỗi model chỉ gọi 1 lần rồi chuyển ngay sang model kế tiếp
+                // (nhanh hơn nhiều so với ngồi chờ backoff 5-45s trên model đã hết quota).
+                var retries = models.Count > 1 ? 1 : maxRetries;
+                response = await PostWithRetryAsync(url, jsonBody, maxRetries: retries);
+
                 if (response.IsSuccessStatusCode)
                 {
                     var responseString = await response.Content.ReadAsStringAsync();
@@ -146,18 +192,18 @@ namespace BussinessLayer.Services
                     if (parts.GetArrayLength() == 0) return string.Empty;
                     return parts[0].GetProperty("text").GetString() ?? string.Empty;
                 }
-                var statusCode = (int)response.StatusCode;
-                if ((statusCode == 429 || statusCode == 503) && attempt < maxRetries)
-                {
-                    await Task.Delay(attempt * 6000);
-                    continue;
-                }
-                if (statusCode == 429) return "⚠️ Trợ lý AI đang quá tải, vui lòng thử lại sau vài giây.";
-                if (statusCode == 503) return "⚠️ Dịch vụ AI tạm thời không khả dụng.";
-                var errorBody = await response.Content.ReadAsStringAsync();
-                return $"Lỗi khi gọi AI: {response.StatusCode} - {errorBody}";
+
+                var sc = (int)response.StatusCode;
+                // 429/503/500: hết quota hoặc quá tải; 404: model không tồn tại → thử model dự phòng kế tiếp.
+                if (sc == 429 || sc == 503 || sc == 500 || sc == 404) continue;
+                break;
             }
-            return "⚠️ Không thể kết nối đến dịch vụ AI sau nhiều lần thử.";
+
+            var statusCode = response != null ? (int)response.StatusCode : 500;
+            if (statusCode == 429) return "⚠️ Trợ lý AI đang quá tải, vui lòng thử lại sau vài giây.";
+            if (statusCode == 503) return "⚠️ Dịch vụ AI tạm thời không khả dụng.";
+            var errorBody = response != null ? await response.Content.ReadAsStringAsync() : string.Empty;
+            return $"Lỗi khi gọi AI: {(response != null ? response.StatusCode.ToString() : "Unknown")} - {errorBody}";
         }
 
         // ─── GenerateStreamingAnswer (SSE) ─────────────────────────────────────
@@ -168,24 +214,42 @@ namespace BussinessLayer.Services
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             modelName = string.IsNullOrWhiteSpace(modelName) ? _defaultModel : modelName;
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:streamGenerateContent?alt=sse&key={_apiKey}";
             var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
-            var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+            var jsonBody = JsonSerializer.Serialize(requestBody);
 
-            HttpResponseMessage response;
-            try
+            // Thử lần lượt model chính rồi các model dự phòng — mỗi model 1 lần,
+            // chuyển ngay khi gặp 429/503/500/404 (không chờ backoff trên model đã hết quota).
+            var models = BuildModelChain(modelName);
+            HttpResponseMessage? response = null;
+
+            foreach (var model in models)
             {
-                var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = jsonContent };
-                response = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?alt=sse&key={_apiKey}";
+                try
+                {
+                    var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = new StringContent(jsonBody, Encoding.UTF8, "application/json") };
+                    response = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+
+                    if (response.IsSuccessStatusCode) break;
+
+                    var sc = (int)response.StatusCode;
+                    if (sc == 429 || sc == 503 || sc == 500 || sc == 404)
+                    {
+                        if (model != models[^1]) response.Dispose();
+                        continue;
+                    }
+                    break;
+                }
+                catch (OperationCanceledException) { yield break; }
             }
-            catch (OperationCanceledException) { yield break; }
 
-            if (!response.IsSuccessStatusCode)
+            if (response == null || !response.IsSuccessStatusCode)
             {
-                var sc = (int)response.StatusCode;
+                var sc = response != null ? (int)response.StatusCode : 500;
                 if (sc == 429) yield return "⚠️ Trợ lý AI đang quá tải, vui lòng thử lại sau vài giây.";
                 else if (sc == 503) yield return "⚠️ Dịch vụ AI tạm thời không khả dụng.";
                 else yield return $"⚠️ Lỗi kết nối AI ({sc}).";
+                response?.Dispose();
                 yield break;
             }
 
@@ -228,12 +292,12 @@ namespace BussinessLayer.Services
         {
             var defaultList = new List<GeminiModelInfo>
             {
-                new("gemini-2.5-flash", "Gemini 2.5 Flash"),
+                new("gemini-3.1-flash-lite", "Gemini 3.1 Flash Lite"),
+                new("gemini-3.5-flash", "Gemini 3.5 Flash"),
+                new("gemini-flash-lite-latest", "Gemini Flash Lite (Latest)"),
+                new("gemini-flash-latest", "Gemini Flash (Latest)"),
                 new("gemini-2.0-flash", "Gemini 2.0 Flash"),
                 new("gemini-2.0-flash-lite", "Gemini 2.0 Flash Lite"),
-                new("gemini-1.5-pro", "Gemini 1.5 Pro"),
-                new("gemini-1.5-flash", "Gemini 1.5 Flash"),
-                new("gemini-pro", "Gemini Pro"),
             };
             try
             {

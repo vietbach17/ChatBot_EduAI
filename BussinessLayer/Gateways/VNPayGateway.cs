@@ -1,4 +1,4 @@
-using BussinessLayer.IServices;
+﻿using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using System;
@@ -10,6 +10,9 @@ using BussinessLayer.Helpers;
 
 namespace BussinessLayer.Gateways
 {
+    /// <summary>
+    /// Cổng thanh toán VNPay. Tạo URL redirect đến trang thanh toán VNPay và xác thực chữ ký (Signature) khi nhận callback.
+    /// </summary>
     public class VNPayGateway : IPaymentGateway
     {
         private readonly IConfiguration _configuration;

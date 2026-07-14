@@ -1,4 +1,4 @@
-using BussinessLayer.IServices;
+﻿using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using System;
@@ -9,6 +9,9 @@ using BussinessLayer.Helpers;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ tạo URL thanh toán VNPay. Xây dựng chuỗi query parameters theo chuẩn VNPay và ký HMAC-SHA512.
+    /// </summary>
     public class VNPayService : IVNPayService
     {
         private readonly IConfiguration _configuration;

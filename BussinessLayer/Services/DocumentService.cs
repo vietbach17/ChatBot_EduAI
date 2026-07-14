@@ -1,4 +1,4 @@
-using BussinessLayer.IServices;
+﻿using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using BussinessLayer.DTOs;
@@ -13,6 +13,9 @@ using BussinessLayer.IServices;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Quản lý Tài liệu. Xử lý tải lên file (PDF/DOCX/PPTX), trích xuất văn bản, chia nhỏ thành các chunk, tạo Embedding AI (vector 768 chiều), và lưu vào PostgreSQL (pgvector).
+    /// </summary>
     public class DocumentService : IDocumentService
     {
          private readonly IDocumentRepository _documentRepository;

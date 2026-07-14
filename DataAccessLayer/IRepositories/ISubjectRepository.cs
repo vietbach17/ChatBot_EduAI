@@ -1,9 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataAccessLayer.Entities;
 
 namespace DataAccessLayer.IRepositories
 {
+    /// <summary>
+    /// Giao diện Repository truy vấn Môn học, Chương, và phân công Giảng viên.
+    /// </summary>
     public interface ISubjectRepository
     {
         Task<IEnumerable<Subject>> GetAllSubjectsAsync(bool includeDeleted = false);

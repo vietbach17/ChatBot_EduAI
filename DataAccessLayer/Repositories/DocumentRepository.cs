@@ -1,4 +1,4 @@
-using DataAccessLayer.Entities;
+﻿using DataAccessLayer.Entities;
 using DataAccessLayer.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using Pgvector;
@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.Repositories
 {
+    /// <summary>
+    /// Repository truy vấn Tài liệu, DocumentChunk, và thực hiện tìm kiếm vector (pgvector).
+    /// </summary>
     public class DocumentRepository : IDocumentRepository
     {
         private readonly ApplicationDbContext _context;

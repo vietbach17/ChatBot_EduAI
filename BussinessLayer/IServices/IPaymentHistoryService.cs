@@ -1,9 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 
 namespace BussinessLayer.IServices
 {
+    /// <summary>
+    /// Giao diện dịch vụ Lịch sử Thanh toán.
+    /// </summary>
     public interface IPaymentHistoryService
     {
         Task<IEnumerable<PaymentHistoryDto>> GetPaymentHistoryByUserIdAsync(int userId);

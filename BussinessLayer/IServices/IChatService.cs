@@ -6,6 +6,9 @@ using BussinessLayer.DTOs;
 
 namespace BussinessLayer.IServices
 {
+    /// <summary>
+    /// Interface dich vu chat AI. Dinh nghia cac phuong thuc xu ly tin nhan chat thong thuong va streaming.
+    /// </summary>
     public interface IChatService
     {
         Task<ChatResponseDto> ProcessChatMessageAsync(int userId, ChatRequestDto request);

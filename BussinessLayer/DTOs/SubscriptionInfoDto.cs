@@ -1,7 +1,10 @@
-using System;
+﻿using System;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO thông tin gói đăng ký hiện tại của người dùng (tên gói, hạn mức, ngày hết hạn).
+    /// </summary>
     public class SubscriptionInfoDto
     {
         public string CurrentPlan { get; set; } = "Free";

@@ -1,8 +1,11 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 
 namespace BussinessLayer.IServices
 {
+    /// <summary>
+    /// Giao diện dịch vụ Xác thực: đăng nhập, đăng ký, quên mật khẩu, đổi mật khẩu.
+    /// </summary>
     public interface IAuthService
     {
         Task<UserDto?> AuthenticateAsync(LoginDto loginDto);

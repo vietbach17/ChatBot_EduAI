@@ -1,5 +1,8 @@
-namespace BussinessLayer.DTOs
+﻿namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO hiển thị chi tiết Gói đăng ký trên trang Pricing.
+    /// </summary>
     public class SubscriptionPlanDto
     {
         public int Id { get; set; }

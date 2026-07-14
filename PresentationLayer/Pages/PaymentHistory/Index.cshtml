@@ -155,11 +155,7 @@
                                                     </form>
                                                 }
                                                 @if(item.Status == "Success") {
-                                                    <form method="post" asp-page-handler="ResendEmail" asp-route-id="@item.TransactionId" style="margin: 0;">
-                                                        <button type="submit" class="brutal-btn" style="background: var(--green); color: var(--white); border: 2px solid var(--black); padding: 10px 20px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); display: flex; align-items: center; gap: 8px;">
-                                                            <i class="fa-solid fa-paper-plane"></i> GỬI LẠI EMAIL
-                                                        </button>
-                                                    </form>
+                                                    <!-- Removed Resend Email Button -->
                                                 }
                                             </div>
                                         </div>

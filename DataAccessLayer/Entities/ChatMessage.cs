@@ -3,6 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Tin nhắn trong một Phiên trò chuyện (ChatSession).
+    /// Mỗi tin nhắn có Role (user/model), nội dung Text, và có thể kèm theo trích dẫn nguồn tài liệu (CitationPayloadJson).
+    /// TokenCount dùng để theo dõi lượng token AI tiêu thụ cho mục đích phân tích.
+    /// </summary>
     public class ChatMessage
     {
         [Key]

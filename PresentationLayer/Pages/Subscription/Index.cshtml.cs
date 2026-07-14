@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace PresentationLayer.Pages.Subscription
 {
     [Authorize]
+    /// <summary>
+    /// PageModel trang Goi Hoi vien. Hien thi cac goi dang ky, goi add-on va thong tin goi hien tai cua nguoi dung.
+    /// </summary>
     public class IndexModel : PageModel
     {
         private readonly ISubscriptionService _subscriptionService;

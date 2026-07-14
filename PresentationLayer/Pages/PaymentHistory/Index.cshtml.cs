@@ -12,6 +12,9 @@ using PresentationLayer.SignalR;
 namespace PresentationLayer.Pages.PaymentHistory
 {
     // [Authorize]
+    /// <summary>
+    /// PageModel trang Lich su Thanh toan cua nguoi dung. Hien thi danh sach giao dich ca nhan theo thu tu thoi gian moi nhat.
+    /// </summary>
     public class IndexModel : PageModel
     {
         private readonly IPaymentHistoryService _historyService;
@@ -56,13 +59,6 @@ namespace PresentationLayer.Pages.PaymentHistory
 
             Histories = query.ToList();
             return Page();
-        }
-
-        public async Task<IActionResult> OnPostResendEmailAsync(int id)
-        {
-            // TODO: Fetch transaction by id and call _emailService.SendInvoiceEmailAsync
-            TempData["SuccessMessage"] = "Đã gửi lại email hóa đơn thành công!";
-            return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostCancelPaymentAsync(int id)

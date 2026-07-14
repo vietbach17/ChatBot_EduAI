@@ -1,7 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO hiển thị và cập nhật thông tin Môn học.
+    /// </summary>
     public class SubjectDto
     {
         public int Id { get; set; }

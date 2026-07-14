@@ -13,6 +13,9 @@ using DataAccessLayer.Entities;
 namespace PresentationLayer.Pages.Lecturer
 {
     [Authorize(Roles = "Lecturer")]
+    /// <summary>
+    /// PageModel trang Sinh cau hoi bang AI (danh cho Giang vien). Cho phep chon mon hoc, nhap yeu cau va goi AI de sinh cau hoi trac nghiem tu dong.
+    /// </summary>
     public class AIGenerateQuestionsModel : PageModel
     {
         private readonly IAIQuizGeneratorService _aiGeneratorService;

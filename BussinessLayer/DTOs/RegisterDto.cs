@@ -1,7 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO nhận dữ liệu đăng ký tài khoản mới.
+    /// </summary>
     public class RegisterDto
     {
         [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]

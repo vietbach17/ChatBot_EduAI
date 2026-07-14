@@ -14,6 +14,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace PresentationLayer.Pages.Payment
 {
     [Authorize]
+    /// <summary>
+    /// PageModel trang Tao don Thanh toan. Hien thi chi tiet goi duoc chon va chuyen huong den cong thanh toan phu hop.
+    /// </summary>
     public class CreateModel : PageModel
     {
         private readonly ISubscriptionPlanService _planService;

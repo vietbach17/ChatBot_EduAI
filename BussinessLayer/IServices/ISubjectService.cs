@@ -1,9 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 
 namespace BussinessLayer.IServices
 {
+    /// <summary>
+    /// Giao diện dịch vụ Quản lý Môn học và Chương.
+    /// </summary>
     public interface ISubjectService
     {
         Task<IEnumerable<SubjectDto>> GetAllSubjectsAsync(bool includeDeleted = false);

@@ -1,9 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 
 namespace BussinessLayer.IServices
 {
+    /// <summary>
+    /// Giao diện dịch vụ Quản lý danh mục Gói đăng ký.
+    /// </summary>
     public interface ISubscriptionPlanService
     {
         Task<IEnumerable<SubscriptionPlanDto>> GetAllAsync();

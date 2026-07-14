@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DataAccessLayer.Entities;
@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLayer.Repositories
 {
+    /// <summary>
+    /// Repository truy vấn Giao dịch Thanh toán từ PostgreSQL.
+    /// </summary>
     public class PaymentTransactionRepository : IPaymentTransactionRepository
     {
         private readonly ApplicationDbContext _context;
@@ -17,10 +20,14 @@ namespace DataAccessLayer.Repositories
         }
 
         public async Task<PaymentTransaction?> GetByIdAsync(int id)
-            => await _context.PaymentTransactions.Include(t => t.SubscriptionPlan).FirstOrDefaultAsync(t => t.Id == id);
+            => await _context.PaymentTransactions
+                .Include(t => t.User)
+                .Include(t => t.SubscriptionPlan)
+                .Include(t => t.AddonPackage)
+                .FirstOrDefaultAsync(t => t.Id == id);
 
         public async Task<IEnumerable<PaymentTransaction>> GetByUserIdAsync(int userId)
-            => await _context.PaymentTransactions.Include(t => t.SubscriptionPlan).Where(t => t.UserId == userId).OrderByDescending(t => t.CreatedAt).ToListAsync();
+            => await _context.PaymentTransactions.Include(t => t.User).Include(t => t.SubscriptionPlan).Where(t => t.UserId == userId).OrderByDescending(t => t.CreatedAt).ToListAsync();
 
         public async Task<IEnumerable<PaymentTransaction>> GetByStatusAsync(string status)
             => await _context.PaymentTransactions.Where(t => t.Status == status).ToListAsync();
@@ -29,7 +36,11 @@ namespace DataAccessLayer.Repositories
             => await _context.PaymentTransactions.Include(t => t.User).Include(t => t.SubscriptionPlan).ToListAsync();
 
         public async Task<PaymentTransaction?> GetByTxnRefAsync(string txnRef)
-            => await _context.PaymentTransactions.Include(t => t.User).Include(t => t.SubscriptionPlan).FirstOrDefaultAsync(t => t.TransactionCode == txnRef);
+            => await _context.PaymentTransactions
+                .Include(t => t.User)
+                .Include(t => t.SubscriptionPlan)
+                .Include(t => t.AddonPackage)
+                .FirstOrDefaultAsync(t => t.TransactionCode == txnRef);
 
         public async Task AddAsync(PaymentTransaction transaction)
         {

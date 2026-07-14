@@ -12,6 +12,9 @@ using PresentationLayer.ViewModels.Auth;
 
 namespace PresentationLayer.Pages.Auth
 {
+    /// <summary>
+    /// PageModel trang Dang nhap. Xu ly xac thuc username/password, tao cookie phien dang nhap va chuyen huong theo vai tro.
+    /// </summary>
     public class LoginModel : PageModel
     {
         private readonly IAuthService _authService;

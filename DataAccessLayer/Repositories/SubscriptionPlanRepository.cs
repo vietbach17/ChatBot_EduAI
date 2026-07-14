@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataAccessLayer.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +6,9 @@ using DataAccessLayer.IRepositories;
 
 namespace DataAccessLayer.Repositories
 {
+    /// <summary>
+    /// Repository truy vấn danh mục Gói đăng ký từ PostgreSQL.
+    /// </summary>
     public class SubscriptionPlanRepository : ISubscriptionPlanRepository
     {
         private readonly ApplicationDbContext _context;

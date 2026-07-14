@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLayer
 {
+    /// <summary>
+    /// DbContext chinh cua toan bo he thong, ke thua tu Entity Framework Core. Dinh nghia tat ca cac bang (DbSet), cau hinh quan he khoa ngoai va du lieu moi (Seed Data) ban dau.
+    /// </summary>
     public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)

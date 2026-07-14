@@ -12,6 +12,9 @@ using PresentationLayer.SignalR;
 namespace PresentationLayer.Pages.Lecturer
 {
     [Authorize(Roles = "Lecturer")]
+    /// <summary>
+    /// PageModel trang Tat ca Mon hoc (danh cho Giang vien). Hien thi toan bo mon hoc trong he thong de giang vien tham khao.
+    /// </summary>
     public class AllSubjectsModel : PageModel
     {
         private readonly ISubjectService _subjectService;

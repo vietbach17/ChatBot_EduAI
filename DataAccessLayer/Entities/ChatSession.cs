@@ -4,6 +4,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Phiên trò chuyện (Chat Session) giữa Sinh viên và Chatbot AI.
+    /// Mỗi phiên có thể được gắn với một Môn học cụ thể (SubjectId) để giới hạn phạm vi trả lời.
+    /// Chứa danh sách các tin nhắn (ChatMessage) và được sắp xếp theo UpdatedAt (phiên mới nhất lên đầu).
+    /// </summary>
     public class ChatSession
     {
         [Key]

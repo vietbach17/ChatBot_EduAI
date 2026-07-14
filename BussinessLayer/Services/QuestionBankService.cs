@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Quản lý Ngân hàng Câu hỏi. CRUD câu hỏi trắc nghiệm, hỗ trợ lọc theo môn học, độ khó, loại câu hỏi, và nhập/xuất hàng loạt.
+    /// </summary>
     public class QuestionBankService : IQuestionBankService
     {
         private readonly IQuestionBankRepository _repository;

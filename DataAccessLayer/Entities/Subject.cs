@@ -3,6 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Môn học. Mỗi môn học có mã (Code), tên, và được gán cho một Giảng viên phụ trách.
+    /// Chứa danh sách các Chương (Chapter) và Tài liệu (Document) thuộc môn học đó.
+    /// Hỗ trợ xóa mềm (Soft Delete) thông qua cờ IsDeleted.
+    /// </summary>
     public class Subject
     {
         [Key]

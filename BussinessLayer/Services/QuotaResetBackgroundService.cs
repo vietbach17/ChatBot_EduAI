@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ chạy ngầm (Background Service) tự động reset hạn mức câu hỏi. Chạy định kỳ để kiểm tra và đặt lại ShortTermQuestionCount (chu kỳ 5h) và MonthlyQuestionCount (hàng tháng).
+    /// </summary>
     public class QuotaResetBackgroundService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;

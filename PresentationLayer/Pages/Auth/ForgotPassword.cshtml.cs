@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace PresentationLayer.Pages.Auth
 {
+    /// <summary>
+    /// PageModel trang Quen Mat khau. Xu ly gui OTP den email nguoi dung va cho phep dat lai mat khau sau khi xac thuc OTP.
+    /// </summary>
     public class ForgotPasswordModel : PageModel
     {
         private readonly IAuthService _authService;

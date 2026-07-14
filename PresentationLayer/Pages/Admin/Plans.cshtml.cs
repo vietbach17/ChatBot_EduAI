@@ -12,6 +12,9 @@ using PresentationLayer.ViewModels.Admin;
 namespace PresentationLayer.Pages.Admin
 {
     [Authorize(Roles = "Admin")]
+    /// <summary>
+    /// PageModel trang Quan ly Goi Dich vu cua Admin. Hien thi danh sach goi dang ky va cho phep admin tao moi, sua, xoa va an/hien goi.
+    /// </summary>
     public class PlansModel : PageModel
     {
         private readonly ISubscriptionPlanService _planService;

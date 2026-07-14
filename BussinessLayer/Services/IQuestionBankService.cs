@@ -1,10 +1,13 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 using DataAccessLayer.Entities;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Giao diện dịch vụ Quản lý Ngân hàng Câu hỏi.
+    /// </summary>
     public interface IQuestionBankService
     {
         Task<QuestionBankDto?> GetQuestionByIdAsync(int id);

@@ -1,7 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO yêu cầu sinh câu hỏi AI: chủ đề, độ khó, loại câu hỏi, số lượng.
+    /// </summary>
     public class AIGenerateRequestDto
     {
         [Required(ErrorMessage = "Vui lòng chọn môn học.")]

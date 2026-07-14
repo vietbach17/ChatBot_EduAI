@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using BussinessLayer.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +10,9 @@ namespace PresentationLayer.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    /// <summary>
+    /// API Controller cung cấp endpoint lấy thông tin Quota hiện tại của người dùng. Được gọi bằng AJAX từ giao diện Chat để cập nhật thanh Usage real-time.
+    /// </summary>
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;

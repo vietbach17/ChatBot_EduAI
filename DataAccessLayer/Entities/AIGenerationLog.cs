@@ -2,6 +2,10 @@ using System;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể ghi lại lịch sử mỗi lần Giảng viên sử dụng AI để sinh câu hỏi trắc nghiệm tự động.
+    /// Lưu thông tin: chủ đề, độ khó, loại câu hỏi, số lượng, và kết quả sinh ra (GeneratedQuestionsJson).
+    /// </summary>
     public class AIGenerationLog
     {
         public int Id { get; set; }

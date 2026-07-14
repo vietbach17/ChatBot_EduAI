@@ -12,6 +12,9 @@ using System;
 namespace PresentationLayer.Pages
 {
     [Authorize]
+    /// <summary>
+    /// PageModel trang xem truc tiep tai lieu. Nhung hoac chuyen huong den URL tai lieu, ghi log hoat dong xem tai lieu cua nguoi dung.
+    /// </summary>
     public class ViewDocumentModel : PageModel
     {
         private readonly IDocumentService _documentService;

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DataAccessLayer.Entities;
@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLayer.Repositories
 {
+    /// <summary>
+    /// Repository truy vấn Bài kiểm tra và câu hỏi liên kết.
+    /// </summary>
     public class QuizRepository : IQuizRepository
     {
         private readonly ApplicationDbContext _context;

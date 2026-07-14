@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -10,6 +10,9 @@ using DataAccessLayer.Entities;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Sinh câu hỏi trắc nghiệm tự động bằng AI (Gemini). Nhận đầu vào: chủ đề, độ khó, loại câu hỏi, số lượng, và trả về danh sách câu hỏi đã format.
+    /// </summary>
     public class AIQuizGeneratorService : IAIQuizGeneratorService
     {
         private readonly IGeminiService _geminiService;

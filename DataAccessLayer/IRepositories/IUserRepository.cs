@@ -1,9 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataAccessLayer.Entities;
 
 namespace DataAccessLayer.IRepositories
 {
+    /// <summary>
+    /// Giao diện Repository truy vấn Người dùng.
+    /// </summary>
     public interface IUserRepository
     {
         Task<User?> GetUserByUsernameAsync(string username);

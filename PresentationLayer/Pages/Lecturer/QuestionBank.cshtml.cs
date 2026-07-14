@@ -13,6 +13,9 @@ using DataAccessLayer.Entities;
 namespace PresentationLayer.Pages.Lecturer
 {
     [Authorize(Roles = "Lecturer")]
+    /// <summary>
+    /// PageModel trang Ngan hang Cau hoi (danh cho Giang vien). Hien thi, tim kiem va quan ly cau hoi trac nghiem theo mon hoc.
+    /// </summary>
     public class QuestionBankModel : PageModel
     {
         private readonly IQuestionBankService _questionService;

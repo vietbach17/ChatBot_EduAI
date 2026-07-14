@@ -1,7 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>
+    /// DTO kết quả sinh câu hỏi AI: danh sách câu hỏi đã format.
+    /// </summary>
     public class AIGenerateResultDto
     {
         public string Content { get; set; } = string.Empty;

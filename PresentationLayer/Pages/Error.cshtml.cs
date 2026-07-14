@@ -6,6 +6,9 @@ namespace PresentationLayer.Pages
 {
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     [IgnoreAntiforgeryToken]
+    /// <summary>
+    /// PageModel trang bao loi mac dinh cua ASP.NET Core. Hien thi thong tin loi va Request ID de debug.
+    /// </summary>
     public class ErrorModel : PageModel
     {
         public string? RequestId { get; set; }

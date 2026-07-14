@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,13 +8,18 @@ using DataAccessLayer.IRepositories;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Lịch sử Thanh toán. Truy xuất danh sách giao dịch của người dùng hoặc toàn bộ hệ thống, hỗ trợ lọc theo phương thức và trạng thái, và hủy giao dịch đang chờ.
+    /// </summary>
     public class PaymentHistoryService : IPaymentHistoryService
     {
         private readonly IPaymentTransactionRepository _transactionRepository;
+        private readonly IEmailService _emailService;
 
-        public PaymentHistoryService(IPaymentTransactionRepository transactionRepository)
+        public PaymentHistoryService(IPaymentTransactionRepository transactionRepository, IEmailService emailService)
         {
             _transactionRepository = transactionRepository;
+            _emailService = emailService;
         }
 
         public async Task<IEnumerable<PaymentHistoryDto>> GetPaymentHistoryByUserIdAsync(int userId)
@@ -32,7 +37,9 @@ namespace BussinessLayer.Services
                 Method = t.PaymentMethod,
                 Status = t.Status,
                 Classification = t.AddonId.HasValue ? "Gói mua thêm" : "Gói hội viên",
-                Date = t.CreatedAt
+                Date = t.CreatedAt,
+                SenderAccountInfo = t.SenderAccountInfo,
+                ActualTransferContent = t.ActualTransferContent
             }).OrderByDescending(x => x.Date).ToList();
         }
 
@@ -68,7 +75,9 @@ namespace BussinessLayer.Services
                 Method = t.PaymentMethod,
                 Status = t.Status,
                 Classification = t.AddonId.HasValue ? "Gói mua thêm" : "Gói hội viên",
-                Date = t.CreatedAt
+                Date = t.CreatedAt,
+                SenderAccountInfo = t.SenderAccountInfo,
+                ActualTransferContent = t.ActualTransferContent
             }).OrderByDescending(x => x.Date).ToList();
         }
 
@@ -107,6 +116,8 @@ namespace BussinessLayer.Services
 
             transaction.Status = "Cancelled";
             await _transactionRepository.UpdateAsync(transaction);
+            
+            try { await _emailService.SendInvoiceEmailAsync(transaction); } catch { /* ignore */ }
             return true;
         }
     }

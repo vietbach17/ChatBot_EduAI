@@ -4,6 +4,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Người dùng trong hệ thống.
+    /// Lưu trữ thông tin tài khoản, vai trò (Admin/Lecturer/Student), 
+    /// gói đăng ký (Subscription), hạn mức câu hỏi (Quota), và mã OTP đặt lại mật khẩu.
+    /// </summary>
     public class User
     {
         [Key]

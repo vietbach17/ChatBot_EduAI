@@ -1,4 +1,4 @@
-using BussinessLayer.DTOs;
+﻿using BussinessLayer.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace BussinessLayer.IServices
 {
+    /// <summary>
+    /// Giao diện dịch vụ Quản lý Tài liệu: tải lên, trích xuất, tạo embedding, xóa.
+    /// </summary>
     public interface IDocumentService
     {
         Task<IEnumerable<DocumentDto>> GetAllDocumentsAsync();

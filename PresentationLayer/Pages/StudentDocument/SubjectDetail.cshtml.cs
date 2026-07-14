@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace PresentationLayer.Pages.StudentDocument
 {
     [Authorize]
+    /// <summary>
+    /// PageModel trang Chi tiet Mon hoc (Student). Hien thi chuong hoc va tai lieu thuoc mon hoc nguoi dung chon.
+    /// </summary>
     public class SubjectDetailModel : PageModel
     {
         private readonly ISubjectService _subjectService;
