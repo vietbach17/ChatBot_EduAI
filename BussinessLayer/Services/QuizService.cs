@@ -82,7 +82,31 @@ namespace BussinessLayer.Services
 
         public async Task<QuizStatisticsDto> GetQuizStatisticsAsync(int quizId, int lecturerId)
         {
-            throw new NotImplementedException();
+            var quiz = await _quizRepo.GetByIdAsync(quizId);
+            if (quiz == null || quiz.LecturerId != lecturerId)
+                throw new Exception("Bài thi không tồn tại hoặc bạn không có quyền truy cập.");
+
+            var attempts = await _attemptRepo.GetAllAttemptsForQuizAsync(quizId);
+            var gradedAttempts = attempts.Where(a => a.Status == "Graded").ToList();
+
+            var stats = new QuizStatisticsDto
+            {
+                QuizId = quiz.Id,
+                QuizTitle = quiz.Title,
+                TotalAttempts = gradedAttempts.Count,
+                AverageScore = 0,
+                HighestScore = 0,
+                LowestScore = 0
+            };
+
+            if (gradedAttempts.Any())
+            {
+                stats.AverageScore = Math.Round(gradedAttempts.Average(a => a.Score), 2);
+                stats.HighestScore = gradedAttempts.Max(a => a.Score);
+                stats.LowestScore = gradedAttempts.Min(a => a.Score);
+            }
+
+            return stats;
         }
 
         // ==========================================
