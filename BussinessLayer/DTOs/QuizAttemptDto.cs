@@ -62,5 +62,16 @@ namespace BussinessLayer.DTOs
         public decimal AverageScore { get; set; }
         public decimal HighestScore { get; set; }
         public decimal LowestScore { get; set; }
+        public List<QuizAttemptSummaryDto> Attempts { get; set; } = new List<QuizAttemptSummaryDto>();
+    }
+
+    public class QuizAttemptSummaryDto
+    {
+        public int AttemptId { get; set; }
+        public string StudentName { get; set; } = string.Empty;
+        public DateTime StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
+        public decimal Score { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }

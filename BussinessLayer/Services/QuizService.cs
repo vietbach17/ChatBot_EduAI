@@ -96,7 +96,16 @@ namespace BussinessLayer.Services
                 TotalAttempts = gradedAttempts.Count,
                 AverageScore = 0,
                 HighestScore = 0,
-                LowestScore = 0
+                LowestScore = 0,
+                Attempts = attempts.Select(a => new QuizAttemptSummaryDto
+                {
+                    AttemptId = a.Id,
+                    StudentName = a.Student?.Username ?? "Unknown",
+                    StartTime = a.StartTime,
+                    EndTime = a.EndTime,
+                    Score = a.Score,
+                    Status = a.Status
+                }).ToList()
             };
 
             if (gradedAttempts.Any())

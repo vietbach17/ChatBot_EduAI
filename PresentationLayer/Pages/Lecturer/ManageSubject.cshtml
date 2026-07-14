@@ -31,6 +31,9 @@
                     </button>
                     @if (Model.IsOwner)
                     {
+                        <a asp-page="/Lecturer/CreateQuiz" asp-route-subjectId="@Model.Subject.Id" class="brutal-btn" style="background-color: var(--pink); color: var(--white); border: 2px solid var(--black); padding: 8px 15px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                            <i class="fa-solid fa-file-signature"></i> TẠO BÀI THI
+                        </a>
                         <button type="button" onclick="openChapterModal(0, '')" class="brutal-btn" style="background-color: var(--green); color: var(--black); border: 2px solid var(--black); padding: 8px 15px; font-weight: 900; box-shadow: 2px 2px 0px var(--black);">
                             <i class="fa-solid fa-plus"></i> THÊM CHƯƠNG
                         </button>
