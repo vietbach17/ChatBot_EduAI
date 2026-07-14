@@ -24,17 +24,20 @@ namespace PresentationLayer.Pages.Lecturer
         private readonly IFileTextExtractorService _textExtractor;
         private readonly IHubContext<SignalRHub> _hubContext;
         private readonly IDocumentActivityLogService _activityLogService;
+        private readonly IQuizService _quizService;
 
-        public ManageSubjectModel(ISubjectService subjectService, IDocumentService documentService, IFileTextExtractorService textExtractor, IHubContext<SignalRHub> hubContext, IDocumentActivityLogService activityLogService)
+        public ManageSubjectModel(ISubjectService subjectService, IDocumentService documentService, IFileTextExtractorService textExtractor, IHubContext<SignalRHub> hubContext, IDocumentActivityLogService activityLogService, IQuizService quizService)
         {
             _subjectService = subjectService;
             _documentService = documentService;
             _textExtractor = textExtractor;
             _hubContext = hubContext;
             _activityLogService = activityLogService;
+            _quizService = quizService;
         }
 
         public SubjectDto Subject { get; set; } = default!;
+        public List<QuizSummaryDto> Quizzes { get; set; } = new();
 
         [BindProperty] public ChapterCreateViewModel CreateChapterModel { get; set; } = new ChapterCreateViewModel();
         
@@ -66,7 +69,9 @@ namespace PresentationLayer.Pages.Lecturer
             {
                 IsAdmin = true;
             }
-            
+
+            Quizzes = await _quizService.GetQuizzesBySubjectAsync(id);
+
             if (IsOwner || IsAdmin)
             {
                 ActivityLogs = (await _activityLogService.GetLogsBySubjectIdAsync(id)).ToList();

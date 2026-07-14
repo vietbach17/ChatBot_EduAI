@@ -3,6 +3,7 @@ using System;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
@@ -12,9 +13,11 @@ using Pgvector;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260713091908_AddQuizAttempts_WithRandomization")]
+    partial class AddQuizAttempts_WithRandomization
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,7 +119,7 @@ namespace DataAccessLayer.Migrations
                         {
                             Id = 3,
                             IsActive = true,
-                            Name = "Gói Ultra (Chạy nước rút)",
+                            Name = "Gói Premium (Chạy nước rút)",
                             Price = 50000m,
                             QuotaAmount = 120
                         });
@@ -380,10 +383,6 @@ namespace DataAccessLayer.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ActualTransferContent")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<int?>("AddonId")
                         .HasColumnType("integer");
 
@@ -403,10 +402,6 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<int?>("PlanId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("SenderAccountInfo")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Status")
                         .IsRequired()

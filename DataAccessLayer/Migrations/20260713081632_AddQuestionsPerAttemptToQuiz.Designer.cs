@@ -3,6 +3,7 @@ using System;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
@@ -12,9 +13,11 @@ using Pgvector;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260713081632_AddQuestionsPerAttemptToQuiz")]
+    partial class AddQuestionsPerAttemptToQuiz
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,7 +119,7 @@ namespace DataAccessLayer.Migrations
                         {
                             Id = 3,
                             IsActive = true,
-                            Name = "Gói Ultra (Chạy nước rút)",
+                            Name = "Gói Premium (Chạy nước rút)",
                             Price = 50000m,
                             QuotaAmount = 120
                         });
@@ -380,10 +383,6 @@ namespace DataAccessLayer.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ActualTransferContent")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<int?>("AddonId")
                         .HasColumnType("integer");
 
@@ -403,10 +402,6 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<int?>("PlanId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("SenderAccountInfo")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -573,6 +568,9 @@ namespace DataAccessLayer.Migrations
                     b.Property<int>("NumVariants")
                         .HasColumnType("integer");
 
+                    b.Property<int>("QuestionsPerAttempt")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("ShowScoreAfterSubmit")
                         .HasColumnType("boolean");
 
@@ -605,79 +603,6 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("SubjectId");
 
                     b.ToTable("Quizzes");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.QuizAnswer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AttemptId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsCorrect")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("QuestionBankId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SelectedAnswer")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttemptId");
-
-                    b.HasIndex("QuestionBankId");
-
-                    b.ToTable("QuizAnswers");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.QuizAttempt", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CorrectCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("EndTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("QuizId")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("Score")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TotalQuestions")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuizId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("QuizAttempts");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.QuizQuestion", b =>
@@ -1116,44 +1041,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Subject");
                 });
 
-            modelBuilder.Entity("DataAccessLayer.Entities.QuizAnswer", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.QuizAttempt", "Attempt")
-                        .WithMany("Answers")
-                        .HasForeignKey("AttemptId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataAccessLayer.Entities.QuestionBank", "QuestionBank")
-                        .WithMany()
-                        .HasForeignKey("QuestionBankId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Attempt");
-
-                    b.Navigation("QuestionBank");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.QuizAttempt", b =>
-                {
-                    b.HasOne("DataAccessLayer.Entities.Quiz", "Quiz")
-                        .WithMany()
-                        .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataAccessLayer.Entities.User", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Quiz");
-
-                    b.Navigation("Student");
-                });
-
             modelBuilder.Entity("DataAccessLayer.Entities.QuizQuestion", b =>
                 {
                     b.HasOne("DataAccessLayer.Entities.QuestionBank", "QuestionBank")
@@ -1191,11 +1078,6 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("DataAccessLayer.Entities.ChatSession", b =>
                 {
                     b.Navigation("Messages");
-                });
-
-            modelBuilder.Entity("DataAccessLayer.Entities.QuizAttempt", b =>
-                {
-                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Subject", b =>

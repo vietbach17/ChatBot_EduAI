@@ -12,6 +12,8 @@ namespace PresentationLayer.Pages.Admin
     public class DashboardModel : PageModel
     {
         private readonly IUserService _userService;
+        private readonly ISubjectService _subjectService;
+        private readonly IDocumentService _documentService;
         private readonly IPaymentHistoryService _paymentHistoryService;
 
         public int TotalUsers { get; set; }
@@ -19,9 +21,15 @@ namespace PresentationLayer.Pages.Admin
         public int TotalDocuments { get; set; }
         public decimal EstimatedRevenue { get; set; }
 
-        public DashboardModel(IUserService userService, IPaymentHistoryService paymentHistoryService)
+        public DashboardModel(
+            IUserService userService, 
+            ISubjectService subjectService, 
+            IDocumentService documentService, 
+            IPaymentHistoryService paymentHistoryService)
         {
             _userService = userService;
+            _subjectService = subjectService;
+            _documentService = documentService;
             _paymentHistoryService = paymentHistoryService;
         }
 
@@ -30,11 +38,13 @@ namespace PresentationLayer.Pages.Admin
             var users = await _userService.GetAllUsersAsync(false);
             TotalUsers = users.Count();
 
-            // Stubbed for strict Member 5 scope (missing ISubjectService and IDocumentService)
-            TotalSubjects = 0;
-            TotalDocuments = 0;
+            var subjects = await _subjectService.GetAllSubjectsAsync(false);
+            TotalSubjects = subjects.Count();
 
-            // Calculate monthly revenue from successful transactions
+            var documents = await _documentService.GetAllDocumentsAsync();
+            TotalDocuments = documents.Count();
+
+            // Calculate monthly revenue from successful transactions (from main branch implementation)
             var currentMonth = System.DateTime.Now.Month;
             var currentYear = System.DateTime.Now.Year;
             

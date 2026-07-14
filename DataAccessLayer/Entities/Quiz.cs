@@ -35,6 +35,8 @@ namespace DataAccessLayer.Entities
 
         public int TotalQuestions { get; set; } = 0;
 
+        //public int QuestionsPerAttempt { get; set; } = 0;
+
         public bool IsShuffled { get; set; } = false;
 
         public int NumVariants { get; set; } = 1; // Số lượng mã đề chia ra
@@ -50,6 +52,16 @@ namespace DataAccessLayer.Entities
         public DateTime? StartTime { get; set; }
 
         public DateTime? EndTime { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Số lần làm bài tối đa phải lớn hơn 0")]
+        public int MaxAttempts { get; set; } = 1;
+
+        [MaxLength(255)]
+        public string? AccessCode { get; set; } // Hashed password to access the quiz
+
+        [Required]
+        [MaxLength(20)]
+        public string GradingMethod { get; set; } = "Highest"; // "Highest", "Average", "Latest"
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
