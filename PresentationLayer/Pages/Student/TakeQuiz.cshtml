@@ -276,6 +276,18 @@
                 </div>
             </div>
         </div>
+
+        <!-- Timeout Popup -->
+        <div class="modal-overlay" id="timeout-modal">
+            <div class="modal-content">
+                <h2 style="font-weight: 900; margin-top: 0; color: red;">ĐÃ HẾT GIỜ!</h2>
+                <p style="font-weight: 600;">Thời gian làm bài đã kết thúc. Vui lòng nộp bài để hoàn tất!</p>
+                
+                <div style="display: flex; gap: 15px; margin-top: 25px; justify-content: center;">
+                    <button class="brutal-btn primary" onclick="submitQuiz()">Nộp Bài Bùp</button>
+                </div>
+            </div>
+        </div>
         
         @Html.AntiForgeryToken()
 
@@ -315,13 +327,20 @@
             // Timer logic
             const endTime = new Date(startTimeUtc.getTime() + timeLimitMinutes * 60000);
             
+            let isTimeoutShown = false;
+            
             function updateTimer() {
+                if (isTimeoutShown) return;
+                
                 const now = new Date();
                 const diff = endTime - now;
                 
                 if (diff <= 0) {
                     document.getElementById('timer').innerText = "00:00:00";
-                    submitQuiz(); // Auto submit when time's up
+                    isTimeoutShown = true;
+                    document.getElementById('timeout-modal').style.display = 'flex';
+                    // We can also disable all inputs
+                    document.querySelectorAll('input[type="radio"]').forEach(el => el.disabled = true);
                     return;
                 }
                 
