@@ -207,5 +207,22 @@ namespace PresentationLayer.Pages.Lecturer
             await _hubContext.Clients.All.SendAsync("CourseChanged");
             return RedirectToPage(new { id = id });
         }
+
+        public async Task<IActionResult> OnPostDeleteQuizAsync(int id, int quizId)
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim != null && int.TryParse(userIdClaim, out var uId))
+            {
+                try
+                {
+                    await _quizService.DeleteQuizAsync(uId, quizId);
+                }
+                catch (Exception ex)
+                {
+                    // Có thể thêm TempData["ErrorMessage"] = ex.Message;
+                }
+            }
+            return RedirectToPage(new { id = id });
+        }
     }
 }

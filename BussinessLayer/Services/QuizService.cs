@@ -82,7 +82,7 @@ namespace BussinessLayer.Services
 
         public async Task<QuizStatisticsDto> GetQuizStatisticsAsync(int quizId, int lecturerId)
         {
-            var quiz = await _quizRepo.GetByIdAsync(quizId);
+            var quiz = await _quizRepo.GetByIdIncludeDeletedAsync(quizId);
             if (quiz == null || quiz.LecturerId != lecturerId)
                 throw new Exception("Bài thi không tồn tại hoặc bạn không có quyền truy cập.");
 
@@ -116,6 +116,52 @@ namespace BussinessLayer.Services
             }
 
             return stats;
+        }
+
+        public async Task<UpdateQuizDto> GetQuizForUpdateAsync(int lecturerId, int quizId)
+        {
+            var quiz = await _quizRepo.GetByIdAsync(quizId);
+            if (quiz == null || quiz.LecturerId != lecturerId)
+                throw new Exception("Bài thi không tồn tại hoặc bạn không có quyền cập nhật.");
+
+            return new UpdateQuizDto
+            {
+                Title = quiz.Title,
+                Description = quiz.Description,
+                TimeLimitMinutes = quiz.TimeLimitMinutes,
+                MaxAttempts = quiz.MaxAttempts,
+                IsShuffled = quiz.IsShuffled,
+                ShowScoreAfterSubmit = quiz.ShowScoreAfterSubmit,
+                GradingMethod = quiz.GradingMethod,
+                AccessCode = quiz.AccessCode
+            };
+        }
+
+        public async Task UpdateQuizAsync(int lecturerId, int quizId, UpdateQuizDto dto)
+        {
+            var quiz = await _quizRepo.GetByIdAsync(quizId);
+            if (quiz == null || quiz.LecturerId != lecturerId)
+                throw new Exception("Bài thi không tồn tại hoặc bạn không có quyền cập nhật.");
+
+            quiz.Title = dto.Title;
+            quiz.Description = dto.Description;
+            quiz.TimeLimitMinutes = dto.TimeLimitMinutes;
+            quiz.MaxAttempts = dto.MaxAttempts;
+            quiz.IsShuffled = dto.IsShuffled;
+            quiz.ShowScoreAfterSubmit = dto.ShowScoreAfterSubmit;
+            quiz.GradingMethod = dto.GradingMethod;
+            quiz.AccessCode = dto.AccessCode;
+
+            await _quizRepo.UpdateAsync(quiz);
+        }
+
+        public async Task DeleteQuizAsync(int lecturerId, int quizId)
+        {
+            var quiz = await _quizRepo.GetByIdAsync(quizId);
+            if (quiz == null || quiz.LecturerId != lecturerId)
+                throw new Exception("Bài thi không tồn tại hoặc bạn không có quyền xóa.");
+
+            await _quizRepo.DeleteAsync(quizId);
         }
 
         // ==========================================
@@ -401,7 +447,7 @@ namespace BussinessLayer.Services
                 throw new Exception("Lần làm bài không tồn tại hoặc bạn không có quyền truy cập.");
 
             // Cần lấy thêm config của Quiz để biết có được phép xem đáp án không
-            var quiz = await _quizRepo.GetByIdAsync(attempt.QuizId);
+            var quiz = await _quizRepo.GetByIdIncludeDeletedAsync(attempt.QuizId);
             bool showAnswers = quiz?.ShowScoreAfterSubmit ?? true;
 
             var resultDto = new QuizResultDto

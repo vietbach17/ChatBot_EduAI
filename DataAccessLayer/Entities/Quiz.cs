@@ -64,5 +64,7 @@ namespace DataAccessLayer.Entities
         public string GradingMethod { get; set; } = "Highest"; // "Highest", "Average", "Latest"
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public bool IsDeleted { get; set; } = false;
     }
 }

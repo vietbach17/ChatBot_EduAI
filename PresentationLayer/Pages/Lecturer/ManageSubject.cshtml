@@ -71,10 +71,18 @@
                                         Thời gian: <strong>@quiz.TimeLimitMinutes phút</strong> | Số lượng mã đề: <strong>@quiz.NumVariants</strong> | Tạo ngày: <strong>@quiz.CreatedAt.ToString("dd/MM/yyyy")</strong>
                                     </div>
                                 </div>
-                                <div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
                                     <a href="/Lecturer/QuizResults?QuizId=@quiz.Id" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 2px solid var(--black); padding: 5px 10px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); text-decoration: none; font-size: 12px;">
                                         <i class="fa-solid fa-chart-simple"></i> THỐNG KÊ
                                     </a>
+                                    <a href="/Lecturer/UpdateQuiz?QuizId=@quiz.Id" class="brutal-btn" style="background-color: var(--blue); color: var(--white); border: 2px solid var(--black); padding: 5px 10px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); text-decoration: none; font-size: 12px;">
+                                        <i class="fa-solid fa-pen"></i> SỬA
+                                    </a>
+                                    <form method="post" asp-page-handler="DeleteQuiz" asp-route-id="@Model.Subject.Id" asp-route-quizId="@quiz.Id" data-confirm="Xóa bài thi '@quiz.Title'? Hành động này không thể hoàn tác nhưng điểm sinh viên đã làm sẽ được giữ lại!" style="display:inline;">
+                                        <button type="submit" class="brutal-btn" style="background-color: #ff4d4f; color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; box-shadow: 2px 2px 0px var(--black);">
+                                            <i class="fa-solid fa-trash"></i> XÓA
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         }

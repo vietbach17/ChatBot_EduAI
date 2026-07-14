@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DataAccessLayer.Entities;
@@ -89,9 +89,19 @@ namespace DataAccessLayer.Repositories
             var quiz = await _context.Quizzes.FindAsync(id);
             if (quiz != null)
             {
-                _context.Quizzes.Remove(quiz);
+                quiz.IsDeleted = true;
+                _context.Quizzes.Update(quiz);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<Quiz?> GetByIdIncludeDeletedAsync(int id)
+        {
+            return await _context.Quizzes
+                .IgnoreQueryFilters()
+                .Include(q => q.Subject)
+                .Include(q => q.Lecturer)
+                .FirstOrDefaultAsync(q => q.Id == id);
         }
     }
 }

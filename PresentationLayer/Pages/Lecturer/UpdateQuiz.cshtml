@@ -1,0 +1,123 @@
+@page
+@model PresentationLayer.Pages.Lecturer.UpdateQuizModel
+@{
+    ViewData["Title"] = "Sửa Bài Thi";
+}
+
+<style>
+    .brutal-card {
+        background-color: var(--white);
+        border: 2px solid var(--black);
+        box-shadow: 4px 4px 0px var(--black);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .brutal-input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid var(--black);
+        font-family: inherit;
+        font-size: 16px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        transition: 0.1s;
+    }
+    .brutal-input:focus {
+        outline: none;
+        border-color: var(--pink);
+        box-shadow: 2px 2px 0px var(--pink);
+    }
+    .brutal-btn {
+        background-color: var(--blue);
+        color: var(--white);
+        border: 2px solid var(--black);
+        padding: 10px 20px;
+        font-weight: 900;
+        font-size: 16px;
+        cursor: pointer;
+        box-shadow: 3px 3px 0px var(--black);
+        transition: 0.1s;
+        text-transform: uppercase;
+    }
+    .brutal-btn:active {
+        box-shadow: 0px 0px 0px var(--black);
+        transform: translate(3px, 3px);
+    }
+</style>
+
+<div class="main-wrapper" style="padding: 20px; max-width: 800px; margin: 0 auto;">
+    <h1 style="color: var(--blue); font-weight: 900; text-transform: uppercase; margin-bottom: 20px;">
+        <i class="fa-solid fa-pen"></i> SỬA BÀI THI
+    </h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="brutal-card" style="background-color: var(--green); color: var(--black); font-weight: 800;">
+            <i class="fa-solid fa-circle-check"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="brutal-card" style="background-color: #ffcccc; color: red;">
+            <strong>Lỗi:</strong> @Model.ErrorMessage
+        </div>
+    }
+
+    <form method="post">
+        <input type="hidden" asp-for="QuizId" />
+        
+        <div class="brutal-card">
+            <h2 style="font-weight: 800; margin-bottom: 15px;">Thông tin chung</h2>
+            
+            <label style="font-weight: 700;">Tên bài thi</label>
+            <input type="text" asp-for="QuizInput.Title" class="brutal-input" required placeholder="VD: Kiểm tra giữa kỳ AI..." />
+
+            <label style="font-weight: 700;">Mô tả</label>
+            <textarea asp-for="QuizInput.Description" class="brutal-input" rows="3" placeholder="Ghi chú thêm cho sinh viên..."></textarea>
+
+            <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label style="font-weight: 700;">Thời gian (phút)</label>
+                    <input type="number" asp-for="QuizInput.TimeLimitMinutes" class="brutal-input" min="1" required />
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-weight: 700;">Số lần thi tối đa</label>
+                    <input type="number" asp-for="QuizInput.MaxAttempts" class="brutal-input" min="1" required />
+                </div>
+            </div>
+
+            <label style="font-weight: 700;">Mật khẩu truy cập (Tùy chọn)</label>
+            <input type="text" asp-for="QuizInput.AccessCode" class="brutal-input" placeholder="Để trống nếu không cần mật khẩu" />
+
+            <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label style="font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
+                        <input type="checkbox" asp-for="QuizInput.ShowScoreAfterSubmit" style="width: 20px; height: 20px;" />
+                        Hiển thị điểm sau khi nộp
+                    </label>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
+                        <input type="checkbox" asp-for="QuizInput.IsShuffled" style="width: 20px; height: 20px;" />
+                        Đảo vị trí đáp án (A,B,C,D)
+                    </label>
+                </div>
+            </div>
+
+            <label style="font-weight: 700;">Cách tính điểm (nếu thi nhiều lần)</label>
+            <select asp-for="QuizInput.GradingMethod" class="brutal-input">
+                <option value="Highest">Lấy điểm cao nhất</option>
+                <option value="Average">Lấy điểm trung bình</option>
+                <option value="Latest">Lấy điểm lần cuối</option>
+            </select>
+
+            <div style="margin-top: 20px; display: flex; gap: 15px;">
+                <button type="submit" class="brutal-btn" style="width: 100%;">LƯU THAY ĐỔI</button>
+                <button type="button" onclick="history.back()" class="brutal-btn" style="background-color: var(--white); color: var(--black); text-align: center; width: 100%;">
+                    QUAY LẠI
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

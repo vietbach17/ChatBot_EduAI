@@ -93,10 +93,14 @@
     @if (TempData["SuccessMessage"] != null)
     {
         <div id="successPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-            <div class="brutal-card" style="background-color: var(--green); text-align: center; max-width: 400px; border: 4px solid var(--black); box-shadow: 8px 8px 0px var(--black);">
+            <div class="brutal-card" style="background-color: var(--green); text-align: center; max-width: 450px; border: 4px solid var(--black); box-shadow: 8px 8px 0px var(--black);">
                 <h2 style="margin-top: 0; font-weight: 900; font-size: 24px;">THÀNH CÔNG! 🎉</h2>
                 <p style="font-weight: 700; font-size: 16px;">@TempData["SuccessMessage"]</p>
-                <button type="button" class="brutal-btn" style="background-color: var(--white); margin-top: 15px;" onclick="document.getElementById('successPopup').style.display='none'">Tiếp tục tạo</button>
+                <p style="font-size: 13px; font-style: italic; margin-top: 5px;">(Trang đã được làm mới để bạn có thể tạo bài thi tiếp theo nếu muốn)</p>
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                    <a href="/Lecturer/ManageSubject/@Model.SubjectId" class="brutal-btn" style="background-color: var(--white); text-decoration: none; font-size: 14px;">Về DS Bài thi</a>
+                    <button type="button" class="brutal-btn" style="background-color: var(--yellow); font-size: 14px;" onclick="document.getElementById('successPopup').style.display='none'">Tạo bài mới</button>
+                </div>
             </div>
         </div>
     }

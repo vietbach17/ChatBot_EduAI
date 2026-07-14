@@ -45,6 +45,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<Subject>().HasQueryFilter(s => !s.IsDeleted);
             modelBuilder.Entity<Chapter>().HasQueryFilter(c => !c.IsDeleted);
             modelBuilder.Entity<Document>().HasQueryFilter(d => !d.IsDeleted);
+            modelBuilder.Entity<Quiz>().HasQueryFilter(q => !q.IsDeleted);
             
             // Seed 1 vài dữ liệu demo
             modelBuilder.Entity<User>().HasData(

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataAccessLayer.Entities;
 
@@ -17,5 +17,6 @@ namespace DataAccessLayer.IRepositories
         Task AddQuestionsAsync(IEnumerable<QuizQuestion> questions);
         Task UpdateAsync(Quiz quiz);
         Task DeleteAsync(int id);
+        Task<Quiz?> GetByIdIncludeDeletedAsync(int id);
     }
 }

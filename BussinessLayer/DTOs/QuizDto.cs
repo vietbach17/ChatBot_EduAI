@@ -30,6 +30,18 @@ namespace BussinessLayer.DTOs
         public List<VariantQuestionsDto> Variants { get; set; } = new List<VariantQuestionsDto>();
     }
 
+    public class UpdateQuizDto
+    {
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public int TimeLimitMinutes { get; set; } = 15;
+        public int MaxAttempts { get; set; } = 1;
+        public bool IsShuffled { get; set; } = false;
+        public bool ShowScoreAfterSubmit { get; set; } = true;
+        public string GradingMethod { get; set; } = "Highest";
+        public string? AccessCode { get; set; }
+    }
+
     public class QuizDetailDto
     {
         public int Id { get; set; }
