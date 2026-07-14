@@ -119,8 +119,50 @@ namespace BussinessLayer.Services
         }
 
         // ==========================================
-        // 2. STUDENT: XEM CHI TIẾT, BẮT ĐẦU VÀ NỘP BÀI
+        // 2. STUDENT: DANH SÁCH, XEM CHI TIẾT, BẮT ĐẦU VÀ NỘP BÀI
         // ==========================================
+        public async Task<List<StudentQuizDto>> GetStudentQuizzesAsync(int studentId)
+        {
+            var quizzes = await _quizRepo.GetQuizzesForStudentAsync(studentId);
+            var attempts = await _attemptRepo.GetAttemptsByStudentAsync(studentId);
+
+            var result = new List<StudentQuizDto>();
+
+            foreach (var q in quizzes)
+            {
+                var studentAttemptsCount = attempts.Count(a => a.QuizId == q.Id);
+                var isCompleted = attempts.Any(a => a.QuizId == q.Id && a.Status == "Graded");
+                var inProgress = attempts.Any(a => a.QuizId == q.Id && a.Status == "InProgress");
+
+                string status = "Chưa làm";
+                if (isCompleted)
+                    status = "Hoàn thành";
+                else if (inProgress)
+                    status = "Đang làm";
+                // TODO: Thêm logic "Hết hạn" nếu có field DueDate sau này
+
+                if (studentAttemptsCount >= q.MaxAttempts)
+                {
+                    status = "Hết lượt";
+                }
+
+                result.Add(new StudentQuizDto
+                {
+                    QuizId = q.Id,
+                    Title = q.Title,
+                    SubjectId = q.SubjectId,
+                    SubjectName = q.Subject?.Name ?? "N/A",
+                    CreatedAt = q.CreatedAt,
+                    TimeLimitMinutes = q.TimeLimitMinutes,
+                    MaxAttempts = q.MaxAttempts,
+                    AttemptsCount = studentAttemptsCount,
+                    Status = status
+                });
+            }
+
+            return result.OrderByDescending(q => q.CreatedAt).ToList();
+        }
+
         public async Task<QuizDetailDto> GetQuizDetailAsync(int quizId, int studentId)
         {
             var quiz = await _quizRepo.GetByIdAsync(quizId);

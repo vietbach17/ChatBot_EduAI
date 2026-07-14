@@ -45,6 +45,13 @@ namespace DataAccessLayer.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<QuizAttempt>> GetAttemptsByStudentAsync(int studentId)
+        {
+            return await _context.QuizAttempts
+                .Where(q => q.StudentId == studentId)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<QuizAttempt>> GetAllAttemptsForQuizAsync(int quizId)
         {
             return await _context.QuizAttempts

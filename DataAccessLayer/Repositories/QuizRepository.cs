@@ -44,6 +44,16 @@ namespace DataAccessLayer.Repositories
             return await query.OrderByDescending(q => q.CreatedAt).ToListAsync();
         }
 
+        public async Task<IEnumerable<Quiz>> GetQuizzesForStudentAsync(int studentId)
+        {
+            // Tạm thời lấy tất cả bài thi (Student có thể thấy tất cả bài thi hoặc được cung cấp AccessCode)
+            // Nếu sau này có bảng trung gian Enrollment/Subscription thì thêm điều kiện Join vào đây.
+            return await _context.Quizzes
+                .Include(q => q.Subject)
+                .OrderByDescending(q => q.CreatedAt)
+                .ToListAsync();
+        }
+
         public async Task AddAsync(Quiz quiz)
         {
             await _context.Quizzes.AddAsync(quiz);

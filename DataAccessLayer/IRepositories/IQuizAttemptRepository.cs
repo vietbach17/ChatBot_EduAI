@@ -10,6 +10,7 @@ namespace DataAccessLayer.IRepositories
         Task<QuizAttempt?> GetAttemptByIdAsync(int id);
         Task<QuizAttempt?> GetAttemptWithAnswersAsync(int id);
         Task<IEnumerable<QuizAttempt>> GetAttemptsByStudentAsync(int studentId, int quizId);
+        Task<IEnumerable<QuizAttempt>> GetAttemptsByStudentAsync(int studentId);
         Task<IEnumerable<QuizAttempt>> GetAllAttemptsForQuizAsync(int quizId);
         Task UpdateAttemptAsync(QuizAttempt attempt);
         Task AddAnswersAsync(IEnumerable<QuizAnswer> answers);
