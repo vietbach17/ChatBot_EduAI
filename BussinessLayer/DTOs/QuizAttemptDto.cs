@@ -18,6 +18,7 @@ namespace BussinessLayer.DTOs
         public string QuestionText { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
         public List<string> Options { get; set; } = new List<string>();
+        public string? SelectedAnswer { get; set; }
     }
 
     public class SubmitQuizDto

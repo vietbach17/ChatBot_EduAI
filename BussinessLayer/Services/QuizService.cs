@@ -205,6 +205,31 @@ namespace BussinessLayer.Services
                 throw new Exception("Mật khẩu bài thi không chính xác.");
 
             var previousAttempts = await _attemptRepo.GetAttemptsByStudentAsync(studentId, quizId);
+            
+            var inProgressAttempt = previousAttempts.FirstOrDefault(a => a.Status == "InProgress");
+            if (inProgressAttempt != null)
+            {
+                var attemptWithAnswers = await _attemptRepo.GetAttemptWithAnswersAsync(inProgressAttempt.Id);
+                if (attemptWithAnswers != null)
+                {
+                    return new TakeQuizDto
+                    {
+                        AttemptId = attemptWithAnswers.Id,
+                        Title = quiz.Title,
+                        StartTime = attemptWithAnswers.StartTime,
+                        TimeLimitMinutes = quiz.TimeLimitMinutes,
+                        Questions = attemptWithAnswers.Answers.Select(a => new TakeQuizQuestionDto
+                        {
+                            QuestionBankId = a.QuestionBankId,
+                            QuestionText = a.QuestionBank?.Content ?? "N/A",
+                            Type = a.QuestionBank?.QuestionType ?? "MultipleChoice",
+                            Options = GetOptionsList(a.QuestionBank),
+                            SelectedAnswer = a.SelectedAnswer
+                        }).ToList()
+                    };
+                }
+            }
+
             if (previousAttempts.Count() >= quiz.MaxAttempts)
                 throw new Exception("Bạn đã hết số lần làm bài.");
 
