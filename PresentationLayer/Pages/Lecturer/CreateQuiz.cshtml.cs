@@ -67,16 +67,20 @@ namespace PresentationLayer.Pages.Lecturer
             {
                 try
                 {
-                    var variants = JsonSerializer.Deserialize<List<VariantQuestionsDto>>(variantsJson);
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var variants = JsonSerializer.Deserialize<List<VariantQuestionsDto>>(variantsJson, options);
                     if (variants != null)
                     {
                         QuizInput.Variants = variants;
                         QuizInput.NumVariants = variants.Count;
                     }
                 }
-                catch
+                catch (System.Exception ex)
                 {
-                    // Ignore JSON errors
+                    ErrorMessage = "Lỗi JSON: " + ex.Message + " | JSON: " + variantsJson;
+                    var questions = await _questionBankRepo.GetPagedAsync(SubjectId, null, null, null, 1, 1000);
+                    QuestionsJson = JsonSerializer.Serialize(questions.Select(q => new { id = q.Id, questionText = q.Content, difficulty = q.Difficulty, type = q.QuestionType }));
+                    return Page();
                 }
             }
 

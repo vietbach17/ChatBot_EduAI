@@ -173,6 +173,14 @@
             <!-- RIGHT PANE: QUESTION BANK -->
             <div class="right-pane brutal-card" style="background-color: #f4f4f4;">
                 <h3 style="font-weight: 800; margin-top: 0;">Ngân Hàng Câu Hỏi</h3>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: stretch;">
+                    <input type="number" id="autoAddCount" class="brutal-input" style="margin: 0; flex: 1;" min="1" placeholder="Nhập số câu..." />
+                    <button type="button" class="brutal-btn" style="padding: 0 15px; font-size: 14px; white-space: nowrap;" onclick="autoAddQuestions()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Lấy ngẫu nhiên
+                    </button>
+                </div>
+
                 <input type="text" id="searchInput" class="brutal-input" placeholder="Tìm kiếm câu hỏi..." onkeyup="renderQuestions()" />
                 
                 <div id="questions-list" style="margin-top: 10px;">
@@ -247,9 +255,41 @@
                 variant.questionIds.push(qId);
                 renderVariants();
             } else {
-                alert("Câu hỏi này đã có trong mã đề hiện tại!");
+                brutalAlert("Câu hỏi này đã có trong mã đề hiện tại!");
             }
         }
+    }
+
+    function autoAddQuestions() {
+        const countInput = document.getElementById('autoAddCount').value;
+        const count = parseInt(countInput);
+        if (isNaN(count) || count <= 0) {
+            brutalAlert("Vui lòng nhập số lượng câu hỏi hợp lệ!");
+            return;
+        }
+
+        const variant = variants.find(v => v.index === activeVariantIndex);
+        if (!variant) return;
+
+        const availableQuestions = bankQuestions.filter(q => !variant.questionIds.includes(q.id));
+        
+        if (availableQuestions.length === 0) {
+            brutalAlert("Mã đề này đã có tất cả câu hỏi trong ngân hàng!");
+            return;
+        }
+
+        const toAdd = Math.min(count, availableQuestions.length);
+        if (toAdd < count) {
+            brutalAlert(`Ngân hàng chỉ còn ${toAdd} câu chưa được thêm vào mã đề này. Hệ thống sẽ tự động thêm ${toAdd} câu đó.`);
+        }
+
+        // Lấy ngẫu nhiên
+        const shuffled = availableQuestions.sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, toAdd);
+
+        selected.forEach(q => variant.questionIds.push(q.id));
+        renderVariants();
+        document.getElementById('autoAddCount').value = ""; // Reset
     }
 
     function prepareSubmit() {
