@@ -33,7 +33,23 @@ namespace DataAccessLayer.Entities
         public int MonthlyQuestionCount { get; set; } = 0; // số câu đã hỏi trong tháng
 
         public DateTime? QuotaResetDate { get; set; } // ngày reset quota (đầu tháng tiếp theo)
+
+        public int ShortTermQuestionCount { get; set; } = 0; // số câu đã hỏi trong chu kỳ 5 giờ
+
+        public DateTime? ShortTermResetDate { get; set; } // thời điểm reset chu kỳ 5 giờ
+        
+        public int ExtraQuestionQuota { get; set; } = 0; // số lượt hỏi dự phòng mua thêm
+        
+        public bool UseExtraQuota { get; set; } = false; // bật tắt việc tiêu thụ lượt dự phòng
         // ========================
+        
+        // ===== FORGOT PASSWORD =====
+        [MaxLength(6)]
+        public string? ResetOtp { get; set; }
+        
+        public DateTime? ResetOtpExpiry { get; set; }
+        // ===========================
+
         
         public ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
         public ICollection<Subject> AssignedSubjects { get; set; } = new List<Subject>();

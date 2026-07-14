@@ -1,11 +1,15 @@
-using BussinessLayer.DTOs;
 using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
+using BussinessLayer.DTOs;
+
 using DataAccessLayer.IRepositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BussinessLayer.IServices;
 
 namespace BussinessLayer.Services
 {
@@ -116,7 +120,8 @@ namespace BussinessLayer.Services
                 UploaderId = doc.UploaderId,
                 UploaderName = doc.Uploader?.Username,
                 SubjectName = doc.Subject?.Name,
-                ChapterTitle = doc.Chapter?.Title
+                ChapterTitle = doc.Chapter?.Title,
+                IsDeleted = doc.IsDeleted
             };
         }
 
@@ -303,3 +308,4 @@ namespace BussinessLayer.Services
         }
     }
 }
+

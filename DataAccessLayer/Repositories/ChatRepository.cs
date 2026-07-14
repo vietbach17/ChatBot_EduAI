@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,9 +22,10 @@ namespace DataAccessLayer.Repositories
             var session = new ChatSession
             {
                 UserId = userId,
-                Title = title
+                Title = title,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
-            
             _context.ChatSessions.Add(session);
             await _context.SaveChangesAsync();
             return session;
@@ -41,7 +43,7 @@ namespace DataAccessLayer.Repositories
             return await _context.ChatSessions
                 .Include(s => s.Messages.OrderBy(m => m.Timestamp))
                 .Where(s => s.UserId == userId)
-                .OrderByDescending(s => s.CreatedAt)
+                .OrderByDescending(s => s.UpdatedAt)
                 .AsNoTracking()
                 .AsSplitQuery()
                 .ToListAsync();
@@ -57,8 +59,16 @@ namespace DataAccessLayer.Repositories
         {
             var session = await _context.ChatSessions.FirstOrDefaultAsync(s => s.Id == sessionId);
             if (session == null) return;
-
             session.Title = title;
+            session.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateSessionUpdatedAtAsync(int sessionId)
+        {
+            var session = await _context.ChatSessions.FirstOrDefaultAsync(s => s.Id == sessionId);
+            if (session == null) return;
+            session.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
 
@@ -66,7 +76,6 @@ namespace DataAccessLayer.Repositories
         {
             var session = await _context.ChatSessions.FirstOrDefaultAsync(s => s.Id == sessionId);
             if (session == null) return;
-
             _context.ChatSessions.Remove(session);
             await _context.SaveChangesAsync();
         }
@@ -76,13 +85,23 @@ namespace DataAccessLayer.Repositories
             var session = await _context.ChatSessions
                 .Include(s => s.Messages)
                 .FirstOrDefaultAsync(s => s.Id == sessionId);
-
             if (session == null) return;
-
             _context.ChatMessages.RemoveRange(session.Messages);
             session.Title = "Cuộc trò chuyện mới";
-            session.CreatedAt = session.CreatedAt;
+            session.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<ChatMessage>> GetMessagesPagedAsync(int sessionId, int page, int pageSize)
+        {
+            return await _context.ChatMessages
+                .Where(m => m.ChatSessionId == sessionId)
+                .OrderByDescending(m => m.Timestamp)
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .OrderBy(m => m.Timestamp)
+                .AsNoTracking()
+                .ToListAsync();
         }
     }
 }

@@ -16,9 +16,16 @@ namespace DataAccessLayer
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<Chapter> Chapters { get; set; }
         public DbSet<DocumentChunk> DocumentChunks { get; set; }
+        public DbSet<AddonPackage> AddonPackages { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         public DbSet<DocumentActivityLog> DocumentActivityLogs { get; set; }
+        public DbSet<QuestionBank> QuestionBanks { get; set; }
+        public DbSet<Quiz> Quizzes { get; set; }
+        public DbSet<QuizQuestion> QuizQuestions { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+        public DbSet<AIGenerationLog> AIGenerationLogs { get; set; }
+        public DbSet<QuizAttempt> QuizAttempts { get; set; }
+        public DbSet<QuizAnswer> QuizAnswers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +48,33 @@ namespace DataAccessLayer
                 new User { Id = 1, Username = "student", PasswordHash = "student123", Role = "Student" },
                 new User { Id = 2, Username = "lecturer", PasswordHash = "lecturer123", Role = "Lecturer" },
                 new User { Id = 3, Username = "admin", PasswordHash = "admin123", Role = "Admin" }
+            );
+
+            modelBuilder.Entity<AddonPackage>().HasData(
+                new AddonPackage
+                {
+                    Id = 1,
+                    Name = "Gói Mini (Cấp tốc)",
+                    Price = 10000,
+                    QuotaAmount = 15,
+                    IsActive = true
+                },
+                new AddonPackage
+                {
+                    Id = 2,
+                    Name = "Gói Standard (Cứu cánh)",
+                    Price = 20000,
+                    QuotaAmount = 40,
+                    IsActive = true
+                },
+                new AddonPackage
+                {
+                    Id = 3,
+                    Name = "Gói Ultra (Chạy nước rút)",
+                    Price = 50000,
+                    QuotaAmount = 120,
+                    IsActive = true
+                }
             );
 
             modelBuilder.Entity<Subject>()
@@ -79,6 +113,125 @@ namespace DataAccessLayer
                 new SubscriptionPlan { Id = 2, Name = "Pro", Description = "Gói nâng cao nhiều tính năng", Price = 25000, MonthlyQuestionLimit = 20, IsActive = true, SortOrder = 2, DurationDays = 30, Features = "[\"Ưu tiên xử lý câu hỏi\", \"Tốc độ phản hồi AI nhanh hơn\", \"Giới hạn 20 câu hỏi / 5 giờ\", \"Hỗ trợ tài liệu đính kèm\"]" },
                 new SubscriptionPlan { Id = 3, Name = "Ultra", Description = "Gói cao cấp không giới hạn", Price = 100000, MonthlyQuestionLimit = -1, IsActive = true, SortOrder = 3, DurationDays = 30, Features = "[\"Không giới hạn số câu hỏi\", \"AI phản hồi tức thì\", \"Mô hình AI cao cấp nhất\", \"Hỗ trợ ưu tiên 24/7\"]" }
             );
+
+            // Cấu hình các quan hệ khóa ngoại để tránh vòng lặp Cascade cho QuestionBank, Quiz, QuizQuestion
+            modelBuilder.Entity<QuestionBank>()
+                .HasOne(q => q.Subject)
+                .WithMany()
+                .HasForeignKey(q => q.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuestionBank>()
+                .HasOne(q => q.Lecturer)
+                .WithMany()
+                .HasForeignKey(q => q.LecturerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Quiz>()
+                .HasOne(q => q.Subject)
+                .WithMany()
+                .HasForeignKey(q => q.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Quiz>()
+                .HasOne(q => q.Lecturer)
+                .WithMany()
+                .HasForeignKey(q => q.LecturerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<QuizQuestion>()
+                .HasOne(qq => qq.Quiz)
+                .WithMany()
+                .HasForeignKey(qq => qq.QuizId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuizQuestion>()
+                .HasOne(qq => qq.QuestionBank)
+                .WithMany()
+                .HasForeignKey(qq => qq.QuestionBankId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Seed câu hỏi mẫu
+            modelBuilder.Entity<QuestionBank>().HasData(
+                new QuestionBank
+                {
+                    Id = 1,
+                    SubjectId = 1,
+                    Content = "Từ khóa nào được dùng để khai báo hằng số trong C#?",
+                    QuestionType = "MultipleChoice",
+                    OptionsJson = "[\"readonly\",\"const\",\"static\",\"let\"]",
+                    CorrectAnswer = "B",
+                    Difficulty = "Easy",
+                    Tags = "Syntax,Variables",
+                    IsAIGenerated = false,
+                    LecturerId = 2,
+                    CreatedAt = new System.DateTime(2026, 7, 8, 0, 0, 0, System.DateTimeKind.Utc)
+                },
+                new QuestionBank
+                {
+                    Id = 2,
+                    SubjectId = 1,
+                    Content = "C# là một ngôn ngữ lập trình thuần hướng đối tượng (Pure Object-Oriented). Đúng hay Sai?",
+                    QuestionType = "TrueFalse",
+                    OptionsJson = null,
+                    CorrectAnswer = "False",
+                    Difficulty = "Easy",
+                    Tags = "OOP,Theory",
+                    IsAIGenerated = false,
+                    LecturerId = 2,
+                    CreatedAt = new System.DateTime(2026, 7, 8, 0, 0, 0, System.DateTimeKind.Utc)
+                },
+                new QuestionBank
+                {
+                    Id = 3,
+                    SubjectId = 2,
+                    Content = "Middleware nào được sử dụng để phục vụ các tệp tĩnh (static files) như HTML, CSS, JS trong ASP.NET Core?",
+                    QuestionType = "MultipleChoice",
+                    OptionsJson = "[\"UseRouting()\",\"UseStaticFiles()\",\"UseEndpoints()\",\"UseHttpsRedirection()\"]",
+                    CorrectAnswer = "B",
+                    Difficulty = "Medium",
+                    Tags = "Middleware,StaticFiles",
+                    IsAIGenerated = false,
+                    LecturerId = 2,
+                    CreatedAt = new System.DateTime(2026, 7, 8, 0, 0, 0, System.DateTimeKind.Utc)
+                }
+            );
+
+            modelBuilder.Entity<AIGenerationLog>()
+                .HasOne(l => l.Lecturer)
+                .WithMany()
+                .HasForeignKey(l => l.LecturerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<AIGenerationLog>()
+                .HasOne(l => l.Subject)
+                .WithMany()
+                .HasForeignKey(l => l.SubjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuizAttempt>()
+                .HasOne(qa => qa.Quiz)
+                .WithMany()
+                .HasForeignKey(qa => qa.QuizId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuizAttempt>()
+                .HasOne(qa => qa.Student)
+                .WithMany()
+                .HasForeignKey(qa => qa.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuizAnswer>()
+                .HasOne(qa => qa.Attempt)
+                .WithMany(a => a.Answers)
+                .HasForeignKey(qa => qa.AttemptId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<QuizAnswer>()
+                .HasOne(qa => qa.QuestionBank)
+                .WithMany()
+                .HasForeignKey(qa => qa.QuestionBankId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

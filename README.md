@@ -15,6 +15,14 @@ ChatEdu AI là một nền tảng hỗ trợ học tập tích hợp Trợ lý T
 
 ---
 
+## 🏛 Kiến Trúc Hệ Thống
+
+Dự án được xây dựng theo mô hình **3-Tier Architecture** (3 lớp) kết hợp với các dịch vụ AI và Cơ sở dữ liệu:
+
+![Kiến trúc hệ thống](images/architecture.png)
+
+---
+
 ## ⚙️ Hướng Dẫn Cài Đặt (Dành cho Developer)
 
 ### 1. Yêu cầu hệ thống
@@ -37,6 +45,20 @@ SMTP_PORT=587
 SMTP_USER=email_cua_ban@gmail.com
 SMTP_PASS=app_password_16_ky_tu
 SMTP_FROM_NAME=EduManager
+
+# Cấu hình Thanh toán VNPay
+VNPay__TmnCode=your-vnpay-tmn-code
+VNPay__HashSecret=your-vnpay-hash-secret
+VNPay__BaseUrl=vpcpay.html
+VNPay__ReturnUrl=Payment/Callback
+
+# Cấu hình Thanh toán PayOS
+PayOS__ClientId=your-payos-client-id
+PayOS__ApiKey=your-payos-api-key
+PayOS__ChecksumKey=your-payos-checksum-key
+
+# Cấu hình Thanh toán SePay
+SePay__ApiKey=your-sepay-api-key
 ```
 
 ### 3. Cập nhật Database

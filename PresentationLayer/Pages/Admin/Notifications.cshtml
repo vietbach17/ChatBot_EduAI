@@ -43,12 +43,12 @@
             </div>
         }
 
-        <div style="background-color: var(--white); border: 3px solid var(--black); box-shadow: 8px 8px 0px var(--black); padding: 30px; max-width: 800px;">
+        <div style="background-color: var(--white); border: 3px solid var(--black); box-shadow: 8px 8px 0px var(--black); padding: 30px; max-width: 800px; margin: 0 auto;">
             <p style="font-weight: 700; color: #555; margin-bottom: 25px; font-size: 14px;">
                 <i class="fa-solid fa-circle-info"></i> Hệ thống sẽ gửi email tới danh sách người dùng được chọn. Những người dùng không có email sẽ tự động bị bỏ qua.
             </p>
 
-            <form method="post" asp-page-handler="Send">
+            <form method="post" asp-page-handler="Send" data-confirm="Bạn có chắc chắn muốn gửi email thông báo này? Hành động này không thể hoàn tác.">
                 <div class="form-group">
                     <label>Đối tượng nhận</label>
                     <select asp-for="SendModel.TargetAudience">
@@ -59,21 +59,62 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Chọn Mẫu thông báo (Tùy chọn)</label>
+                    <select id="templateSelector" onchange="applyTemplate()">
+                        <option value="">-- Tự viết thông báo --</option>
+                        <option value="maintenance">Bảo trì hệ thống</option>
+                        <option value="new_feature">Cập nhật tính năng mới EduAI</option>
+                        <option value="reminder">Cập nhật gói bán</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Tiêu đề thông báo</label>
-                    <input type="text" asp-for="SendModel.Subject" placeholder="Nhập tiêu đề email..." required />
+                    <input type="text" asp-for="SendModel.Subject" id="emailSubject" placeholder="Nhập tiêu đề email..." required />
                     <span asp-validation-for="SendModel.Subject" style="color: red; font-weight: bold; font-size: 12px;"></span>
                 </div>
 
                 <div class="form-group">
                     <label>Nội dung</label>
-                    <textarea asp-for="SendModel.EmailContent" rows="10" placeholder="Nhập nội dung thông báo. Hỗ trợ xuống dòng tự động..." required></textarea>
+                    <textarea asp-for="SendModel.EmailContent" id="emailContent" rows="10" placeholder="Nhập nội dung thông báo. Hỗ trợ xuống dòng tự động..." required></textarea>
                     <span asp-validation-for="SendModel.EmailContent" style="color: red; font-weight: bold; font-size: 12px;"></span>
                 </div>
 
-                <button type="submit" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 3px solid var(--black); padding: 15px 30px; font-weight: 900; font-size: 16px; box-shadow: 4px 4px 0px var(--black); cursor: pointer; margin-top: 10px;" onclick="return confirm('Bạn có chắc chắn muốn gửi email thông báo này? Hành động này không thể hoàn tác.');">
+                <button type="submit" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 3px solid var(--black); padding: 15px 30px; font-weight: 900; font-size: 16px; box-shadow: 4px 4px 0px var(--black); cursor: pointer; margin-top: 10px;">
                     <i class="fa-solid fa-paper-plane"></i> GỬI NGAY
                 </button>
             </form>
         </div>
+
+        <script>
+            const templates = {
+                maintenance: {
+                    subject: "[EduManager] Thông báo bảo trì hệ thống định kỳ",
+                    content: "Chào bạn,\n\nHệ thống EduManager sẽ tiến hành bảo trì định kỳ nâng cấp server AI để mang lại trải nghiệm tốt hơn.\n\n- Thời gian dự kiến: 22:00 hôm nay đến 02:00 sáng mai.\n- Ảnh hưởng: Trong thời gian này, tính năng ChatBot AI và truy cập tài liệu có thể bị gián đoạn.\n\nXin lỗi vì sự bất tiện này.\nTrân trọng,\nBan Quản Trị EduManager."
+                },
+                new_feature: {
+                    subject: "[EduManager] Cập nhật tính năng AI mới vô cùng hấp dẫn!",
+                    content: "Chào bạn,\n\nEduManager vừa ra mắt bản cập nhật mới mang đến nhiều trải nghiệm AI tuyệt vời hơn!\n\n- Cải thiện tốc độ phản hồi .\n- Cho phép chat dựa trên nhiều tài liệu PDF/Word cùng lúc.\n- Giao diện quản lý trực quan hơn.\n\nHãy đăng nhập ngay để trải nghiệm nhé!\nTrân trọng,\nBan Quản Trị EduManager."
+                },
+                reminder: {
+                    subject: "[EduManager] Thông báo: Cập nhật các gói bán mới siêu ưu đãi!",
+                    content: "Chào bạn,\n\nNhằm đáp ứng nhu cầu học tập và nghiên cứu, EduManager vừa ra mắt và cập nhật các gói sử dụng AI mới với mức giá cực kỳ ưu đãi và nhiều quyền lợi hấp dẫn.\n\nĐặc biệt, hệ thống vừa bổ sung các gói tích hợp thanh toán linh hoạt qua SePay.\n\nHãy truy cập ngay mục 'Mua Gói (Pricing)' để chọn cho mình gói phù hợp nhé!\n\nTrân trọng,\nBan Quản Trị EduManager."
+                }
+            };
+
+            function applyTemplate() {
+                const val = document.getElementById('templateSelector').value;
+                const subjInput = document.getElementById('emailSubject');
+                const contentInput = document.getElementById('emailContent');
+
+                if (val && templates[val]) {
+                    subjInput.value = templates[val].subject;
+                    contentInput.value = templates[val].content;
+                } else {
+                    subjInput.value = '';
+                    contentInput.value = '';
+                }
+            }
+        </script>
     </div>
 </div>

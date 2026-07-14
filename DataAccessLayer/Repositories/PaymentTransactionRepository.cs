@@ -25,6 +25,12 @@ namespace DataAccessLayer.Repositories
         public async Task<IEnumerable<PaymentTransaction>> GetByStatusAsync(string status)
             => await _context.PaymentTransactions.Where(t => t.Status == status).ToListAsync();
 
+        public async Task<IEnumerable<PaymentTransaction>> GetAllAsync()
+            => await _context.PaymentTransactions.Include(t => t.User).Include(t => t.SubscriptionPlan).ToListAsync();
+
+        public async Task<PaymentTransaction?> GetByTxnRefAsync(string txnRef)
+            => await _context.PaymentTransactions.Include(t => t.User).Include(t => t.SubscriptionPlan).FirstOrDefaultAsync(t => t.TransactionCode == txnRef);
+
         public async Task AddAsync(PaymentTransaction transaction)
         {
             _context.PaymentTransactions.Add(transaction);

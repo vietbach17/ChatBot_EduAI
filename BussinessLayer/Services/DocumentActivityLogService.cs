@@ -1,4 +1,7 @@
-﻿using BussinessLayer.DTOs;
+using BussinessLayer.IServices;
+using BussinessLayer.IGateways;
+using BussinessLayer.Gateways;
+using BussinessLayer.DTOs;
 using DataAccessLayer.Entities;
 using DataAccessLayer.IRepositories;
 using System;
@@ -49,3 +52,4 @@ namespace BussinessLayer.Services
         }
     }
 }
+

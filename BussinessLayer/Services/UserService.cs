@@ -85,6 +85,16 @@ namespace BussinessLayer.Services
             return true;
         }
 
+        public async Task<bool> UpdateUseExtraQuotaAsync(int userId, bool useExtraQuota)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return false;
+
+            user.UseExtraQuota = useExtraQuota;
+            await _userRepository.UpdateUserAsync(user);
+            return true;
+        }
+
         public async Task<bool> SoftDeleteUserAsync(int id)
         {
             var user = await _userRepository.GetUserByIdAsync(id);

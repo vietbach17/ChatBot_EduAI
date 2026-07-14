@@ -7,19 +7,27 @@ namespace DataAccessLayer.Entities
     {
         [Key]
         public int Id { get; set; }
-        
+
         [Required]
         public int ChatSessionId { get; set; }
         public ChatSession? ChatSession { get; set; }
-        
+
         [Required]
         public string Role { get; set; } = string.Empty; // "user" hoặc "model"
-        
+
+        // Phân loại tin nhắn: "system" (system prompt), "user", "model" (AI reply)
+        [MaxLength(20)]
+        public string MessageType { get; set; } = "user";
+
         [Required]
         public string Text { get; set; } = string.Empty;
 
         public string? CitationPayloadJson { get; set; }
-        
+
+        // Số token ước tính (dùng cho tracking/analytics)
+        public int? TokenCount { get; set; }
+
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }
+

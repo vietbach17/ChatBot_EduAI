@@ -27,7 +27,7 @@ namespace PresentationLayer.Pages.Admin
 
         public async Task OnGetAsync()
         {
-            Users = await _userService.GetAllUsersAsync(false);
+            Users = await _userService.GetAllUsersAsync(true);
         }
 
         public async Task<IActionResult> OnPostAddUserAsync()
@@ -73,6 +73,12 @@ namespace PresentationLayer.Pages.Admin
         public async Task<IActionResult> OnPostDeleteUserAsync(int id)
         {
             await _userService.SoftDeleteUserAsync(id);
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostRestoreUserAsync(int id)
+        {
+            await _userService.RestoreUserAsync(id);
             return RedirectToPage();
         }
     }

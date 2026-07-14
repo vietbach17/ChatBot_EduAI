@@ -24,6 +24,104 @@ namespace DataAccessLayer.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("DataAccessLayer.Entities.AIGenerationLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Difficulty")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("GeneratedQuestionsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("LecturerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("QuestionType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("AIGenerationLogs");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.AddonPackage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("QuotaAmount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AddonPackages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsActive = true,
+                            Name = "Gói Mini (Cấp tốc)",
+                            Price = 10000m,
+                            QuotaAmount = 15
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsActive = true,
+                            Name = "Gói Standard (Cứu cánh)",
+                            Price = 20000m,
+                            QuotaAmount = 40
+                        },
+                        new
+                        {
+                            Id = 3,
+                            IsActive = true,
+                            Name = "Gói Premium (Chạy nước rút)",
+                            Price = 50000m,
+                            QuotaAmount = 120
+                        });
+                });
+
             modelBuilder.Entity("DataAccessLayer.Entities.Chapter", b =>
                 {
                     b.Property<int>("Id")
@@ -93,6 +191,11 @@ namespace DataAccessLayer.Migrations
                     b.Property<string>("CitationPayloadJson")
                         .HasColumnType("text");
 
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
@@ -103,6 +206,9 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("TokenCount")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -122,14 +228,22 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("SubjectId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SubjectId");
 
                     b.HasIndex("UserId");
 
@@ -266,6 +380,9 @@ namespace DataAccessLayer.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AddonId")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
@@ -280,7 +397,7 @@ namespace DataAccessLayer.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<int>("PlanId")
+                    b.Property<int?>("PlanId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Status")
@@ -297,11 +414,291 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AddonId");
+
                     b.HasIndex("PlanId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("PaymentTransactions");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuestionBank", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CorrectAnswer")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Difficulty")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<bool>("IsAIGenerated")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LecturerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OptionsJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuestionType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("QuestionBanks");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Content = "Từ khóa nào được dùng để khai báo hằng số trong C#?",
+                            CorrectAnswer = "B",
+                            CreatedAt = new DateTime(2026, 7, 8, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Difficulty = "Easy",
+                            IsAIGenerated = false,
+                            IsDeleted = false,
+                            LecturerId = 2,
+                            OptionsJson = "[\"readonly\",\"const\",\"static\",\"let\"]",
+                            QuestionType = "MultipleChoice",
+                            SubjectId = 1,
+                            Tags = "Syntax,Variables"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Content = "C# là một ngôn ngữ lập trình thuần hướng đối tượng (Pure Object-Oriented). Đúng hay Sai?",
+                            CorrectAnswer = "False",
+                            CreatedAt = new DateTime(2026, 7, 8, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Difficulty = "Easy",
+                            IsAIGenerated = false,
+                            IsDeleted = false,
+                            LecturerId = 2,
+                            QuestionType = "TrueFalse",
+                            SubjectId = 1,
+                            Tags = "OOP,Theory"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Content = "Middleware nào được sử dụng để phục vụ các tệp tĩnh (static files) như HTML, CSS, JS trong ASP.NET Core?",
+                            CorrectAnswer = "B",
+                            CreatedAt = new DateTime(2026, 7, 8, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Difficulty = "Medium",
+                            IsAIGenerated = false,
+                            IsDeleted = false,
+                            LecturerId = 2,
+                            OptionsJson = "[\"UseRouting()\",\"UseStaticFiles()\",\"UseEndpoints()\",\"UseHttpsRedirection()\"]",
+                            QuestionType = "MultipleChoice",
+                            SubjectId = 2,
+                            Tags = "Middleware,StaticFiles"
+                        });
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.Quiz", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccessCode")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GradingMethod")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<bool>("IsShuffled")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LecturerId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NumVariants")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("ShowScoreAfterSubmit")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TimeLimitMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("TotalQuestions")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LecturerId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("Quizzes");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuizAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AttemptId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("QuestionBankId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SelectedAnswer")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttemptId");
+
+                    b.HasIndex("QuestionBankId");
+
+                    b.ToTable("QuizAnswers");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuizAttempt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CorrectCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("QuizId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Score")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalQuestions")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("QuizAttempts");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuizQuestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuestionBankId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuizId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("VariantIndex")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionBankId");
+
+                    b.HasIndex("QuizId");
+
+                    b.ToTable("QuizQuestions");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Subject", b =>
@@ -444,6 +841,9 @@ namespace DataAccessLayer.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
+                    b.Property<int>("ExtraQuestionQuota")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -457,10 +857,23 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateTime?>("QuotaResetDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ResetOtp")
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)");
+
+                    b.Property<DateTime?>("ResetOtpExpiry")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<int>("ShortTermQuestionCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ShortTermResetDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("SubscriptionExpiry")
                         .HasColumnType("timestamp with time zone");
@@ -469,6 +882,9 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<bool>("UseExtraQuota")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -483,33 +899,61 @@ namespace DataAccessLayer.Migrations
                         new
                         {
                             Id = 1,
+                            ExtraQuestionQuota = 0,
                             IsDeleted = false,
                             MonthlyQuestionCount = 0,
                             PasswordHash = "student123",
                             Role = "Student",
+                            ShortTermQuestionCount = 0,
                             SubscriptionPlan = "Basic",
+                            UseExtraQuota = false,
                             Username = "student"
                         },
                         new
                         {
                             Id = 2,
+                            ExtraQuestionQuota = 0,
                             IsDeleted = false,
                             MonthlyQuestionCount = 0,
                             PasswordHash = "lecturer123",
                             Role = "Lecturer",
+                            ShortTermQuestionCount = 0,
                             SubscriptionPlan = "Basic",
+                            UseExtraQuota = false,
                             Username = "lecturer"
                         },
                         new
                         {
                             Id = 3,
+                            ExtraQuestionQuota = 0,
                             IsDeleted = false,
                             MonthlyQuestionCount = 0,
                             PasswordHash = "admin123",
                             Role = "Admin",
+                            ShortTermQuestionCount = 0,
                             SubscriptionPlan = "Basic",
+                            UseExtraQuota = false,
                             Username = "admin"
                         });
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.AIGenerationLog", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.User", "Lecturer")
+                        .WithMany()
+                        .HasForeignKey("LecturerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccessLayer.Entities.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lecturer");
+
+                    b.Navigation("Subject");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Chapter", b =>
@@ -536,11 +980,17 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("DataAccessLayer.Entities.ChatSession", b =>
                 {
+                    b.HasOne("DataAccessLayer.Entities.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId");
+
                     b.HasOne("DataAccessLayer.Entities.User", "User")
                         .WithMany("ChatSessions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Subject");
 
                     b.Navigation("User");
                 });
@@ -598,11 +1048,14 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("DataAccessLayer.Entities.PaymentTransaction", b =>
                 {
+                    b.HasOne("DataAccessLayer.Entities.AddonPackage", "AddonPackage")
+                        .WithMany()
+                        .HasForeignKey("AddonId");
+
                     b.HasOne("DataAccessLayer.Entities.SubscriptionPlan", "SubscriptionPlan")
                         .WithMany()
                         .HasForeignKey("PlanId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("DataAccessLayer.Entities.User", "User")
                         .WithMany("PaymentTransactions")
@@ -610,9 +1063,106 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("AddonPackage");
+
                     b.Navigation("SubscriptionPlan");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuestionBank", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.User", "Lecturer")
+                        .WithMany()
+                        .HasForeignKey("LecturerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DataAccessLayer.Entities.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lecturer");
+
+                    b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.Quiz", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.User", "Lecturer")
+                        .WithMany()
+                        .HasForeignKey("LecturerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DataAccessLayer.Entities.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lecturer");
+
+                    b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuizAnswer", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.QuizAttempt", "Attempt")
+                        .WithMany("Answers")
+                        .HasForeignKey("AttemptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccessLayer.Entities.QuestionBank", "QuestionBank")
+                        .WithMany()
+                        .HasForeignKey("QuestionBankId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attempt");
+
+                    b.Navigation("QuestionBank");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuizAttempt", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.Quiz", "Quiz")
+                        .WithMany()
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccessLayer.Entities.User", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuizQuestion", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.QuestionBank", "QuestionBank")
+                        .WithMany()
+                        .HasForeignKey("QuestionBankId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccessLayer.Entities.Quiz", "Quiz")
+                        .WithMany()
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuestionBank");
+
+                    b.Navigation("Quiz");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Subject", b =>
@@ -633,6 +1183,11 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("DataAccessLayer.Entities.ChatSession", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuizAttempt", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Subject", b =>

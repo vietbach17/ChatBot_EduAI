@@ -18,29 +18,66 @@ namespace PresentationLayer.Pages.Chat
         private readonly IDocumentService _documentService;
         private readonly IChatService _chatService;
         private readonly IGeminiService _geminiService;
+        private readonly ISubscriptionService _subscriptionService;
 
-        public IndexModel(IDocumentService documentService, IChatService chatService, IGeminiService geminiService)
+        public IndexModel(IDocumentService documentService, IChatService chatService, IGeminiService geminiService, ISubscriptionService subscriptionService)
         {
             _documentService = documentService;
             _chatService = chatService;
             _geminiService = geminiService;
+            _subscriptionService = subscriptionService;
         }
 
         public List<DocumentDto> Documents { get; set; } = new List<DocumentDto>();
         public List<ChatSessionDto> ChatSessions { get; set; } = new List<ChatSessionDto>();
+        public SubscriptionInfoDto Info { get; set; } = new();
 
         public async Task OnGetAsync()
         {
             var userId = GetUserId();
             Documents = (await _documentService.GetAllDocumentsAsync()).ToList();
-            // ChatSessions is loaded asynchronously via OnGetSessionsAsync by frontend JS
+            if (userId > 0)
+            {
+                Info = await _subscriptionService.GetSubscriptionInfoAsync(userId);
+            }
         }
 
+        /// <summary>Tra ve danh sach sessions cua user</summary>
         public async Task<IActionResult> OnGetSessionsAsync()
         {
             var userId = GetUserId();
             var sessions = await _chatService.GetUserSessionsAsync(userId);
             return new JsonResult(new { success = true, sessions });
+        }
+
+        /// <summary>Tra ve thong tin quota hien tai cua user (realtime)</summary>
+        public async Task<IActionResult> OnGetQuotaInfoAsync()
+        {
+            var userId = GetUserId();
+            if (userId <= 0)
+                return new JsonResult(new { success = false, message = "Chua dang nhap." });
+            var info = await _subscriptionService.GetSubscriptionInfoAsync(userId);
+            return new JsonResult(new
+            {
+                success = true,
+                plan = info.CurrentPlan,
+                monthlyUsed = info.UsedCount,
+                monthlyLimit = info.MonthlyLimit,
+                shortTermUsed = info.ShortTermUsedCount,
+                shortTermLimit = info.ShortTermLimit,
+                remaining = info.Remaining,
+                extraQuota = info.ExtraQuota,
+                useExtraQuota = info.UseExtraQuota
+            });
+        }
+
+
+        /// <summary>Phan trang tin nhan cu - lazy loading khi scroll len tren</summary>
+        public async Task<IActionResult> OnGetSessionMessagesAsync(int sessionId, int page = 0, int pageSize = 20)
+        {
+            var userId = GetUserId();
+            var messages = await _chatService.GetSessionMessagesPagedAsync(userId, sessionId, page, pageSize);
+            return new JsonResult(new { success = true, messages });
         }
 
         public async Task<IActionResult> OnGetModelsAsync()
@@ -70,14 +107,13 @@ namespace PresentationLayer.Pages.Chat
             return new JsonResult(new { success = ok });
         }
 
+        /// <summary>Fallback non-streaming cho browser khong ho tro SignalR</summary>
         public async Task<IActionResult> OnPostSendChatMessageAsync([FromBody] ChatRequestDto request)
         {
             var userId = GetUserId();
 
             if (request == null || string.IsNullOrWhiteSpace(request.Message))
-            {
-                return new JsonResult(new { success = false, message = "Tin nhắn không hợp lệ" });
-            }
+                return new JsonResult(new { success = false, message = "Tin nhan khong hop le" });
 
             var response = await _chatService.ProcessChatMessageAsync(userId, request);
 
@@ -98,9 +134,7 @@ namespace PresentationLayer.Pages.Chat
         {
             var doc = await _documentService.GetDocumentByIdAsync(docId);
             if (doc == null)
-            {
-                return new JsonResult(new { success = false, message = "Không tìm thấy tài liệu." });
-            }
+                return new JsonResult(new { success = false, message = "Khong tim thay tai lieu." });
 
             var text = await _documentService.GetDocumentTextAsync(docId);
             return new JsonResult(new
@@ -115,11 +149,7 @@ namespace PresentationLayer.Pages.Chat
         private int GetUserId()
         {
             var userIdStr = User.FindFirst("UserId")?.Value;
-            if (int.TryParse(userIdStr, out var parsedId))
-            {
-                return parsedId;
-            }
-
+            if (int.TryParse(userIdStr, out var parsedId)) return parsedId;
             return 0;
         }
     }

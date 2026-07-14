@@ -66,59 +66,159 @@
 </style>
 }
 
-<div class="main-wrapper">
-    <div class="invoice-card">
-        <h2 style="font-weight: 900; font-size: 24px; text-transform: uppercase; border-bottom: 3px solid var(--black); padding-bottom: 12px; margin-bottom: 20px; color: var(--pink);">
-            <i class="fa-solid fa-file-invoice-dollar"></i> Hóa đơn tạm tính
-        </h2>
+<div class="main-wrapper" style="padding: 40px;">
+    <!-- MỘT HỘP DUY NHẤT CHỨA 2 CỘT NẰM NGANG -->
+    <div class="invoice-card" style="max-width: 900px; display: flex; flex-wrap: wrap; gap: 40px;">
+        
+        <!-- BÊN TRÁI: HÓA ĐƠN -->
+        <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+            <h2 style="font-weight: 900; font-size: 24px; text-transform: uppercase; border-bottom: 3px solid var(--black); padding-bottom: 12px; margin-bottom: 20px; color: var(--pink);">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Hóa đơn tạm tính
+            </h2>
 
-        <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; margin-bottom: 24px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
-                <span>Gói đăng ký:</span>
-                <span style="font-size: 18px; color: var(--blue);">@Model.Plan.Name.ToUpper()</span>
+            <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 20px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                    <span style="color: #555;">Khách hàng:</span>
+                    <span style="font-size: 16px; color: var(--black);">@User.Identity?.Name</span>
+                </div>
+                @if (Model.Plan != null)
+                {
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                        <span style="color: #555;">Gói đăng ký:</span>
+                        <span style="font-size: 16px; color: var(--blue);">@Model.Plan.Name.ToUpper()</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                        <span style="color: #555;">Thời hạn:</span>
+                        <span style="font-size: 16px; color: var(--black);">@Model.Plan.DurationDays ngày</span>
+                    </div>
+                    <hr style="border-top: 2px dashed #cbd5e1; margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px;">
+                        <span>Tổng tiền:</span>
+                        <span style="color: var(--pink);">@Model.Plan.Price.ToString("N0") đ</span>
+                    </div>
+                }
+                else if (Model.Addon != null)
+                {
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                        <span style="color: #555;">Gói mua thêm:</span>
+                        <span style="font-size: 16px; color: var(--blue);">@Model.Addon.Name.ToUpper()</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
+                        <span style="color: #555;">Số lượng:</span>
+                        <span style="font-size: 16px; color: var(--black);">+@Model.Addon.QuotaAmount câu hỏi</span>
+                    </div>
+                    <hr style="border-top: 2px dashed #cbd5e1; margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px;">
+                        <span>Tổng tiền:</span>
+                        <span style="color: var(--pink);">@Model.Addon.Price.ToString("N0") đ</span>
+                    </div>
+                }
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
-                <span>Thời hạn:</span>
-                <span>@Model.Plan.DurationDays ngày</span>
+
+            <div style="margin-bottom: 24px;">
+                <div style="font-weight: 800; font-size: 14px; margin-bottom: 10px; color: var(--black); text-transform: uppercase;">
+                    <i class="fa-solid fa-gift" style="color: var(--pink);"></i> Quyền lợi nhận được:
+                </div>
+                <div style="background: #fdf2f8; border-left: 4px solid var(--pink); padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;">
+                    @if (Model.Plan != null)
+                    {
+                        @foreach(var feature in Model.Plan.FeatureList)
+                        {
+                            if (feature.Contains("Hỗ trợ tài liệu đính kèm", StringComparison.OrdinalIgnoreCase))
+                                continue;
+
+                            <div style="font-size: 13px; font-weight: 700; color: #555;">
+                                <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> @feature
+                            </div>
+                        }
+                        var realLimit = BussinessLayer.Services.ChatService.GetMonthlyLimit(Model.Plan.Name);
+                        string displayFeature = realLimit == int.MaxValue || realLimit == -1 
+                            ? "Không giới hạn câu hỏi / tháng" 
+                            : $"Tối đa {realLimit:N0} câu hỏi / tháng";
+                        
+                        <div style="font-size: 13px; font-weight: 700; color: #555;">
+                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> @displayFeature
+                        </div>
+                    }
+                    else if (Model.Addon != null)
+                    {
+                        <div style="font-size: 13px; font-weight: 700; color: #555;">
+                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Cộng thêm <b>@Model.Addon.QuotaAmount</b> lượt hỏi dự phòng.
+                        </div>
+                        <div style="font-size: 13px; font-weight: 700; color: #555;">
+                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Lượt hỏi <b>KHÔNG BAO GIỜ</b> hết hạn.
+                        </div>
+                        <div style="font-size: 13px; font-weight: 700; color: #555;">
+                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Không bị ảnh hưởng bởi chu kỳ của gói Hội viên.
+                        </div>
+                    }
+                </div>
             </div>
-            <hr style="border-top: 2px dashed #cbd5e1; margin: 15px 0;">
-            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px;">
-                <span>Tổng tiền:</span>
-                <span style="color: var(--pink);">@Model.Plan.Price.ToString("N0") đ</span>
+
+            <div style="font-size: 13px; font-weight: 700; color: #64748b; display: flex; flex-direction: column; gap: 8px;">
+                <div><i class="fa-solid fa-shield-halved" style="color: var(--green);"></i> Thanh toán an toàn, bảo mật 100%</div>
+                <div><i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Kích hoạt gói tự động ngay lập tức</div>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 20px; text-align: center;">
+                <a href="/Subscription/Index" style="font-weight: 800; color: #555; text-decoration: none;">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại bảng giá
+                </a>
             </div>
         </div>
 
-        <h3 style="font-weight: 900; font-size: 16px; text-transform: uppercase; margin-bottom: 15px;">
-            Chọn cổng thanh toán
-        </h3>
+        <!-- ĐƯỜNG KẺ GIỮA (Chỉ hiện trên màn hình to) -->
+        <div style="width: 3px; background-color: var(--black); border-radius: 2px;" class="desktop-divider"></div>
 
-        <form method="post">
-            <input type="hidden" name="planId" value="@Model.Plan.Id" />
+        <!-- BÊN PHẢI: CHỌN CỔNG THANH TOÁN -->
+        <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+            <h3 style="font-weight: 900; font-size: 20px; text-transform: uppercase; border-bottom: 3px solid var(--black); padding-bottom: 12px; margin-bottom: 20px; color: var(--pink);">
+                <i class="fa-solid fa-credit-card"></i> Chọn cổng thanh toán
+            </h3>
 
-            <label class="payment-option">
-                <input type="radio" name="paymentMethod" value="VNPay" checked />
-                <span style="font-weight: 800;">Cổng VNPay (Thử nghiệm)</span>
-            </label>
+            <form method="post" style="display: flex; flex-direction: column; flex: 1;">
+                @if (Model.Plan != null)
+                {
+                    <input type="hidden" name="planId" value="@Model.Plan.Id" />
+                }
+                else if (Model.Addon != null)
+                {
+                    <input type="hidden" name="addonId" value="@Model.Addon.Id" />
+                }
 
-            <label class="payment-option disabled-option">
-                <input type="radio" name="paymentMethod" value="PayOS" disabled />
-                <span style="font-weight: 800;">Cổng PayOS (Chờ tích hợp)</span>
-            </label>
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="VNPay" checked />
+                    <div style="width: 70px; display: flex; justify-content: center; margin: 0 10px;">
+                        <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/6/0oxhzjmxbksr1686814746087.png" alt="VNPay" style="height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'" />
+                    </div>
+                    <span style="font-weight: 800;">Cổng VNPay</span>
+                </label>
 
-            <label class="payment-option disabled-option">
-                <input type="radio" name="paymentMethod" value="SePay" disabled />
-                <span style="font-weight: 800;">Cổng SePay (Chờ tích hợp)</span>
-            </label>
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="PayOS" />
+                    <div style="width: 70px; display: flex; justify-content: center; margin: 0 10px;">
+                        <img src="/images/payos.png" alt="PayOS" style="height: 28px; object-fit: contain;" onerror="this.style.display='none'" />
+                    </div>
+                    <span style="font-weight: 800;">Cổng PayOS</span>
+                </label>
 
-            <button type="submit" class="checkout-btn">
-                Xác nhận và Thanh toán <i class="fa-solid fa-arrow-right-to-bracket"></i>
-            </button>
-        </form>
+                <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="SePay" />
+                    <div style="width: 70px; display: flex; justify-content: center; margin: 0 10px;">
+                        <img src="/images/sepay.png" alt="SePay" style="height: 28px; object-fit: contain;" onerror="this.style.display='none'" />
+                    </div>
+                    <span style="font-weight: 800;">Cổng SePay</span>
+                </label>
 
-        <div style="margin-top: 20px; text-align: center;">
-            <a href="/Subscription/Index" style="font-weight: 800; color: #555; text-decoration: none;">
-                <i class="fa-solid fa-arrow-left"></i> Quay lại bảng giá
-            </a>
+                <button type="submit" class="checkout-btn" style="margin-top: auto;">
+                    Xác nhận và Thanh toán <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
         </div>
     </div>
 </div>
+<style>
+    @@media (max-width: 768px) {
+        .desktop-divider { display: none; }
+    }
+</style>

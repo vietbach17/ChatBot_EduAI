@@ -7,5 +7,7 @@ namespace BussinessLayer.IServices
     {
         Task SendAccountCreatedEmailAsync(string toEmail, string username, string password, string role);
         Task SendBroadcastEmailAsync(IEnumerable<string> toEmails, string subject, string content);
+        Task SendInvoiceEmailAsync(DataAccessLayer.Entities.PaymentTransaction transaction);
+        Task SendPasswordResetOtpAsync(string toEmail, string otp);
     }
 }

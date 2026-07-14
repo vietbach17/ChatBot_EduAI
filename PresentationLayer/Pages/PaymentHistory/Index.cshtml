@@ -1,0 +1,195 @@
+@page
+@model PresentationLayer.Pages.PaymentHistory.IndexModel
+@{
+    ViewData["Title"] = "Lịch sử thanh toán";
+}
+
+<div class="main-wrapper" style="padding: 40px; background-color: var(--bg);">
+    <div style="max-width: 1200px; margin: 0 auto; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="font-size: 32px; font-weight: 900; text-transform: uppercase; color: var(--black); text-shadow: 2px 2px 0px var(--white);">
+                <i class="fa-solid fa-file-invoice-dollar" style="color: var(--pink);"></i> Lịch sử thanh toán
+            </h1>
+        </div>
+
+        <!-- Filter Form -->
+        <div style="background: var(--white); border: var(--border); box-shadow: var(--shadow); padding: 25px; margin-bottom: 30px;">
+            <form method="get" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="font-weight: 800; font-size: 13px; margin-bottom: 8px; display: block; color: var(--black);">PHƯƠNG THỨC</label>
+                    <select name="method" asp-for="SelectedMethod" style="width: 100%; padding: 12px; border: 2px solid var(--black); font-weight: 700; font-size: 14px; outline: none; box-shadow: 2px 2px 0px var(--black); background: var(--bg); cursor: pointer;">
+                        <option value="">TẤT CẢ</option>
+                        <option value="VNPay">VNPAY</option>
+                        <option value="PayOS">PAYOS</option>
+                        <option value="SePay">SEPAY</option>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="font-weight: 800; font-size: 13px; margin-bottom: 8px; display: block; color: var(--black);">TRẠNG THÁI</label>
+                    <select name="status" asp-for="SelectedStatus" style="width: 100%; padding: 12px; border: 2px solid var(--black); font-weight: 700; font-size: 14px; outline: none; box-shadow: 2px 2px 0px var(--black); background: var(--bg); cursor: pointer;">
+                        <option value="">TẤT CẢ</option>
+                        <option value="Success">THÀNH CÔNG</option>
+                        <option value="Pending">ĐANG XỬ LÝ</option>
+                        <option value="Failed">THẤT BẠI</option>
+                        <option value="Cancelled">ĐÃ HỦY</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="brutal-btn" style="background: var(--blue); color: var(--white); border: 2px solid var(--black); padding: 12px 30px; font-weight: 900; font-size: 14px; box-shadow: 2px 2px 0px var(--black); display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-filter"></i> LỌC
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div style="background: var(--white); border: var(--border); box-shadow: var(--shadow); overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background: var(--yellow); border-bottom: 3px solid var(--black); white-space: nowrap;">
+                        <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">MÃ GD</th>
+                        <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">NGÀY TT</th>
+                        <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">GÓI DỊCH VỤ</th>
+                        <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">PHÂN LOẠI</th>
+                        <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">SỐ TIỀN</th>
+                        <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">PHƯƠNG THỨC</th>
+                        <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black);">TRẠNG THÁI</th>
+                        <th style="padding: 15px; font-weight: 900; font-size: 13px; color: var(--black); text-align: center;">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Histories != null && Model.Histories.Any())
+                    {
+                        foreach (var item in Model.Histories)
+                        {
+                            <tr style="border-bottom: 2px solid var(--black); transition: 0.1s; cursor: default; white-space: nowrap;" onmouseover="this.style.backgroundColor='#f9f9f9'" onmouseout="this.style.backgroundColor='transparent'">
+                                <td style="padding: 15px; font-weight: 900; font-size: 13px;">#@(string.IsNullOrEmpty(item.TransactionCode) ? "GD" + item.TransactionId : item.TransactionCode)</td>
+                                <td style="padding: 15px; font-weight: 700; font-size: 13px;">@item.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td style="padding: 15px;">
+                                    <span style="background: var(--blue); color: var(--white); padding: 4px 10px; font-size: 11px; font-weight: 900; border: 2px solid var(--black); box-shadow: 1px 1px 0 var(--black);">@item.PlanName.ToUpper()</span>
+                                </td>
+                                <td style="padding: 15px;">
+                                    @{
+                                        string classBg = item.Classification == "Gói mua thêm" ? "#f59e0b" : "#a855f7";
+                                    }
+                                    <span style="background: @classBg; color: var(--white); padding: 4px 10px; font-size: 11px; font-weight: 900; border: 2px solid var(--black); box-shadow: 1px 1px 0 var(--black); display: inline-block; white-space: nowrap;">@item.Classification.ToUpper()</span>
+                                </td>
+                                <td style="padding: 15px; font-weight: 900; color: var(--pink); white-space: nowrap;">@item.Amount.ToString("N0") VNĐ</td>
+                                <td style="padding: 15px;">
+                                    @{
+                                        string methodColor = item.Method == "VNPay" ? "var(--blue)" : (item.Method == "SePay" ? "var(--green)" : "var(--yellow)");
+                                    }
+                                    <span style="background: @methodColor; color: var(--black); padding: 4px 10px; font-size: 11px; font-weight: 900; border: 2px solid var(--black); box-shadow: 1px 1px 0 var(--black);">@item.Method.ToUpper()</span>
+                                </td>
+                                <td style="padding: 15px;">
+                                    @if (item.Status == "Success") { 
+                                        <span style="color: var(--green); font-weight: 900; font-size: 13px;"><i class="fa-solid fa-circle-check"></i> THÀNH CÔNG</span> 
+                                    }
+                                    else if (item.Status == "Failed") { 
+                                        <span style="color: gray; font-weight: 900; font-size: 13px;"><i class="fa-solid fa-circle-xmark"></i> THẤT BẠI</span> 
+                                    }
+                                    else if (item.Status == "Cancelled") { 
+                                        <span style="color: var(--pink); font-weight: 900; font-size: 13px;"><i class="fa-solid fa-ban"></i> ĐÃ HỦY</span> 
+                                    }
+                                    else { 
+                                        <span style="color: #f59e0b; font-weight: 900; font-size: 13px;"><i class="fa-solid fa-clock"></i> ĐANG XỬ LÝ</span> 
+                                    }
+                                </td>
+                                <td style="padding: 15px; text-align: center;">
+                                    <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                                        <button onclick="openModal('@item.TransactionId')" class="brutal-btn" style="background: var(--white); color: var(--black); border: 2px solid var(--black); padding: 6px 15px; font-weight: 800; font-size: 11px; box-shadow: 2px 2px 0px var(--black);">
+                                            CHI TIẾT
+                                        </button>
+                                        @if(item.Status == "Pending") {
+                                            <form method="post" asp-page-handler="CancelPayment" asp-route-id="@item.TransactionId" data-confirm="Bạn có chắc chắn muốn hủy giao dịch này không? Thao tác không thể hoàn tác." style="margin: 0;">
+                                                <button type="submit" class="brutal-btn" style="background: var(--pink); color: var(--white); border: 2px solid var(--black); padding: 6px 15px; font-weight: 800; font-size: 11px; box-shadow: 2px 2px 0px var(--black);">
+                                                    HỦY
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+
+                                    <!-- Brutalist Modal -->
+                                    <div id="modal-@item.TransactionId" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+                                        <div style="background: var(--white); border: 4px solid var(--black); box-shadow: 8px 8px 0px var(--black); width: 500px; max-width: 90%; display: flex; flex-direction: column;">
+                                            <div style="background: var(--yellow); padding: 15px 20px; border-bottom: 4px solid var(--black); display: flex; justify-content: space-between; align-items: center;">
+                                                <h3 style="margin: 0; font-weight: 900; font-size: 18px; text-transform: uppercase; color: var(--black);">HÓA ĐƠN #@(string.IsNullOrEmpty(item.TransactionCode) ? "GD" + item.TransactionId : item.TransactionCode)</h3>
+                                                <button onclick="closeModal('@item.TransactionId')" style="background: none; border: none; font-size: 24px; font-weight: 900; cursor: pointer; line-height: 1; color: var(--black);">&times;</button>
+                                            </div>
+                                            <div style="padding: 25px; text-align: left;">
+                                                <div style="display: grid; grid-template-columns: 140px 1fr; gap: 15px; font-size: 14px;">
+                                                    <div style="font-weight: 800; color: #555;">MÃ GIAO DỊCH:</div>
+                                                    <div style="font-weight: 700; font-family: monospace; font-size: 15px; background: #eee; padding: 2px 6px; border: 1px solid #000; width: fit-content; color: var(--black);">@(string.IsNullOrEmpty(item.TransactionCode) ? "GD" + item.TransactionId : item.TransactionCode)</div>
+                                                    
+                                                    <div style="font-weight: 800; color: #555;">KHÁCH HÀNG:</div>
+                                                    <div style="font-weight: 700; color: var(--black);">@item.UserName</div>
+                                                    
+                                                    <div style="font-weight: 800; color: #555;">GÓI ĐĂNG KÝ:</div>
+                                                    <div style="font-weight: 900; color: var(--blue);">@item.PlanName.ToUpper()</div>
+                                                    
+                                                    <div style="font-weight: 800; color: #555;">SỐ TIỀN:</div>
+                                                    <div style="font-weight: 900; color: var(--pink); font-size: 18px;">@item.Amount.ToString("N0") VNĐ</div>
+                                                    
+                                                    <div style="font-weight: 800; color: #555;">PHƯƠNG THỨC:</div>
+                                                    <div style="font-weight: 700; color: var(--black);">@item.Method.ToUpper()</div>
+                                                    
+                                                    <div style="font-weight: 800; color: #555;">TRẠNG THÁI:</div>
+                                                    <div style="font-weight: 900;">
+                                                        @if (item.Status == "Success") { <span style="color: var(--green);">THÀNH CÔNG</span> }
+                                                        else if (item.Status == "Failed") { <span style="color: gray;">THẤT BẠI</span> }
+                                                        else if (item.Status == "Cancelled") { <span style="color: var(--pink);">ĐÃ HỦY</span> }
+                                                        else { <span style="color: #f59e0b;">ĐANG XỬ LÝ</span> }
+                                                    </div>
+
+                                                    <div style="font-weight: 800; color: #555;">NGÀY TT:</div>
+                                                    <div style="font-weight: 700; color: var(--black);">@item.Date.ToString("dd/MM/yyyy HH:mm")</div>
+                                                </div>
+                                            </div>
+                                            <div style="padding: 20px; border-top: 4px solid var(--black); background: var(--bg); display: flex; justify-content: flex-end; gap: 15px;">
+                                                <button onclick="closeModal('@item.TransactionId')" class="brutal-btn" style="background: var(--white); color: var(--black); border: 2px solid var(--black); padding: 10px 20px; font-weight: 900; box-shadow: 2px 2px 0px var(--black);">ĐÓNG</button>
+                                                @if(item.Status == "Pending") {
+                                                    <form method="post" asp-page-handler="CancelPayment" asp-route-id="@item.TransactionId" data-confirm="Bạn có chắc chắn muốn hủy giao dịch này không? Thao tác không thể hoàn tác." style="margin: 0;">
+                                                        <button type="submit" class="brutal-btn" style="background: var(--pink); color: var(--white); border: 2px solid var(--black); padding: 10px 20px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); display: flex; align-items: center; gap: 8px;">
+                                                            <i class="fa-solid fa-ban"></i> HỦY THANH TOÁN
+                                                        </button>
+                                                    </form>
+                                                }
+                                                @if(item.Status == "Success") {
+                                                    <form method="post" asp-page-handler="ResendEmail" asp-route-id="@item.TransactionId" style="margin: 0;">
+                                                        <button type="submit" class="brutal-btn" style="background: var(--green); color: var(--white); border: 2px solid var(--black); padding: 10px 20px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); display: flex; align-items: center; gap: 8px;">
+                                                            <i class="fa-solid fa-paper-plane"></i> GỬI LẠI EMAIL
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" style="padding: 40px; text-align: center; font-weight: 800; color: #777;">
+                                <i class="fa-solid fa-box-open" style="font-size: 32px; display: block; margin-bottom: 10px;"></i>
+                                CHƯA CÓ LỊCH SỬ THANH TOÁN NÀO
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openModal(id) {
+            document.getElementById('modal-' + id).style.display = 'flex';
+        }
+        function closeModal(id) {
+            document.getElementById('modal-' + id).style.display = 'none';
+        }
+    </script>
+}

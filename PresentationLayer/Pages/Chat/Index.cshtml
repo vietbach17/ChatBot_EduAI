@@ -6,937 +6,693 @@
 }
 
 @section Styles {
-    <style>
-        /* ==================== MAIN CONTENT ==================== */
-        .main-content { 
-            flex: 1; 
-            display: flex; 
-            overflow: hidden; 
-        }
-
-        /* MIDDLE COLUMN (SOURCES) */
-        .middle-column {
-            width: 320px;
-            padding: 40px 20px;
-            border-right: var(--border);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            background-color: var(--bg);
-        }
-
-        .section-title {
-            color: #9e3636;
-            font-weight: 900;
-            font-size: 20px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-        }
-
-        .brutal-btn-green {
-            background-color: var(--green);
-            color: var(--black);
-            border: var(--border);
-            padding: 8px 15px;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 2px 2px 0px 0px var(--black);
-            display: inline-block;
-            margin-bottom: 25px;
-            align-self: flex-start;
-        }
-        .brutal-btn-green:active { transform: translate(2px, 2px); box-shadow: 0 0 0 0 var(--black); }
-
-        .sources-list-box {
-            background: var(--white);
-            height: 250px;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            border: var(--border);
-            box-shadow: var(--shadow);
-            margin-bottom: auto;
-        }
-        .sources-list-box::-webkit-scrollbar { width: 8px; }
-        .sources-list-box::-webkit-scrollbar-track { background: var(--bg); border-left: var(--border); }
-        .sources-list-box::-webkit-scrollbar-thumb { background: var(--black); }
-
-        .source-item {
-            display: flex; align-items: flex-start; gap: 10px; font-weight: 700; font-size: 13px;
-        }
-
-        .doc-folder {
-            border: 2px solid #000;
-            box-shadow: 2px 2px 0px #000;
-            background: var(--white);
-            margin-bottom: 10px;
-            overflow: hidden;
-        }
-
-        .doc-folder summary {
-            list-style: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 10px 12px;
-            font-size: 12px;
-            font-weight: 900;
-            background: #fff;
-        }
-
-        .doc-folder summary::-webkit-details-marker {
-            display: none;
-        }
-
-        .doc-folder-name {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-            flex: 1;
-        }
-
-        .doc-folder-count {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 10px;
-            color: var(--black);
-            white-space: nowrap;
-            padding-left: 8px;
-        }
-
-        .doc-folder-content {
-            border-top: 1px solid #ddd;
-            padding: 8px 10px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            background: #fff;
-            max-height: 180px;
-            overflow-y: auto;
-        }
-
-        .doc-folder-content::-webkit-scrollbar { width: 6px; }
-        .doc-folder-content::-webkit-scrollbar-track { background: var(--bg); border-left: 1px solid #ddd; }
-        .doc-folder-content::-webkit-scrollbar-thumb { background: #888; }
-
-        .doc-folder-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed #eee;
-        }
-
-        .doc-folder-item:last-child {
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .doc-folder-accent { display: none; }
-        .doc-folder-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 0;
-            font-size: 12px;
-            font-weight: 900;
-            min-width: 0;
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-
-        .doc-folder-chevron {
-            transition: transform 0.15s ease;
-        }
-
-        .doc-folder[open] .doc-folder-chevron {
-            transform: rotate(180deg);
-        }
-
-        .toggle-group {
-            display: flex;
-            border: var(--border);
-            width: fit-content;
-            margin-bottom: 10px;
-        }
-        .toggle-btn {
-            padding: 8px 15px; font-weight: 800; font-size: 13px; border: none; cursor: pointer;
-        }
-        .toggle-btn:not(:last-child) { border-right: var(--border); }
-        .toggle-btn.active { background-color: var(--yellow); }
-        .toggle-btn:not(.active) { background-color: var(--white); }
-        .restriction-hint { font-size: 12px; color: #555; font-weight: 700; }
-
-        /* RIGHT COLUMN (CHAT) */
-        .right-column {
-            flex: 1;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            background-color: var(--bg);
-        }
-
-        .chat-container {
-            background-color: var(--white);
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            overflow: hidden;
-            border: var(--border);
-            box-shadow: 6px 6px 0px 0px var(--black);
-            background-image: radial-gradient(#d1d5db 2px, transparent 2px);
-            background-size: 20px 20px;
-        }
-
-        .chat-header {
-            background: var(--white);
-            border-bottom: var(--border);
-            padding: 15px;
-            text-align: center;
-            color: #d93856;
-            font-weight: 900;
-            font-size: 20px;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .chat-messages::-webkit-scrollbar { width: 8px; }
-        .chat-messages::-webkit-scrollbar-track { background: transparent; border-left: var(--border); }
-        .chat-messages::-webkit-scrollbar-thumb { background: #d93856; }
-
-        .message { display: flex; gap: 15px; max-width: 80%; }
-        .message-user { align-self: flex-end; flex-direction: row-reverse; }
-        .message-bot { align-self: flex-start; }
-
-        .chat-avatar {
-            width: 40px; height: 40px;
-            border: var(--border);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; color: var(--white);
-        }
-        .message-bot .chat-avatar { background-color: var(--green); }
-        .message-user .chat-avatar { background-color: var(--pink); }
-
-        .message-content {
-            background: var(--white); padding: 15px; border: var(--border);
-            box-shadow: var(--shadow);
-        }
-        .message-sender { font-weight: 900; font-size: 13px; margin-bottom: 5px; color: var(--black); }
-        .message-text { font-size: 15px; font-weight: 600; line-height: 1.6; margin: 0; color: #222; }
-        .message-text h1, .message-text h2, .message-text h3 { font-weight: 900; margin-top: 15px; margin-bottom: 10px; color: #000; }
-        .message-text p { margin-bottom: 10px; }
-        .message-text p:last-child { margin-bottom: 0; }
-        .message-text ul, .message-text ol { padding-left: 25px; margin-bottom: 15px; }
-        .message-text li { margin-bottom: 5px; }
-        .message-text code { background: #f3f4f6; padding: 2px 6px; font-family: 'Courier New', Courier, monospace; font-size: 90%; color: #d93856; border: 1px solid #000; font-weight: 700; }
-        .message-text pre { background: #fff8dc; padding: 15px; border: 2px solid #000; font-family: monospace; overflow-x: auto; margin: 15px 0; box-shadow: 4px 4px 0px #000; }
-        .message-text pre code { background: none; padding: 0; border: none; color: #000; font-weight: 500; }
-        .message-text strong { font-weight: 900; color: #000; }
-        .message-text blockquote { border-left: 5px solid var(--pink); padding-left: 15px; margin: 15px 0; color: #444; font-style: italic; background: #fdf2f8; padding-top: 10px; padding-bottom: 10px; border-right: 2px solid #000; border-top: 2px solid #000; border-bottom: 2px solid #000; }
-        .message-text table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; box-shadow: 3px 3px 0px #000; }
-        .message-text th, .message-text td { border: 2px solid #000; padding: 10px; text-align: left; }
-        .message-text th { background-color: var(--yellow); font-weight: 900; text-transform: uppercase; }
-
-        .input-area {
-            background: var(--white); border-top: var(--border); padding: 20px;
-            display: flex; gap: 15px;
-        }
-        .input-box {
-            flex: 1; border: var(--border); padding: 12px 20px;
-            font-size: 15px; font-weight: 700; outline: none;
-        }
-        .send-btn {
-            background-color: #8b3d3d; color: var(--white); border: var(--border);
-            padding: 0 25px; font-weight: 900; font-size: 16px; cursor: pointer;
-            display: flex; align-items: center; gap: 10px; box-shadow: 2px 2px 0px var(--black);
-        }
-        .send-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px var(--black); }
-
-        .session-item {
-            transition: all 0.1s ease;
-        }
-        .session-item:hover {
-            background-color: #f5f5f5 !important;
-            transform: translate(-1px, -1px);
-        }
-
-        /* INLINE CITATION BADGE (NOTEBOOKLM STYLE) */
-        .citation-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--pink);
-            color: #fff;
-            font-size: 10px;
-            font-weight: 900;
-            border-radius: 3px;
-            width: 18px;
-            height: 18px;
-            margin-left: 4px;
-            cursor: pointer;
-            position: relative;
-            vertical-align: super;
-            box-shadow: 1px 1px 0px #000;
-            border: 1px solid #000;
-            transition: all 0.1s;
-        }
-
-        .citation-badge:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 2px 2px 0px #000;
-        }
-
-        /* CUSTOM TOOLTIP */
-        .citation-tooltip-content {
-            display: none;
-            position: absolute;
-            bottom: 130%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: max-content;
-            max-width: 280px;
-            background: #fff;
-            color: #000;
-            border: 2px solid #000;
-            box-shadow: 3px 3px 0px #000;
-            padding: 10px;
-            font-size: 12px;
-            font-weight: 600;
-            z-index: 1000;
-            white-space: normal;
-            line-height: 1.4;
-            pointer-events: none;
-            text-align: left;
-        }
-
-        .citation-badge:hover .citation-tooltip-content {
-            display: block;
-        }
-    </style>
+<style>
+.main-content { flex: 1; display: flex; overflow: hidden; }
+.sidebar-column {
+    width: 300px; min-width: 260px; max-width: 340px;
+    padding: 16px 12px; border-right: var(--border);
+    display: flex; flex-direction: column; gap: 14px;
+    flex-shrink: 0; background-color: var(--bg);
+    overflow-y: auto; transition: transform 0.3s ease;
+}
+.sidebar-column::-webkit-scrollbar { width: 6px; }
+.sidebar-column::-webkit-scrollbar-thumb { background: #aaa; }
+.section-title { color: #9e3636; font-weight: 900; font-size: 14px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.quota-badge { display:flex; flex-direction:column; gap:4px; background:var(--white); border:var(--border); box-shadow:2px 2px 0 var(--black); padding:10px 12px; font-size:12px; font-weight:700; }
+.quota-badge-plan { font-size:14px; font-weight:900; display:flex; align-items:center; gap:6px; }
+.quota-bar-wrap { background:#eee; border:1px solid #ccc; height:6px; border-radius:3px; overflow:hidden; }
+.quota-bar-fill { height:100%; background:var(--pink); border-radius:3px; transition:width 0.3s ease; }
+.quota-bar-fill.green { background:#16a34a; }
+.quota-bar-fill.orange { background:#ea580c; }
+.quota-bar-fill.red { background:#d93856; }
+.quota-warn { color:#d93856; font-size:10px; font-weight:800; margin-top:2px; }
+.sources-box { flex:1 1 0; min-height:0; overflow-y:auto; background:var(--white); border:var(--border); box-shadow:3px 3px 0 var(--black); padding:8px; }
+.sources-box::-webkit-scrollbar { width:5px; }
+.sources-box::-webkit-scrollbar-thumb { background:#aaa; }
+.doc-folder { border:2px solid #000; box-shadow:2px 2px 0 #000; background:var(--white); margin-bottom:8px; overflow:hidden; }
+.doc-folder summary { list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; font-size:11px; font-weight:900; background:#fff; }
+.doc-folder summary::-webkit-details-marker { display:none; }
+.doc-folder-name { display:flex; align-items:center; gap:6px; min-width:0; flex:1; }
+.doc-folder-count { display:inline-flex; align-items:center; gap:4px; font-size:10px; color:var(--black); white-space:nowrap; }
+.doc-folder-content { border-top:1px solid #ddd; padding:6px 8px 8px; display:flex; flex-direction:column; gap:6px; background:#fff; max-height:150px; overflow-y:auto; }
+.doc-folder-item { display:flex; align-items:center; gap:6px; padding-bottom:6px; border-bottom:1px dashed #eee; }
+.doc-folder-item:last-child { padding-bottom:0; border-bottom:none; }
+.doc-folder-chevron { transition:transform 0.15s ease; }
+.doc-folder[open] .doc-folder-chevron { transform:rotate(180deg); }
+.sessions-box { max-height:200px; overflow-y:auto; background:var(--white); border:var(--border); box-shadow:3px 3px 0 var(--black); padding:6px; display:flex; flex-direction:column; gap:4px; }
+.sessions-box::-webkit-scrollbar { width:4px; }
+.sessions-box::-webkit-scrollbar-thumb { background:#d93856; }
+.session-item { display:flex; align-items:center; justify-content:space-between; padding:7px 9px; border:2px solid #000; font-size:11px; font-weight:800; cursor:pointer; background:var(--white); transition:all 0.1s ease; }
+.session-item:hover { background:#f5f5f5; transform:translate(-1px,-1px); box-shadow:2px 2px 0 #000; }
+.session-item.active { background:var(--yellow); box-shadow:2px 2px 0 #000; }
+.toggle-group { display:flex; border:var(--border); width:100%; }
+.toggle-btn { padding:6px; font-weight:800; font-size:11px; border:none; cursor:pointer; flex:1; text-align:center; }
+.toggle-btn:not(:last-child) { border-right:var(--border); }
+.toggle-btn.active { background-color:var(--yellow); }
+.toggle-btn:not(.active) { background-color:var(--white); }
+.restriction-hint { font-size:10px; color:#555; font-weight:700; margin-top:4px; }
+.right-column { flex:1; padding:20px 24px; display:flex; flex-direction:column; overflow:hidden; background-color:var(--bg); }
+.chat-container { background-color:var(--white); display:flex; flex-direction:column; flex:1; overflow:hidden; border:var(--border); box-shadow:6px 6px 0 0 var(--black); background-image:radial-gradient(#d1d5db 1.5px,transparent 1.5px); background-size:20px 20px; }
+.chat-header { background:var(--white); border-bottom:var(--border); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-shrink:0; }
+.chat-header-title { color:#d93856; font-weight:900; font-size:16px; display:flex; align-items:center; gap:8px; }
+.chat-header-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.chat-messages { flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:16px; }
+.chat-messages::-webkit-scrollbar { width:8px; }
+.chat-messages::-webkit-scrollbar-thumb { background:#d93856; }
+.message { display:flex; gap:12px; max-width:82%; }
+.message-user { align-self:flex-end; flex-direction:row-reverse; }
+.message-bot { align-self:flex-start; }
+.chat-avatar { width:36px; height:36px; border:var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--white); font-size:14px; }
+.message-bot .chat-avatar { background-color:var(--green); }
+.message-user .chat-avatar { background-color:var(--pink); }
+.message-content { background:var(--white); padding:12px 16px; border:var(--border); box-shadow:var(--shadow); }
+.message-sender { font-weight:900; font-size:12px; margin-bottom:4px; color:var(--black); }
+.message-text { font-size:14px; font-weight:500; line-height:1.65; margin:0; color:#222; }
+.message-text h1,.message-text h2,.message-text h3 { font-weight:900; margin-top:14px; margin-bottom:8px; color:#000; }
+.message-text p { margin-bottom:8px; }
+.message-text p:last-child { margin-bottom:0; }
+.message-text ul,.message-text ol { padding-left:22px; margin-bottom:12px; }
+.message-text li { margin-bottom:4px; }
+.message-text code { background:#f3f4f6; padding:2px 5px; font-family:monospace; font-size:88%; color:#d93856; border:1px solid #000; font-weight:700; }
+.message-text pre { background:#fff8dc; padding:12px; border:2px solid #000; font-family:monospace; overflow-x:auto; margin:12px 0; box-shadow:3px 3px 0 #000; }
+.message-text pre code { background:none; padding:0; border:none; color:#000; font-weight:500; }
+.message-text strong { font-weight:900; color:#000; }
+.message-text blockquote { border-left:4px solid var(--pink); padding:8px 12px; margin:12px 0; color:#444; font-style:italic; background:#fdf2f8; }
+.message-text table { width:100%; border-collapse:collapse; margin:12px 0; }
+.message-text th,.message-text td { border:2px solid #000; padding:8px; }
+.message-text th { background-color:var(--yellow); font-weight:900; }
+.streaming-bubble .message-text::after { content:"▌"; animation:blink 0.7s step-end infinite; color:var(--pink); }
+@@keyframes blink { 50% { opacity:0; } }
+.input-area { background:var(--white); border-top:var(--border); padding:14px 16px; display:flex; gap:10px; align-items:flex-end; flex-shrink:0; }
+.input-box { flex:1; border:var(--border); padding:10px 14px; font-size:14px; font-weight:600; outline:none; resize:none; min-height:44px; max-height:120px; overflow-y:auto; font-family:inherit; line-height:1.5; }
+.input-box:focus { box-shadow:2px 2px 0 var(--pink); border-color:var(--pink); }
+.send-btn { background-color:#8b3d3d; color:var(--white); border:var(--border); padding:0 20px; height:44px; font-weight:900; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:2px 2px 0 var(--black); white-space:nowrap; flex-shrink:0; }
+.send-btn:active { transform:translate(2px,2px); box-shadow:0 0 0 var(--black); }
+.send-btn:disabled { background-color:#999; cursor:not-allowed; transform:none; }
+.citation-badge { display:inline-flex; align-items:center; justify-content:center; background-color:var(--pink); color:#fff; font-size:10px; font-weight:900; border-radius:3px; width:17px; height:17px; margin-left:3px; cursor:pointer; position:relative; vertical-align:super; box-shadow:1px 1px 0 #000; border:1px solid #000; transition:all 0.1s; }
+.citation-badge:hover { transform:translate(-1px,-1px); box-shadow:2px 2px 0 #000; }
+.citation-tooltip-content { display:none; position:absolute; bottom:130%; left:50%; transform:translateX(-50%); width:max-content; max-width:260px; background:#fff; color:#000; border:2px solid #000; box-shadow:3px 3px 0 #000; padding:8px; font-size:11px; font-weight:600; z-index:1000; white-space:normal; line-height:1.4; pointer-events:none; }
+.citation-badge:hover .citation-tooltip-content { display:block; }
+.quota-modal-wrap { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.65); align-items:center; justify-content:center; }
+.quota-modal { background:#fff; border:4px solid #000; box-shadow:10px 10px 0 #000; width:460px; max-width:92%; padding:32px; text-align:center; }
+.quota-modal h2 { font-weight:900; font-size:22px; color:#d93856; margin:0 0 12px; }
+.quota-modal p { font-size:14px; color:#333; margin:0 0 24px; font-weight:600; line-height:1.6; }
+.brutal-btn-upgrade { background-color:var(--pink); color:#fff; border:2px solid #000; padding:12px 28px; font-weight:900; font-size:15px; cursor:pointer; box-shadow:4px 4px 0 #000; display:inline-block; text-decoration:none; }
+.brutal-btn-upgrade:hover { transform:translate(-2px,-2px); box-shadow:6px 6px 0 #000; }
+.sidebar-toggle-btn { display:none; background:none; border:2px solid #000; padding:6px 10px; cursor:pointer; font-size:14px; font-weight:900; }
+.model-select { border:var(--border); padding:5px 8px; font-weight:700; font-size:11px; background:var(--white); cursor:pointer; max-width:160px; }
+@@media (max-width:768px) {
+    .sidebar-column { position:fixed; left:0; top:0; height:100%; z-index:200; transform:translateX(-100%); }
+    .sidebar-column.open { transform:translateX(0); box-shadow:4px 0 0 rgba(0,0,0,0.2); }
+    .sidebar-toggle-btn { display:inline-flex; }
+    .right-column { padding:12px; }
+    .chat-messages { padding:14px 12px; }
+    .message { max-width:94%; }
+}
+</style>
 }
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-        
-        <!-- MIDDLE COLUMN (SOURCES & HISTORY) -->
-        <div class="middle-column" style="width: 320px; padding: 25px 15px; border-right: var(--border); display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; min-height: 0; overflow: hidden;">
-            <!-- Nguồn tài liệu (Chiếm 45%) -->
-            <div style="display: flex; flex-direction: column; flex: 1 1 0; min-height: 0;">
-                <div class="section-title" style="font-size: 15px; margin-bottom: 8px;">Nguồn tài liệu</div>
-                <div class="sources-list-box" style="flex: 1 1 0; min-height: 0; overflow-y: auto; background: var(--white); border: var(--border); box-shadow: 3px 3px 0px var(--black); padding: 8px;">
-                    @{
-                        var indexedDocs = Model.Documents
-                            .Where(d => d.Status == BussinessLayer.DTOs.DocumentStatus.Indexed)
-                            .OrderBy(d => d.SubjectName ?? "Không phân loại")
-                            .ThenBy(d => d.ChapterTitle ?? string.Empty)
-                            .ThenBy(d => d.Title)
-                            .ToList();
+<div id="sidebarOverlay" onclick="closeSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:199;"></div>
 
-                        var groupedDocs = indexedDocs
-                            .GroupBy(d => string.IsNullOrWhiteSpace(d.SubjectName) ? "Không phân loại" : d.SubjectName!.Trim())
-                            .OrderBy(g => g.Key)
-                            .ToList();
-                    }
-
-                    @if (groupedDocs.Any())
-                    {
-                        @foreach (var subjectGroup in groupedDocs)
-                        {
-                            var visual = GetSubjectVisual(subjectGroup.Key);
-                            if (subjectGroup.Key == "Không phân loại")
-                            {
-                            <details class="doc-folder">
-                                <summary>
-                                    <span class="doc-folder-accent" style="background:@visual.Accent;"></span>
-                                    <span class="doc-folder-name">
-                                        <span class="doc-folder-pill" style="background:@visual.Soft;">
-                                            <i class="@visual.Icon"></i>
-                                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@subjectGroup.Key</span>
-                                        </span>
-                                    </span>
-                                    <span class="doc-folder-count">@subjectGroup.Count() tài liệu <i class="fa-solid fa-chevron-down doc-folder-chevron"></i></span>
-                                </summary>
-                                <div class="doc-folder-content">
-                                    @foreach (var doc in subjectGroup)
-                                    {
-                                        <div class="doc-folder-item">
-                                            <input type="checkbox" name="selectedDocs" value="@doc.Id" class="doc-checkbox" id="doc-@doc.Id" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--pink); flex-shrink: 0;" />
-                                            <label for="doc-@doc.Id" style="cursor: pointer; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; margin-right: 4px;" title="@doc.Title">
-                                                <span style="color: @(doc.FileType.ToLower() == "pdf" ? "#d93856" : (doc.FileType.ToLower() == "docx" ? "#2b579a" : (doc.FileType.ToLower() == "pptx" ? "#d04423" : "#6b7280"))); font-weight:900; font-size: 10px;">
-                                                    [@doc.FileType.ToUpper()]
-                                                </span>
-                                                @doc.Title
-                                                @if (!string.IsNullOrWhiteSpace(doc.ChapterTitle))
-                                                {
-                                                    <span style="display: block; color: #777; font-size: 10px; font-weight: 700; margin-top: 2px;">@doc.ChapterTitle</span>
-                                                }
-                                            </label>
-                                            <i class="fa-solid fa-eye" style="cursor: pointer; color: #555; transition: 0.1s; font-size: 11px; padding: 2px;" title="Xem nội dung AI đọc" onclick="previewDocumentText(@doc.Id)"></i>
-                                        </div>
-                                    }
-                                </div>
-                            </details>
-                            }
-                            else
-                            {
-                            <details class="doc-folder">
-                                <summary>
-                                    <span class="doc-folder-accent" style="background:@visual.Accent;"></span>
-                                    <span class="doc-folder-name">
-                                        <span class="doc-folder-pill" style="background:@visual.Soft;">
-                                            <i class="@visual.Icon"></i>
-                                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@subjectGroup.Key</span>
-                                        </span>
-                                    </span>
-                                    <span class="doc-folder-count">@subjectGroup.Count() tài liệu <i class="fa-solid fa-chevron-down doc-folder-chevron"></i></span>
-                                </summary>
-                                <div class="doc-folder-content">
-                                    @foreach (var doc in subjectGroup)
-                                    {
-                                        <div class="doc-folder-item">
-                                            <input type="checkbox" name="selectedDocs" value="@doc.Id" class="doc-checkbox" id="doc-@doc.Id" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--pink); flex-shrink: 0;" />
-                                            <label for="doc-@doc.Id" style="cursor: pointer; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; margin-right: 4px;" title="@doc.Title">
-                                                <span style="color: @(doc.FileType.ToLower() == "pdf" ? "#d93856" : (doc.FileType.ToLower() == "docx" ? "#2b579a" : (doc.FileType.ToLower() == "pptx" ? "#d04423" : "#6b7280"))); font-weight:900; font-size: 10px;">
-                                                    [@doc.FileType.ToUpper()]
-                                                </span>
-                                                @doc.Title
-                                                @if (!string.IsNullOrWhiteSpace(doc.ChapterTitle))
-                                                {
-                                                    <span style="display: block; color: #777; font-size: 10px; font-weight: 700; margin-top: 2px;">@doc.ChapterTitle</span>
-                                                }
-                                            </label>
-                                            <i class="fa-solid fa-eye" style="cursor: pointer; color: #555; transition: 0.1s; font-size: 11px; padding: 2px;" title="Xem nội dung AI đọc" onclick="previewDocumentText(@doc.Id)"></i>
-                                        </div>
-                                    }
-                                </div>
-                            </details>
-                            }
-                        }
-                    }
-                    else
-                    {
-                        <div style="font-size: 11px; color: #777; font-style: italic; text-align: center; padding: 15px 0;">Không có tài liệu nào sẵn có để truy vấn.</div>
-                    }
-                </div>
-            </div>
-
-            <!-- Lịch sử hội thoại (Chiếm 45%) -->
-            <div style="display: flex; flex-direction: column; min-height: 180px; max-height: 42%;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div class="section-title" style="font-size: 15px; margin: 0;">Lịch sử Chat</div>
-                    <button onclick="createNewSession()" class="brutal-btn" style="padding: 3px 8px; font-size: 10px; font-weight: 800; background-color: var(--green); cursor: pointer; border: 2px solid #000; box-shadow: 1px 1px 0px #000; display: inline-flex; align-items: center; gap: 4px;" title="Tạo cuộc hội thoại mới">
-                        + MỚI
-                    </button>
-                </div>
-                <div id="sessionsListBox" style="flex: 1; overflow-y: auto; background: var(--white); border: var(--border); box-shadow: 3px 3px 0px var(--black); padding: 8px; display: flex; flex-direction: column; gap: 6px;">
-                    <div style="font-size: 11px; color: #777; font-style: italic; text-align: center; padding: 15px 0;">Đang tải...</div>
-                </div>
-            </div>
-
-            <!-- Hạn chế trả lời (Phần còn lại ở đáy) -->
-            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 4px;">
-                <div class="section-title" style="font-size: 14px; margin: 0;">Hạn chế trả lời</div>
-                <div class="toggle-group" style="margin-bottom: 2px; width: fit-content; display: flex;">
-                    <button class="toggle-btn" style="font-size: 11px; padding: 4px 10px;">Tất cả</button>
-                    <button class="toggle-btn active" style="font-size: 11px; padding: 4px 10px;">Trong phạm vi tài liệu</button>
-                </div>
-                <div class="restriction-hint" style="font-size: 10px; color: #555; font-weight: 700;">Hạn chế: Chỉ trả lời ĐÚNG phạm vi tài liệu.</div>
-            </div>
-        </div>
-
-        <!-- RIGHT COLUMN (CHAT) -->
-        <div class="right-column">
-            <div class="chat-container">
-                <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px;">
-                    <div style="flex: 1; text-align: center; margin-left: 100px;">
-                        TRỢ LÝ HỌC TẬP AI <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <button onclick="clearChatHistory()" class="brutal-btn" style="padding: 6px 12px; font-size: 11px; background-color: var(--white); font-weight: 800; border: 2px solid #000; box-shadow: 1px 1px 0px #000; cursor: pointer; display: flex; align-items: center; gap: 6px;" title="Xóa lịch sử trò chuyện">
-                        <i class="fa-solid fa-trash-can"></i> XÓA LỊCH SỬ
-                    </button>
-                </div>
-
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message message-bot">
-                        <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
-                        <div class="message-content">
-                            <div class="message-sender">Trợ lý AI</div>
-                            <p class="message-text">Chào bạn! Tôi là trợ lý học tập AI của bạn. Hãy chọn tài liệu ôn tập ở cột bên trái và gửi câu hỏi để bắt đầu trò chuyện nhé!</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="input-area">
-                    <input type="text" id="messageInput" class="input-box" placeholder="Nhập tin nhắn của bạn..." onkeypress="handleKeyPress(event)">
-                    <button class="send-btn" onclick="sendMessage()">
-                        Gửi <i class="fa-solid fa-paper-plane"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
+<div class="main-content">
+  <div class="sidebar-column" id="sidebarColumn">
+    <!-- Quota Badge -->
+    <div class="quota-badge" id="quotaBadge">
+      <div class="quota-badge-plan">
+        <i class="fa-solid fa-crown" style="color:#f59e0b;"></i>
+        <span id="quotaPlanLabel">@Model.Info.CurrentPlan</span>
+      </div>
+      <div style="font-size:11px;color:#555;">Lượt hỏi tháng này</div>
+      <div class="quota-bar-wrap">
+        @{
+          var ml = Model.Info.MonthlyLimit > 0 ? Model.Info.MonthlyLimit : 1;
+          var pct = ml >= 999999 ? 0 : Math.Min(100,(int)((double)Model.Info.UsedCount/ml*100));
+          var bc = pct>=90?"red":pct>=70?"orange":"green";
+        }
+        <div class="quota-bar-fill @bc" id="quotaBarFill" style="width:@(pct)%;"></div>
+      </div>
+      <div id="quotaCountLabel" style="font-size:11px;color:#333;">
+        @Model.Info.UsedCount / @(Model.Info.MonthlyLimit>=999999?"∞":Model.Info.MonthlyLimit.ToString()) câu hỏi
+      </div>
+      @if(pct>=90){<div class="quota-warn">Sắp hết quota tháng!</div>}
     </div>
+
+    <!-- Nguon tai lieu -->
+    <div style="display:flex;flex-direction:column;flex:1 1 0;min-height:120px;">
+      <div class="section-title">Nguồn tài liệu</div>
+      <div class="sources-box" id="sourcesBox">
+        @{
+          var idxDocs = Model.Documents
+            .Where(d=>d.Status==BussinessLayer.DTOs.DocumentStatus.Indexed)
+            .OrderBy(d=>d.SubjectName??"z").ThenBy(d=>d.Title).ToList();
+          var grp = idxDocs
+            .GroupBy(d=>string.IsNullOrWhiteSpace(d.SubjectName)?"Khong phan loai":d.SubjectName!.Trim())
+            .OrderBy(g=>g.Key).ToList();
+        }
+        @if(grp.Any()){
+          @foreach(var sg in grp){
+            var v=GetSubjectVisual(sg.Key);
+            <details class="doc-folder">
+              <summary>
+                <span class="doc-folder-name">
+                  <i class="@v.Icon" style="color:@v.Accent;font-size:12px;"></i>
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@sg.Key</span>
+                </span>
+                <span class="doc-folder-count">@sg.Count() <i class="fa-solid fa-chevron-down doc-folder-chevron"></i></span>
+              </summary>
+              <div class="doc-folder-content">
+                @foreach(var doc in sg){
+                  <div class="doc-folder-item">
+                    <input type="checkbox" name="selectedDocs" value="@doc.Id" class="doc-checkbox" id="doc-@doc.Id" style="cursor:pointer;width:14px;height:14px;accent-color:var(--pink);flex-shrink:0;"/>
+                    <label for="doc-@doc.Id" style="cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;" title="@doc.Title">
+                      <span style="color:@(doc.FileType.ToLower()=="pdf"?"#d93856":doc.FileType.ToLower()=="docx"?"#2b579a":"#d04423");font-weight:900;font-size:9px;">[@doc.FileType.ToUpper()]</span> @doc.Title
+                    </label>
+                    <i class="fa-solid fa-eye" style="cursor:pointer;color:#777;font-size:10px;" onclick="previewDocumentText(@doc.Id)"></i>
+                  </div>
+                }
+              </div>
+            </details>
+          }
+        } else {
+          <div style="font-size:11px;color:#777;text-align:center;padding:12px;">Chưa có tài liệu.</div>
+        }
+      </div>
+    </div>
+
+    <!-- Lich su Chat -->
+    <div style="display:flex;flex-direction:column;min-height:100px;max-height:210px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div class="section-title" style="margin:0;">Lịch sử Chat</div>
+        <button onclick="createNewSession()" style="padding:3px 8px;font-size:10px;font-weight:800;background:var(--green);cursor:pointer;border:2px solid #000;box-shadow:1px 1px 0 #000;display:inline-flex;align-items:center;gap:4px;">+ MỚI</button>
+      </div>
+      <div id="sessionsListBox" class="sessions-box">
+        <div style="font-size:11px;color:#777;text-align:center;padding:8px;">Đang tải...</div>
+      </div>
+    </div>
+
+    <!-- Dieu khien -->
+    <div style="display:flex;flex-direction:column;gap:10px;background:#fefefe;padding:10px;border:var(--border);box-shadow:2px 2px 0 var(--black);">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:12px;font-weight:700;">Dự phòng: <span style="color:var(--blue);font-weight:900;font-size:14px;" id="extraQuotaCount">@Model.Info.ExtraQuota</span></div>
+          <div style="font-size:10px;color:#777;">Dùng khi hết hạn mức</div>
+        </div>
+        <label style="position:relative;display:inline-block;width:44px;height:20px;">
+          <input type="checkbox" id="toggleExtraQuotaChat" @(Model.Info.UseExtraQuota?"checked":"") style="opacity:0;width:0;height:0;">
+          <span id="sliderTrack" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:@(Model.Info.UseExtraQuota?"var(--pink)":"#ccc");transition:.4s;border-radius:34px;">
+            <span id="sliderBtn" style="position:absolute;height:14px;width:14px;left:3px;bottom:3px;background-color:white;transition:.4s;border-radius:50%;@(Model.Info.UseExtraQuota?"transform:translateX(24px);":"")"></span>
+          </span>
+        </label>
+      </div>
+      <div style="height:1px;background:#e5e5e5;"></div>
+      <div>
+        <div class="section-title" style="font-size:12px;margin:0 0 4px 0;">Phạm vi kiến thức</div>
+        <div class="toggle-group">
+          <button class="toggle-btn" id="btnAll" style="font-size:10px;">Tất cả</button>
+          <button class="toggle-btn active" id="btnDocs" style="font-size:10px;">Trong tài liệu</button>
+        </div>
+        <div class="restriction-hint" id="restrictHint">Hạn chế: Chỉ trả lời ĐÚNG phạm vi tài liệu.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="right-column">
+    <div class="chat-container">
+      <div class="chat-header">
+        <button class="sidebar-toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <div class="chat-header-title">
+          <i class="fa-solid fa-robot"></i> TRỢ LÝ HỌC TẬP AI
+          <span id="streamingStatus" style="display:none;font-size:11px;color:var(--green);font-weight:700;"><i class="fa-solid fa-circle-notch fa-spin"></i> Đang trả lời...</span>
+        </div>
+        <div class="chat-header-right">
+          <button onclick="clearChatHistory()" style="padding:5px 10px;font-size:10px;background:var(--white);font-weight:800;border:2px solid #000;box-shadow:1px 1px 0 #000;cursor:pointer;display:flex;align-items:center;gap:5px;">
+            <i class="fa-solid fa-trash-can"></i> XÓA
+          </button>
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message message-bot">
+          <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="message-content">
+            <div class="message-sender">Trợ lý AI</div>
+            <p class="message-text">Chào bạn! Tôi là trợ lý học tập AI. Hãy chọn tài liệu ở sidebar và gửi câu hỏi để bắt đầu nhé!</p>
+          </div>
+        </div>
+      </div>
+      <div class="input-area">
+        <textarea id="messageInput" class="input-box" placeholder="Nhập câu hỏi... (Enter = gửi, Shift+Enter = xuống dòng)" rows="1" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">Gửi <i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTA OVERLAY -->
+<div id="quotaOverlay" class="quota-modal-wrap">
+  <div class="quota-modal">
+    <h2>Hết lượt hỏi!</h2>
+    <p id="quotaOverlayMsg">Bạn đã dùng hết lượt hỏi trong chu kỳ này.</p>
+    <a href="/Subscription" class="brutal-btn-upgrade">Nâng cấp gói ngay</a>
+    <button onclick="document.getElementById('quotaOverlay').style.display='none'" style="display:block;margin:12px auto 0;background:none;border:none;font-size:13px;cursor:pointer;color:#555;text-decoration:underline;">Đóng</button>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div id="previewModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;">
+  <div style="background:#fff;border:3px solid #000;box-shadow:8px 8px 0 #000;width:650px;max-width:92%;padding:24px;display:flex;flex-direction:column;max-height:85vh;">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:12px;">
+      <h3 id="modalTitle" style="font-weight:900;font-size:17px;margin:0;color:var(--pink);">Xem trước</h3>
+      <button onclick="closePreviewModal()" style="background:none;border:none;font-size:22px;cursor:pointer;">&times;</button>
+    </div>
+    <div id="modalContent" style="flex:1;overflow-y:auto;font-family:monospace;font-size:12px;white-space:pre-wrap;background:#f8f9fa;padding:12px;border:2px solid #000;max-height:55vh;">Đang tải...</div>
+    <div style="margin-top:14px;text-align:right;">
+      <button onclick="closePreviewModal()" style="background:#000;color:#fff;border:2px solid #000;padding:7px 18px;font-weight:900;cursor:pointer;">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div id="deleteConfirmModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;">
+  <div style="background:#fff;border:4px solid #000;box-shadow:8px 8px 0 #000;width:400px;max-width:92%;padding:24px;text-align:center;">
+    <h2 style="font-weight:900;font-size:20px;color:#d93856;margin:0 0 12px;">Xác nhận xóa</h2>
+    <p id="deleteConfirmMsg" style="font-size:14px;color:#333;margin:0 0 24px;font-weight:600;">Bạn có chắc chắn muốn xóa không?</p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button id="btnCancelDelete" style="background:#fff;color:#000;border:2px solid #000;padding:8px 20px;font-weight:900;cursor:pointer;box-shadow:3px 3px 0 #000;transition:transform 0.1s;onmouseover=\"this.style.transform='translate(-2px,-2px)'\" onmouseout=\"this.style.transform='none'\">Hủy</button>
+      <button id="btnConfirmDelete" style="background:#d93856;color:#fff;border:2px solid #000;padding:8px 20px;font-weight:900;cursor:pointer;box-shadow:3px 3px 0 #000;transition:transform 0.1s;onmouseover=\"this.style.transform='translate(-2px,-2px)'\" onmouseout=\"this.style.transform='none'\">Xóa</button>
+    </div>
+  </div>
+</div>
 
 @functions {
-    private (string Accent, string Soft, string Icon) GetSubjectVisual(string subjectName)
-    {
-        var name = subjectName ?? string.Empty;
-        var normalized = name.ToLowerInvariant();
-
-        if (normalized.Contains("ai"))
-        {
-            return ("#4f46e5", "#e0e7ff", "fa-solid fa-folder-open");
-        }
-
-        if (normalized.Contains("c#") || normalized.Contains(".net") || normalized.Contains("code"))
-        {
-            return ("#0f766e", "#ccfbf1", "fa-solid fa-folder-open");
-        }
-
-        if (normalized.Contains("math") || normalized.Contains("toán") || normalized.Contains("toan"))
-        {
-            return ("#b45309", "#fef3c7", "fa-solid fa-folder-open");
-        }
-
-        if (normalized.Contains("english") || normalized.Contains("tiếng anh") || normalized.Contains("anh"))
-        {
-            return ("#2563eb", "#dbeafe", "fa-solid fa-folder-open");
-        }
-
-        if (normalized.Contains("database") || normalized.Contains("sql"))
-        {
-            return ("#7c3aed", "#ede9fe", "fa-solid fa-folder-open");
-        }
-
-        if (normalized.Contains("phys") || normalized.Contains("lý"))
-        {
-            return ("#dc2626", "#fee2e2", "fa-solid fa-folder-open");
-        }
-
-        var palette = new[]
-        {
-            ("#7c3aed", "#ede9fe", "fa-solid fa-book-open"),
-            ("#0891b2", "#cffafe", "fa-solid fa-folder-tree"),
-            ("#ea580c", "#ffedd5", "fa-solid fa-folder-open"),
-            ("#16a34a", "#dcfce7", "fa-solid fa-graduation-cap"),
-            ("#db2777", "#fce7f3", "fa-solid fa-pen-nib")
-        };
-
-        var bucket = 0;
-        foreach (var ch in name)
-        {
-            bucket += ch;
-        }
-
-        var selected = palette[bucket % palette.Length];
-        return (selected.Item1, selected.Item2, "fa-solid fa-folder-open");
-    }
+  private (string Accent, string Soft, string Icon) GetSubjectVisual(string subjectName)
+  {
+    var name = subjectName ?? string.Empty;
+    var n = name.ToLowerInvariant();
+    if (n.Contains("ai") || n.Contains("machine")) return ("#4f46e5","#e0e7ff","fa-solid fa-brain");
+    if (n.Contains("c#") || n.Contains(".net") || n.Contains("code")) return ("#0f766e","#ccfbf1","fa-solid fa-code");
+    if (n.Contains("math") || n.Contains("toan")) return ("#b45309","#fef3c7","fa-solid fa-square-root-variable");
+    if (n.Contains("english") || n.Contains("anh")) return ("#2563eb","#dbeafe","fa-solid fa-language");
+    if (n.Contains("database") || n.Contains("sql")) return ("#7c3aed","#ede9fe","fa-solid fa-database");
+    if (n.Contains("phys") || n.Contains("vat ly")) return ("#dc2626","#fee2e2","fa-solid fa-atom");
+    var palette = new[]{("#7c3aed","#ede9fe","fa-solid fa-book-open"),("#0891b2","#cffafe","fa-solid fa-folder-tree"),("#ea580c","#ffedd5","fa-solid fa-folder-open"),("#16a34a","#dcfce7","fa-solid fa-graduation-cap"),("#db2777","#fce7f3","fa-solid fa-pen-nib")};
+    var b = name.Sum(ch=>(int)ch); var s=palette[b%palette.Length];
+    return (s.Item1,s.Item2,"fa-solid fa-folder-open");
+  }
 }
 
-    <!-- SCRIPT -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script>
-        // ========== TOGGLE RESTRICT ==========
-        let restrictToDocs = true;
-        document.querySelectorAll('.toggle-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                const hint = document.querySelector('.restriction-hint');
-                if (this.textContent.trim() === 'Trong phạm vi tài liệu') {
-                    restrictToDocs = true;
-                    hint.textContent = 'Hạn chế: Chỉ trả lời ĐÚNG phạm vi tài liệu.';
-                } else {
-                    restrictToDocs = false;
-                    hint.textContent = 'Tất cả: Trả lời tự do bằng kiến thức của AI.';
-                }
-            });
-        });
+<script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+const chatMessages = document.getElementById("chatMessages");
+let sessions = [], currentSessionId = null, restrictToDocs = true;
+let connection = null, isStreaming = false;
+let streamingMessageEl = null, streamingRawText = "";
 
-        // ========== LOAD MODELS ==========
-        async function loadModels() {
-            try {
-                const res = await fetch('?handler=Models');
-                const data = await res.json();
-                const sel = document.getElementById('modelSelector');
-                if (data.success && data.models && data.models.length > 0) {
-                    sel.innerHTML = '';
-                    data.models.forEach(m => {
-                        const opt = document.createElement('option');
-                        opt.value = m.id;
-                        opt.textContent = m.displayName;
-                        if (m.id === 'gemini-3.5-flash') opt.selected = true;
-                        sel.appendChild(opt);
-                    });
-                } else {
-                    sel.innerHTML = '<option value="gemini-3.5-flash">Gemini 3.5 Flash</option>';
-                }
-            } catch(e) {
-                const sel = document.getElementById('modelSelector');
-                if (sel) sel.innerHTML = '<option value="gemini-3.5-flash">Gemini 3.5 Flash</option>';
-            }
-        }
-        loadModels();
+// ===== SIGNALR =====
+async function initSignalR() {
+  try {
+    connection = new signalR.HubConnectionBuilder()
+      .withUrl("/courseHub")
+      .withAutomaticReconnect([0,1000,3000,5000])
+      .build();
 
-        // ========== CHAT CORE ==========
-        const chatMessages = document.getElementById('chatMessages');
-        let sessions = [], currentSessionId = null;
+    connection.on("ReceiveChunk", function(chunk) {
+      if (!streamingMessageEl) return;
+      streamingRawText += chunk;
+      var textEl = streamingMessageEl.querySelector(".message-text");
+      if (textEl) { textEl.innerHTML = renderMdCit(streamingRawText, []); }
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
 
-        function escapeHtml(t) {
-            return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-        }
-        
-        function formatMarkdown(text) {
-            if (!text) return '';
-            // Use marked library if available, otherwise fallback to simple text
-            if (typeof marked !== 'undefined') {
-                return marked.parse(text);
-            }
-            return escapeHtml(text).replace(/\n/g, '<br>');
-        }
-        
-        function buildCitationHtml(citations) {
-            // Không sử dụng khối trích dẫn khổng lồ ở dưới nữa, chỉ dùng Inline Citation.
-            return '';
-        }
+    connection.on("StreamComplete", function(data) {
+      isStreaming = false; setStreamingUI(false);
+      if (!streamingMessageEl) return;
+      var cits = data.citations || [];
+      var textEl = streamingMessageEl.querySelector(".message-text");
+      if (textEl) {
+        textEl.innerHTML = renderMdCit(streamingRawText, cits);
+        textEl.setAttribute("data-raw", streamingRawText);
+        streamingMessageEl.classList.remove("streaming-bubble");
+        appendBotActions(streamingMessageEl.querySelector(".message-content"), streamingRawText);
+        appendRemBadge(streamingMessageEl.querySelector(".message-content"), data.remaining);
+      }
+      var s = sessions.find(function(x){return x.id===currentSessionId;});
+      if (s) {
+        s.messages.push({role:"model",text:data.reply||streamingRawText,citations:cits});
+        if (data.sessionTitle) s.title = data.sessionTitle;
+        if (data.sessionId) currentSessionId = data.sessionId;
+      }
+      streamingMessageEl = null; streamingRawText = "";
+      renderSessionsList(); refreshQuota();
+    });
 
-        function processInlineCitations(text, citations) {
-            if (!text) return '';
-            let formattedHtml = formatMarkdown(text);
+    connection.on("StreamError", function(message, outOfQuota) {
+      isStreaming = false; setStreamingUI(false);
+      removeTypingIndicator();
+      if (streamingMessageEl) { streamingMessageEl.remove(); streamingMessageEl = null; streamingRawText = ""; }
+      if (outOfQuota) {
+        document.getElementById("quotaOverlayMsg").textContent = message || "Ban da het luot hoi.";
+        document.getElementById("quotaOverlay").style.display = "flex";
+      } else { appendErrMsg(message || "Loi khong xac dinh."); }
+    });
 
-            if (!Array.isArray(citations) || citations.length === 0) return formattedHtml;
+    await connection.start();
+  } catch(e) { console.warn("SignalR fallback:", e); }
+}
 
-            // Tìm các mẫu [1], [2] và thay thế bằng badge HTML
-            formattedHtml = formattedHtml.replace(/\[(\d+)\]/g, (match, p1) => {
-                const idx = parseInt(p1) - 1;
-                if (idx >= 0 && idx < citations.length) {
-                    const c = citations[idx];
-                    const snippet = escapeHtml(c.snippet || 'Không có trích đoạn');
-                    const fullContent = escapeHtml(c.fullContent || c.snippet || 'Không có trích đoạn');
-                    const title = escapeHtml(c.documentTitle || 'Tài liệu');
-                    return `<span class="citation-badge" data-title="${title}" data-fullcontent="${fullContent}" onclick="openFullCitationFromElement(this)">
-                                ${p1}
-                                <span class="citation-tooltip-content">
-                                    <strong style="color:var(--blue);display:block;margin-bottom:4px;border-bottom:1px solid #ddd;padding-bottom:2px;font-size:13px;">${title}</strong>
-                                    <span style="font-style:italic;">"${snippet}"</span>
-                                </span>
-                            </span>`;
-                }
-                return match;
-            });
-            
-            return formattedHtml;
-        }
+// ===== UTILS =====
+function esc(t) { return (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+function fmtMd(text) {
+  if (!text) return "";
+  if (typeof marked !== "undefined") return marked.parse(text);
+  return esc(text).replace(/\n/g,"<br>");
+}
+function renderMdCit(text, cits) {
+  var html = fmtMd(text);
+  if (!Array.isArray(cits)||cits.length===0) return html;
+  html = html.replace(/\[(\d+)\]/g, function(match, p1) {
+    var idx = parseInt(p1)-1;
+    if (idx>=0&&idx<cits.length) {
+      var c=cits[idx], snippet=esc(c.snippet||""), fc=esc(c.fullContent||c.snippet||""), title=esc(c.documentTitle||"Tài liệu");
+      return "<span class=\"citation-badge\" data-title=\""+title+"\" data-fc=\""+fc+"\" onclick=\"openCit(this)\">"+p1+"<span class=\"citation-tooltip-content\"><strong style=\"color:var(--blue);display:block;margin-bottom:3px;\">"+title+"</strong><span style=\"font-style:italic;\">\""+snippet+"\"</span></span></span>";
+    }
+    return match;
+  });
+  return html;
+}
+function openCit(el) {
+  document.getElementById("modalTitle").textContent = "Trích dẫn: "+el.getAttribute("data-title");
+  document.getElementById("modalContent").textContent = el.getAttribute("data-fc");
+  document.getElementById("previewModal").style.display = "flex";
+}
+function appendBotActions(contentEl, rawText) {
+  var bar = document.createElement("div");
+  bar.style.cssText = "margin-top:10px;display:flex;gap:8px;";
+  var copyBtn = document.createElement("button");
+  copyBtn.style.cssText = "background:var(--white);color:var(--black);border:2px solid var(--black);padding:5px 10px;font-weight:800;font-size:10px;cursor:pointer;box-shadow:2px 2px 0 var(--black);";
+  copyBtn.innerHTML = "<i class=\"fa-regular fa-copy\"></i> COPY";
+  copyBtn.onclick = function() { navigator.clipboard.writeText(rawText).then(function(){copyBtn.textContent="DA COPY";setTimeout(function(){copyBtn.innerHTML="<i class=\"fa-regular fa-copy\"></i> COPY";},2000);}); };
+  var regenBtn = document.createElement("button");
+  regenBtn.style.cssText = "background:var(--white);color:var(--black);border:2px solid var(--black);padding:5px 10px;font-weight:800;font-size:10px;cursor:pointer;box-shadow:2px 2px 0 var(--black);";
+  regenBtn.innerHTML = "<i class=\"fa-solid fa-rotate-right\"></i> THỬ LẠI";
+  regenBtn.onclick = regenerateMessage;
+  bar.appendChild(copyBtn); bar.appendChild(regenBtn);
+  contentEl.appendChild(bar);
+}
+function appendRemBadge(contentEl, remaining) {
+  if (remaining===undefined||remaining===null) return;
+  var q = document.createElement("span");
+  q.style.cssText = "font-size:10px;color:#777;font-weight:bold;display:block;margin-top:6px;border-top:1px dashed #ddd;padding-top:5px;";
+  q.textContent = "(Còn "+(remaining>=9999?"∞":remaining)+" lượt hỏi)";
+  contentEl.appendChild(q);
+}
+function appendErrMsg(msg) {
+  var err = document.createElement("div");
+  err.className = "message message-bot";
+  err.innerHTML = "<div class=\"chat-avatar\" style=\"background:#d93856;\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\" style=\"border-color:#d93856;\"><div class=\"message-sender\" style=\"color:#d93856;\">Hệ thống</div><p class=\"message-text\">"+esc(msg)+"</p></div>";
+  chatMessages.appendChild(err); chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+function renderMessageUI(role, text, cits) {
+  var div = document.createElement("div"), isUser = role==="user";
+  div.className = isUser?"message message-user":"message message-bot";
+  var icon = isUser?"fa-user":"fa-robot";
+  var sender = isUser?"Bạn":"Trợ lý AI";
+  var bodyHtml;
+  if (isUser) {
+    bodyHtml = "<p class=\"message-text\" data-raw=\""+esc(text)+"\">"+esc(text).replace(/\n/g,"<br>")+"</p>";
+    bodyHtml += "<div style=\"margin-top:8px;display:flex;gap:8px;justify-content:flex-end;\"><button onclick=\"cpyMsg(this)\" style=\"background:transparent;color:#666;border:none;font-weight:800;font-size:10px;cursor:pointer;\"><i class=\"fa-regular fa-copy\"></i> COPY</button><button onclick=\"editMsg(this)\" style=\"background:transparent;color:#666;border:none;font-weight:800;font-size:10px;cursor:pointer;\"><i class=\"fa-solid fa-pen\"></i> SỬA</button></div>";
+  } else {
+    bodyHtml = "<div class=\"message-text\" data-raw=\""+esc(text)+"\" style=\"font-weight:500;font-size:14px;line-height:1.65;\">"+renderMdCit(text,cits)+"</div>";
+  }
+  div.innerHTML = "<div class=\"chat-avatar\"><i class=\"fa-solid "+icon+"\"></i></div><div class=\"message-content\"><div class=\"message-sender\">"+sender+"</div>"+bodyHtml+"</div>";
+  if (!isUser) appendBotActions(div.querySelector(".message-content"), text);
+  chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight;
+  return div;
+}
+function cpyMsg(btn) {
+  var raw = btn.closest(".message-content").querySelector("[data-raw]").getAttribute("data-raw");
+  navigator.clipboard.writeText(raw).then(function(){var o=btn.textContent;btn.textContent="DA COPY";setTimeout(function(){btn.textContent=o;},2000);});
+}
+function editMsg(btn) {
+  var raw = btn.closest(".message-content").querySelector("[data-raw]").getAttribute("data-raw");
+  var s = sessions.find(function(x){return x.id===currentSessionId;});
+  if (s) { var idx=s.messages.map(function(m){return m.text;}).lastIndexOf(raw); if(idx!==-1){s.messages=s.messages.slice(0,idx);renderMessages();} }
+  var inp = document.getElementById("messageInput"); inp.value=raw; inp.focus(); autoResize(inp);
+}
+function regenerateMessage() {
+  var s = sessions.find(function(x){return x.id===currentSessionId;});
+  if (!s||s.messages.length<2) return;
+  var lastUserIdx = s.messages.map(function(m){return m.role;}).lastIndexOf("user");
+  if (lastUserIdx===-1) return;
+  var text=s.messages[lastUserIdx].text;
+  s.messages=s.messages.slice(0,lastUserIdx); renderMessages();
+  document.getElementById("messageInput").value=text; sendMessage();
+}
+function createStreamingBubble() {
+  var div = document.createElement("div");
+  div.className = "message message-bot streaming-bubble";
+  div.innerHTML = "<div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Trợ lý AI</div><div class=\"message-text\" style=\"font-weight:500;font-size:14px;line-height:1.65;min-height:24px;\"></div></div>";
+  chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight;
+  return div;
+}
+function showTypingIndicator() {
+  var d = document.createElement("div");
+  d.className = "message message-bot typing-indicator-msg";
+  d.innerHTML = "<div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Trợ lý AI</div><p class=\"message-text\"><i class=\"fa-solid fa-circle-notch fa-spin\"></i> Đang suy nghĩ...</p></div>";
+  chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+function removeTypingIndicator() { document.querySelectorAll(".typing-indicator-msg").forEach(function(el){el.remove();}); }
+function setStreamingUI(on) {
+  document.getElementById("sendBtn").disabled = on;
+  document.getElementById("streamingStatus").style.display = on?"inline-flex":"none";
+}
 
-        function openFullCitationFromElement(el) {
-            const title = el.getAttribute('data-title');
-            const fullContent = el.getAttribute('data-fullcontent');
-            const modal = document.getElementById('previewModal');
-            document.getElementById('modalTitle').textContent = 'Trích dẫn: ' + title;
-            document.getElementById('modalContent').textContent = fullContent;
-            modal.style.display = 'flex';
-        }
+// ===== SESSIONS =====
+function normSession(s) { return {id:s.id,title:s.title||"Cuộc trò chuyện mới",messages:(s.messages||[]).map(function(m){return {role:m.role,text:m.text,citations:m.citations||[]};})}; }
+function renderSessionsList() {
+  var box = document.getElementById("sessionsListBox"); if (!box) return;
+  box.innerHTML = "";
+  if (sessions.length===0) { box.innerHTML="<div style=\"font-size:11px;color:#777;text-align:center;padding:8px;\">Chưa có cuộc trò chuyện.</div>"; return; }
+  sessions.forEach(function(s) {
+    var isActive = s.id===currentSessionId;
+    var item = document.createElement("div");
+    item.className = "session-item"+(isActive?" active":"");
+    item.onclick = function(e) { if (e.target.closest(".del-btn")) return; switchSession(s.id); };
+    var tit = document.createElement("span");
+    tit.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;margin-right:6px;";
+    tit.textContent = s.title;
+    var del = document.createElement("button");
+    del.className = "del-btn";
+    del.style.cssText = "background:none;border:none;cursor:pointer;padding:2px 3px;color:#555;";
+    del.innerHTML = "<i class=\"fa-solid fa-trash-can\" style=\"font-size:10px;\"></i>";
+    del.onclick = function(e) { e.stopPropagation(); deleteSession(s.id); };
+    item.appendChild(tit); item.appendChild(del);
+    box.appendChild(item);
+  });
+}
+function renderMessages() {
+  var s = sessions.find(function(x){return x.id===currentSessionId;});
+  chatMessages.innerHTML = "";
+  if (s&&s.messages&&s.messages.length>0) { s.messages.forEach(function(m){renderMessageUI(m.role,m.text,m.citations||[]);}); }
+  else { chatMessages.innerHTML = "<div class=\"message message-bot\"><div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Trợ lý AI</div><p class=\"message-text\">Hãy chọn tài liệu và gửi câu hỏi để bắt đầu!</p></div></div>"; }
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+function switchSession(id) { currentSessionId=id; renderSessionsList(); renderMessages(); }
+async function apiPost(url, payload) {
+  var r = await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload||{})});
+  return r.json();
+}
+async function initSessions() {
+  try {
+    var r = await fetch("?handler=Sessions");
+    var data = await r.json();
+    if (!data.success) throw new Error();
+    sessions = (data.sessions||[]).map(normSession);
+    if (sessions.length===0) { await createNewSession(); return; }
+    currentSessionId = sessions[0].id;
+    renderSessionsList(); renderMessages();
+  } catch(e) {
+    document.getElementById("sessionsListBox").innerHTML = "<div style=\"font-size:11px;color:#d93856;padding:8px;\">Không thể tải lịch sử.</div>";
+    renderMessages();
+  }
+}
+async function createNewSession() {
+  var data = await apiPost("?handler=CreateSession",{});
+  if (!data.success||!data.session) return;
+  var s = normSession(data.session);
+  sessions.unshift(s); currentSessionId=s.id;
+  renderSessionsList(); renderMessages();
+}
+function showDeleteConfirm(msg) {
+  return new Promise(function(resolve) {
+    document.getElementById("deleteConfirmMsg").textContent = msg;
+    var modal = document.getElementById("deleteConfirmModal");
+    var btnOk = document.getElementById("btnConfirmDelete");
+    var btnCancel = document.getElementById("btnCancelDelete");
+    var cleanup = function() { modal.style.display = "none"; btnOk.onclick = null; btnCancel.onclick = null; };
+    btnOk.onclick = function() { cleanup(); resolve(true); };
+    btnCancel.onclick = function() { cleanup(); resolve(false); };
+    modal.style.display = "flex";
+  });
+}
 
-        function copyMessage(btn) {
-            const msgBody = btn.closest('.message-content').querySelector('.message-text');
-            if (msgBody) {
-                const rawText = msgBody.getAttribute('data-raw') || msgBody.textContent;
-                navigator.clipboard.writeText(rawText).then(() => {
-                    const originalHTML = btn.innerHTML;
-                    btn.innerHTML = '<i class="fa-solid fa-check"></i> ĐÃ COPY';
-                    setTimeout(() => btn.innerHTML = originalHTML, 2000);
-                });
-            }
-        }
-        
-        function regenerateMessage() {
-            const s = sessions.find(x => x.id === currentSessionId);
-            if (!s || s.messages.length < 2) return;
-            
-            const lastUserMsgIndex = s.messages.map(m => m.role).lastIndexOf('user');
-            if (lastUserMsgIndex === -1) return;
-            
-            const text = s.messages[lastUserMsgIndex].text;
-            s.messages = s.messages.slice(0, lastUserMsgIndex);
-            
-            renderMessages();
-            document.getElementById('messageInput').value = text;
-            sendMessage();
-        }
+async function deleteSession(id) {
+  var ok = await showDeleteConfirm("Xóa cuộc hội thoại này?");
+  if (!ok) return;
+  await apiPost("?handler=DeleteSession",{sessionId:id});
+  sessions = sessions.filter(function(s){return s.id!==id;});
+  if (sessions.length===0) { await createNewSession(); }
+  else { if (currentSessionId===id) currentSessionId=sessions[0]?.id||null; renderSessionsList(); renderMessages(); }
+}
+async function clearChatHistory() {
+  var ok = await showDeleteConfirm("Xóa toàn bộ tin nhắn trong cuộc hội thoại này?");
+  if (!ok) return;
+  await apiPost("?handler=ClearSession",{sessionId:currentSessionId});
+  var s = sessions.find(function(x){return x.id===currentSessionId;});
+  if (s) { s.messages=[]; s.title="Cuộc trò chuyện mới"; }
+  renderSessionsList(); renderMessages();
+}
 
-        function editMessage(btn) {
-            const msgBody = btn.closest('.message-content').querySelector('.message-text');
-            if (!msgBody) return;
-            const text = msgBody.getAttribute('data-raw') || msgBody.textContent;
-            
-            const s = sessions.find(x => x.id === currentSessionId);
-            if (s) {
-                const idx = s.messages.map(m => m.text).lastIndexOf(text);
-                if (idx !== -1) {
-                    s.messages = s.messages.slice(0, idx);
-                    renderMessages();
-                }
-            }
-            
-            const input = document.getElementById('messageInput');
-            input.value = text;
-            input.focus();
-        }
+// ===== SEND MESSAGE =====
+async function sendMessage() {
+  var input = document.getElementById("messageInput");
+  var text = input.value.trim();
+  if (!text||!currentSessionId||isStreaming) return;
+  var s = sessions.find(function(x){return x.id===currentSessionId;});
+  if (!s) return;
+  renderMessageUI("user",text,[]);
+  var history = s.messages.map(function(m){return {role:m.role,text:m.text};});
+  s.messages.push({role:"user",text:text,citations:[]});
+  input.value=""; autoResize(input);
+  var docIds = [];
+  document.querySelectorAll(".doc-checkbox:checked").forEach(function(cb){docIds.push(parseInt(cb.value));});
+  var modelName = document.getElementById("modelSelector")?.value || "";
+  var req = {message:text,sessionId:currentSessionId,history:history,selectedDocIds:docIds,restrictToDocs:restrictToDocs,modelName:modelName};
+  isStreaming=true; setStreamingUI(true);
 
-        function renderMessageUI(role, text, citations) {
-            const div = document.createElement('div');
-            const isUser = role === 'user';
-            div.className = isUser ? 'message message-user' : 'message message-bot';
-            const senderName = isUser ? '@User.Identity?.Name' : 'Trợ lý AI';
-            const icon = isUser ? 'fa-user' : 'fa-robot';
-            
-            const actionBar = isUser ? `
-                <div style="margin-top: 10px; display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" onclick="copyMessage(this)" style="background:transparent; color:#666; border:none; font-weight:800; font-size:11px; cursor:pointer; transition:0.1s;" onmouseover="this.style.color='var(--black)';" onmouseout="this.style.color='#666';">
-                        <i class="fa-regular fa-copy"></i> COPY
-                    </button>
-                    <button type="button" onclick="editMessage(this)" style="background:transparent; color:#666; border:none; font-weight:800; font-size:11px; cursor:pointer; transition:0.1s;" onmouseover="this.style.color='var(--black)';" onmouseout="this.style.color='#666';">
-                        <i class="fa-solid fa-pen"></i> CHỈNH SỬA
-                    </button>
-                </div>` : `
-                <div style="margin-top: 15px; display: flex; gap: 10px;">
-                    <button type="button" onclick="copyMessage(this)" style="background:var(--white); color:var(--black); border:2px solid var(--black); padding:6px 12px; font-weight:800; font-size:11px; cursor:pointer; box-shadow:2px 2px 0 var(--black); transition:0.1s;" onmouseover="this.style.transform='translate(-1px,-1px)'; this.style.boxShadow='3px 3px 0 var(--black)';" onmouseout="this.style.transform='none'; this.style.boxShadow='2px 2px 0 var(--black)';">
-                        <i class="fa-regular fa-copy"></i> COPY
-                    </button>
-                    <button type="button" onclick="regenerateMessage()" style="background:var(--white); color:var(--black); border:2px solid var(--black); padding:6px 12px; font-weight:800; font-size:11px; cursor:pointer; box-shadow:2px 2px 0 var(--black); transition:0.1s;" onmouseover="this.style.transform='translate(-1px,-1px)'; this.style.boxShadow='3px 3px 0 var(--black)';" onmouseout="this.style.transform='none'; this.style.boxShadow='2px 2px 0 var(--black)';">
-                        <i class="fa-solid fa-rotate-right"></i> THỬ LẠI
-                    </button>
-                </div>`;
+  var signalrReady = connection && connection.state === signalR.HubConnectionState.Connected;
+  if (signalrReady) {
+    streamingRawText=""; streamingMessageEl=createStreamingBubble();
+    try { await connection.invoke("SendStreamingMessage", req); }
+    catch(e) {
+      console.error("SignalR invoke error:", e);
+      isStreaming=false; setStreamingUI(false);
+      if (streamingMessageEl){streamingMessageEl.remove();streamingMessageEl=null;}
+      appendErrMsg("Loi ket noi real-time.");
+    }
+  } else {
+    showTypingIndicator();
+    try {
+      var resp = await fetch("?handler=SendChatMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(req)});
+      var data = await resp.json();
+      removeTypingIndicator(); isStreaming=false; setStreamingUI(false);
+      if (!data.success) {
+        if (data.outOfQuota) {
+          document.getElementById("quotaOverlayMsg").textContent = data.message||"Ban da het luot hoi.";
+          document.getElementById("quotaOverlay").style.display="flex";
+        } else { appendErrMsg(data.message||"Loi khong xac dinh."); }
+        input.value=text; autoResize(input); return;
+      }
+      var cits=data.citations||[];
+      var msgEl=renderMessageUI("model",data.reply,cits);
+      s.messages.push({role:"model",text:data.reply,citations:cits});
+      appendRemBadge(msgEl.querySelector(".message-content"),data.remaining);
+      if (data.sessionTitle) s.title=data.sessionTitle;
+      if (data.sessionId) currentSessionId=data.sessionId;
+      renderSessionsList(); refreshQuota();
+    } catch(err) {
+      removeTypingIndicator(); isStreaming=false; setStreamingUI(false);
+      appendErrMsg("Khong the ket noi may chu."); input.value=text; autoResize(input);
+    }
+  }
+}
 
-            const body = isUser
-                ? `<p class="message-text" data-raw="${escapeHtml(text)}">${escapeHtml(text).replace(/\\n/g, '<br>')}</p>${actionBar}`
-                : `<div class="message-text" data-raw="${escapeHtml(text)}" style="font-weight:500;font-size:14px;line-height:1.6;">${processInlineCitations(text, citations)}</div>${actionBar}`;
-            div.innerHTML = `<div class="chat-avatar"><i class="fa-solid ${icon}"></i></div><div class="message-content"><div class="message-sender">${senderName}</div>${body}</div>`;
-            chatMessages.appendChild(div);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+// ===== QUOTA REFRESH =====
+async function refreshQuota() {
+  try {
+    var r = await fetch("?handler=QuotaInfo");
+    var data = await r.json();
+    if (!data.success) return;
+    var planLabel=document.getElementById("quotaPlanLabel");
+    var barFill=document.getElementById("quotaBarFill");
+    var countLabel=document.getElementById("quotaCountLabel");
+    var extraCount=document.getElementById("extraQuotaCount");
+    if (planLabel) planLabel.textContent=data.plan||"";
+    if (countLabel) {
+      var lim=data.monthlyLimit>=999999?"∞":(data.monthlyLimit||0);
+      countLabel.textContent=(data.monthlyUsed||0)+" / "+lim+" cau hoi";
+    }
+    if (barFill&&data.monthlyLimit>0&&data.monthlyLimit<999999) {
+      var pct=Math.min(100,Math.round((data.monthlyUsed||0)/data.monthlyLimit*100));
+      barFill.style.width=pct+"%";
+      barFill.className="quota-bar-fill "+(pct>=90?"red":pct>=70?"orange":"green");
+    }
+    if (extraCount) extraCount.textContent=data.extraQuota||0;
+  } catch(e) {}
+}
 
-        function showTypingIndicator() {
-            const d = document.createElement('div');
-            d.className = 'message message-bot typing-indicator-msg';
-            d.innerHTML = `<div class="chat-avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content" style="background:#f7f7f9;"><div class="message-sender">Trợ lý AI</div><p class="message-text"><i class="fa-solid fa-circle-notch fa-spin"></i> Trợ lý AI đang suy nghĩ...</p></div>`;
-            chatMessages.appendChild(d);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        function removeTypingIndicator() {
-            document.querySelectorAll('.typing-indicator-msg').forEach(el => el.remove());
-        }
-        function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
+// ===== CONTROLS =====
+function autoResize(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,120)+"px";}
+function handleKeyDown(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}}
+function toggleSidebar(){var s=document.getElementById("sidebarColumn"),o=document.getElementById("sidebarOverlay"),open=s.classList.toggle("open");o.style.display=open?"block":"none";}
+function closeSidebar(){document.getElementById("sidebarColumn").classList.remove("open");document.getElementById("sidebarOverlay").style.display="none";}
+function closePreviewModal(){document.getElementById("previewModal").style.display="none";}
+function previewDocumentText(docId){
+  var modal=document.getElementById("previewModal");
+  document.getElementById("modalTitle").textContent="Dang tai...";
+  document.getElementById("modalContent").textContent="Dang trich xuat...";
+  modal.style.display="flex";
+  fetch("?handler=DocumentText&docId="+docId).then(function(r){return r.json();}).then(function(d){
+    document.getElementById("modalTitle").textContent=d.success?"["+d.fileType?.toUpperCase()+"] "+d.title:"Loi";
+    document.getElementById("modalContent").textContent=d.success?(d.text||"(Rong)"):d.message;
+  }).catch(function(e){document.getElementById("modalContent").textContent="Loi: "+e.message;});
+}
 
-        // ========== SESSION MANAGEMENT (SERVER-SIDE) ==========
-        function normalizeSession(s) {
-            return {
-                id: s.id,
-                title: s.title || 'Cuộc trò chuyện mới',
-                messages: (s.messages||[]).map(m => ({role:m.role, text:m.text, citations:m.citations||[]}))
-            };
-        }
-        function renderSessionsList() {
-            const box = document.getElementById('sessionsListBox');
-            if (!box) return;
-            box.innerHTML = '';
-            sessions.forEach(s => {
-                const isActive = s.id === currentSessionId;
-                const item = document.createElement('div');
-                item.className = 'session-item' + (isActive ? ' active' : '');
-                item.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:2px solid #000;box-shadow:${isActive?'2px 2px 0 #000':'none'};font-size:12px;font-weight:800;cursor:pointer;background:var(--white);margin-bottom:4px;`;
-                item.onclick = e => {
-                    if (e.target.closest('.del-btn')) return;
-                    switchSession(s.id);
-                };
-                const title = document.createElement('span');
-                title.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;margin-right:8px;';
-                title.textContent = s.title;
-                const del = document.createElement('button');
-                del.className = 'del-btn';
-                del.style.cssText = 'background:none;border:none;cursor:pointer;padding:2px 4px;color:#555;';
-                del.innerHTML = '<i class="fa-solid fa-trash-can" style="font-size:11px;"></i>';
-                del.onclick = e => { e.stopPropagation(); deleteSession(s.id); };
-                item.appendChild(title); item.appendChild(del);
-                box.appendChild(item);
-            });
-        }
-        function renderMessages() {
-            const s = sessions.find(x => x.id === currentSessionId);
-            chatMessages.innerHTML = '';
-            if (s && s.messages.length > 0) {
-                s.messages.forEach(m => renderMessageUI(m.role, m.text, m.citations));
-            } else {
-                chatMessages.innerHTML = `<div class="message message-bot"><div class="chat-avatar"><i class="fa-solid fa-robot"></i></div><div class="message-content"><div class="message-sender">Trợ lý AI</div><p class="message-text">Chào bạn! Hãy chọn tài liệu và gửi câu hỏi để bắt đầu!</p></div></div>`;
-            }
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        function switchSession(id) {
-            currentSessionId = id;
-            renderSessionsList();
-            renderMessages();
-        }
+// ===== TOGGLE RESTRICT =====
+document.getElementById("btnAll")?.addEventListener("click",function(){
+  restrictToDocs=false;
+  document.getElementById("btnAll").classList.add("active");
+  document.getElementById("btnDocs").classList.remove("active");
+  document.getElementById("restrictHint").textContent="Tất cả: Trả lời tự do bằng kiến thức của AI.";
+});
+document.getElementById("btnDocs")?.addEventListener("click",function(){
+  restrictToDocs=true;
+  document.getElementById("btnDocs").classList.add("active");
+  document.getElementById("btnAll").classList.remove("active");
+  document.getElementById("restrictHint").textContent="Hạn chế: Chỉ trả lời ĐÚNG phạm vi tài liệu.";
+});
 
-        async function apiPost(url, payload) {
-            const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload||{}) });
-            return r.json();
-        }
-        async function initSessions() {
-            try {
-                const r = await fetch('?handler=Sessions');
-                const data = await r.json();
-                if (!data.success) throw new Error();
-                sessions = (data.sessions||[]).map(normalizeSession);
-                if (sessions.length === 0) { await createNewSession(); return; }
-                currentSessionId = sessions[0].id;
-                renderSessionsList(); renderMessages();
-            } catch(e) {
-                document.getElementById('sessionsListBox').innerHTML = '<div style="font-size:11px;color:#d93856;padding:10px;">Không thể tải lịch sử.</div>';
-                renderMessages();
-            }
-        }
-        async function createNewSession() {
-            const data = await apiPost('?handler=CreateSession', {});
-            if (!data.success || !data.session) return;
-            const s = normalizeSession(data.session);
-            sessions.unshift(s);
-            currentSessionId = s.id;
-            renderSessionsList(); renderMessages();
-        }
-        async function deleteSession(id) {
-            if (sessions.length <= 1) { alert('Cần giữ ít nhất một cuộc hội thoại.'); return; }
-            if (!confirm('Xóa cuộc hội thoại này?')) return;
-            await apiPost('?handler=DeleteSession', { sessionId: id });
-            sessions = sessions.filter(s => s.id !== id);
-            if (currentSessionId === id) currentSessionId = sessions[0]?.id || null;
-            renderSessionsList(); renderMessages();
-        }
-        async function clearChatHistory() {
-            if (!confirm('Xóa toàn bộ tin nhắn trong cuộc hội thoại này?')) return;
-            await apiPost('?handler=ClearSession', { sessionId: currentSessionId });
-            const s = sessions.find(x => x.id === currentSessionId);
-            if (s) { s.messages = []; s.title = 'Cuộc trò chuyện mới'; }
-            renderSessionsList(); renderMessages();
-        }
+// ===== EXTRA QUOTA TOGGLE =====
+var toggleExtraQ = document.getElementById("toggleExtraQuotaChat");
+var sliderTrack = document.getElementById("sliderTrack");
+var sliderBtn = document.getElementById("sliderBtn");
+if (toggleExtraQ) {
+  toggleExtraQ.addEventListener("change", async function(e) {
+    var isChecked=e.target.checked;
+    sliderBtn.style.transform=isChecked?"translateX(24px)":"";
+    sliderTrack.style.backgroundColor=isChecked?"var(--pink)":"#ccc";
+    try {
+      var r=await fetch("/api/user/toggle-extra-quota",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({UseExtraQuota:isChecked})});
+      if (!r.ok) throw new Error();
+    } catch {
+      e.target.checked=!isChecked;
+      sliderBtn.style.transform=!isChecked?"translateX(24px)":"";
+      sliderTrack.style.backgroundColor=!isChecked?"var(--pink)":"#ccc";
+    }
+  });
+}
 
-        async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-            if (!text || !currentSessionId) return;
-            const s = sessions.find(x => x.id === currentSessionId);
-            if (!s) return;
+// ===== LOAD MODELS =====
+async function loadModels() {
+  /* Models are now handled server-side, selection is hidden from user */
+}
 
-            renderMessageUI('user', text, []);
-            const history = s.messages.map(m => ({role:m.role, text:m.text}));
-            s.messages.push({role:'user', text, citations:[]});
-            input.value = '';
+// ===== INIT =====
+(async function(){
+  await initSignalR();
+  await initSessions();
+  loadModels();
+})();
+</script>
 
-            const docIds = [];
-            document.querySelectorAll('.doc-checkbox:checked').forEach(cb => docIds.push(parseInt(cb.value)));
-            showTypingIndicator();
-
-            try {
-                const resp = await fetch('?handler=SendChatMessage', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({
-                        message: text,
-                        sessionId: currentSessionId,
-                        history,
-                        selectedDocIds: docIds,
-                        restrictToDocs,
-                        modelName: document.getElementById('modelSelector')?.value || ''
-                    })
-                });
-                const data = await resp.json();
-                removeTypingIndicator();
-
-                if (!data.success) {
-                    s.messages.pop();
-                    renderMessages();
-                    const err = document.createElement('div');
-                    err.className = 'message message-bot';
-                    err.innerHTML = `<div class="chat-avatar" style="background:#d93856;"><i class="fa-solid fa-robot"></i></div><div class="message-content" style="border-color:#d93856;"><div class="message-sender" style="color:#d93856;">Hệ thống</div><p class="message-text">⚠️ ${escapeHtml(data.message||'Lỗi')} ${data.outOfQuota?'<a href="/Subscription" style="color:#3b82f6;text-decoration:underline;">Nâng cấp gói</a>':''}</p></div>`;
-                    chatMessages.appendChild(err);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                    return;
-                }
-
-                const citations = data.citations || [];
-                renderMessageUI('model', data.reply, citations);
-                s.messages.push({role:'model', text:data.reply, citations});
-
-                if (data.sessionTitle) s.title = data.sessionTitle;
-                if (data.sessionId) currentSessionId = data.sessionId;
-                renderSessionsList();
-
-                const last = chatMessages.lastChild?.querySelector('.message-content');
-                if (last) {
-                    const q = document.createElement('span');
-                    q.style.cssText = 'font-size:10px;color:#777;font-weight:bold;display:block;margin-top:8px;border-top:1px dashed #ddd;padding-top:6px;';
-                    q.textContent = `(Còn ${data.remaining >= 9999 ? '∞' : data.remaining} lượt hỏi)`;
-                    last.appendChild(q);
-                }
-            } catch(err) {
-                removeTypingIndicator();
-                s.messages.pop();
-                renderMessages();
-                const errDiv = document.createElement('div');
-                errDiv.className = 'message message-bot';
-                errDiv.innerHTML = `<div class="chat-avatar" style="background:#d93856;"><i class="fa-solid fa-robot"></i></div><div class="message-content" style="border-color:#d93856;"><div class="message-sender" style="color:#d93856;">Lỗi mạng</div><p class="message-text">⚠️ Không thể kết nối máy chủ.</p></div>`;
-                chatMessages.appendChild(errDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        }
-
-        // ========== PREVIEW MODAL ==========
-        function previewDocumentText(docId) {
-            const modal = document.getElementById('previewModal');
-            document.getElementById('modalTitle').textContent = 'Đang tải...';
-            document.getElementById('modalContent').textContent = 'Đang trích xuất...';
-            modal.style.display = 'flex';
-            fetch(`?handler=DocumentText&docId=${docId}`)
-                .then(r=>r.json())
-                .then(d => {
-                    document.getElementById('modalTitle').textContent = d.success ? `[${d.fileType?.toUpperCase()}] ${d.title}` : 'Lỗi';
-                    document.getElementById('modalContent').textContent = d.success ? (d.text||'(Rỗng)') : d.message;
-                })
-                .catch(e => { document.getElementById('modalContent').textContent = 'Lỗi: ' + e.message; });
-        }
-        function closePreviewModal() {
-            document.getElementById('previewModal').style.display = 'none';
-        }
-
-        // ========== INIT ==========
-        initSessions();
-    </script>
-
-    <!-- MODAL XEM TRƯỚC VĂN BẢN -->
-    <div id="previewModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;">
-        <div style="background:#fff;border:3px solid #000;box-shadow:8px 8px 0 #000;width:650px;max-width:90%;padding:25px;display:flex;flex-direction:column;max-height:85vh;">
-            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #000;padding-bottom:12px;margin-bottom:15px;">
-                <h3 id="modalTitle" style="font-weight:900;font-size:18px;margin:0;color:var(--pink);">Xem trước</h3>
-                <button onclick="closePreviewModal()" style="background:none;border:none;font-size:24px;font-weight:900;cursor:pointer;">&times;</button>
-            </div>
-            <div id="modalContent" style="flex:1;overflow-y:auto;font-family:monospace;font-size:13px;white-space:pre-wrap;background:#f8f9fa;padding:15px;border:2px solid #000;line-height:1.6;max-height:55vh;">Đang tải...</div>
-            <div style="margin-top:20px;text-align:right;">
-                <button onclick="closePreviewModal()" style="background:#000;color:#fff;border:2px solid #000;padding:8px 20px;font-weight:900;cursor:pointer;">Đóng</button>
-            </div>
-        </div>
-    </div>

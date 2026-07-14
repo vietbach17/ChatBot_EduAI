@@ -1,3 +1,5 @@
+using BussinessLayer.IServices;
+using BussinessLayer.Gateways;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +8,8 @@ using BussinessLayer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
+using PresentationLayer.SignalR;
 
 namespace PresentationLayer.Pages.Payment
 {
@@ -15,15 +19,18 @@ namespace PresentationLayer.Pages.Payment
         private readonly PaymentGatewayFactory _gatewayFactory;
         private readonly ISubscriptionService _subscriptionService;
         private readonly IPaymentService _paymentService;
+        private readonly IHubContext<SignalRHub> _hubContext;
 
         public VNPayCallbackModel(
             PaymentGatewayFactory gatewayFactory,
             ISubscriptionService subscriptionService,
-            IPaymentService paymentService)
+            IPaymentService paymentService,
+            IHubContext<SignalRHub> hubContext)
         {
             _gatewayFactory = gatewayFactory;
             _subscriptionService = subscriptionService;
             _paymentService = paymentService;
+            _hubContext = hubContext;
         }
 
         public bool IsSuccess { get; set; }
@@ -79,6 +86,7 @@ namespace PresentationLayer.Pages.Payment
                     var processed = await _subscriptionService.ProcessPaymentSuccessAsync(transactionId, transactionNo);
                     if (processed)
                     {
+                        await _hubContext.Clients.All.SendAsync("PaymentStatusUpdated", transactionId, "Success");
                         IsSuccess = true;
                         Message = $"Thanh toán thành công gói {transaction.PlanName}!";
                     }
@@ -132,3 +140,4 @@ namespace PresentationLayer.Pages.Payment
         }
     }
 }
+

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -82,24 +82,41 @@
     <div class="sidebar">
         @{
             var userRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
+            var activePage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
         }
 
         <div class="logo"><i class="fa-solid fa-graduation-cap"></i> EduManager</div>
 
         @if (userRole == "Admin")
         {
-            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">QUáº¢N TRá»Š VIÃŠN</div>
-            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">QUẢN TRỊ VIÊN</div>
+            <a asp-page="/Admin/Dashboard" class="nav-item @(ViewBag.ActiveMenu == "AdminDashboard" ? "active" : "")"><i class="fa-solid fa-chart-pie"></i> DASHBOARD</a>
+            <a asp-page="/Admin/Users" class="nav-item @(ViewBag.ActiveMenu == "AdminUsers" ? "active" : "")"><i class="fa-solid fa-users-gear"></i> QL NGƯỜI DÙNG</a>
+            <a asp-page="/Admin/Subjects" class="nav-item @(ViewBag.ActiveMenu == "AdminSubjects" ? "active" : "")"><i class="fa-solid fa-book-open-reader"></i> QL MÔN HỌC</a>
+            <a asp-page="/Admin/Subscriptions" class="nav-item @(ViewBag.ActiveMenu == "AdminSubscriptions" ? "active" : "")"><i class="fa-solid fa-users"></i> QL NGƯỜI ĐĂNG KÝ</a>
+            <a asp-page="/Admin/Plans" class="nav-item @(ViewBag.ActiveMenu == "AdminPlans" ? "active" : "")"><i class="fa-solid fa-tags"></i> QL LOẠI GÓI</a>
+            <a asp-page="/Admin/PaymentHistory" class="nav-item @(ViewBag.ActiveMenu == "PaymentHistory" ? "active" : "")"><i class="fa-solid fa-file-invoice-dollar"></i> LỊCH SỬ TT</a>
         }
         else if (userRole == "Lecturer")
         {
-            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">GIáº¢NG VIÃŠN</div>
-            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">GIẢNG VIÊN</div>
+            <a asp-page="/Lecturer/MySubjects" class="nav-item @(ViewBag.ActiveMenu == "LecturerSubjects" ? "active" : "")"><i class="fa-solid fa-chalkboard-user"></i> MÔN PHỤ TRÁCH</a>
+            <a asp-page="/Lecturer/AllSubjects" class="nav-item @(ViewBag.ActiveMenu == "LecturerAllSubjects" ? "active" : "")"><i class="fa-solid fa-book-open"></i> TẤT CẢ MÔN HỌC</a>
+            <a asp-page="/Lecturer/MyDocuments" class="nav-item @(ViewBag.ActiveMenu == "LecturerDocuments" ? "active" : "")"><i class="fa-regular fa-file-lines"></i> TÀI LIỆU CỦA TÔI</a>
+            <a asp-page="/Lecturer/QuestionBank" class="nav-item @(ViewBag.ActiveMenu == "QuestionBank" ? "active" : "")"><i class="fa-solid fa-database"></i> NGÂN HÀNG CÂU HỎI</a>
+            <a asp-page="/Lecturer/AIGenerateQuestions" class="nav-item @(ViewBag.ActiveMenu == "AIGenerateQuestions" ? "active" : "")"><i class="fa-solid fa-robot"></i> AI TẠO CÂU HỎI</a>
+            <a asp-page="/Lecturer/CreateQuiz" class="nav-item @(ViewBag.ActiveMenu == "CreateQuiz" ? "active" : "")"><i class="fa-solid fa-file-signature"></i> TẠO BÀI THI</a>
         }
         else
         {
-            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">SINH VIÃŠN</div>
-            <a asp-page="/Auth/Profile" class="nav-item active"><i class="fa-solid fa-user"></i> Há»’ SÆ </a>
+            <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">SINH VIÊN</div>
+            <a asp-page="/Index" class="nav-item @(ViewBag.ActiveMenu == "Overview" ? "active" : "")"><i class="fa-solid fa-border-all"></i> TỔNG QUAN</a>
+            <a asp-page="/StudentDocument/Subjects" class="nav-item @(ViewBag.ActiveMenu == "Subjects" ? "active" : "")"><i class="fa-solid fa-book-open"></i> MÔN HỌC</a>
+            <a asp-page="/StudentDocument/Documents"  class="nav-item @(ViewBag.ActiveMenu == "Docs" ? "active" : "")"><i class="fa-regular fa-file-lines"></i> TÀI LIỆU</a>
+            <a asp-page="/Student/QuizList" class="nav-item @(ViewBag.ActiveMenu == "StudentQuizzes" ? "active" : "")"><i class="fa-solid fa-file-signature"></i> BÀI THI</a>
+            <a asp-page="/Chat/Index"  class="nav-item @(ViewBag.ActiveMenu == "AI" ? "active" : "")"><i class="fa-solid fa-robot"></i> CHAT AI</a>
+            <a asp-page="/Subscription/Index" class="nav-item @(ViewBag.ActiveMenu == "Subscription" ? "active" : "")"><i class="fa-solid fa-crown"></i> GÓI HỘI VIÊN</a>
+            <a asp-page="/PaymentHistory/Index" class="nav-item @(ViewBag.ActiveMenu == "PaymentHistory" ? "active" : "")"><i class="fa-solid fa-file-invoice-dollar"></i> LỊCH SỬ TT</a>
         }
         
         <a asp-page="/Auth/Profile" class="user-profile" style="text-decoration: none; cursor: pointer; transition: 0.1s;">
@@ -114,11 +131,64 @@
                 </div>
             }
         </a>
-        <a asp-page="/Auth/Logout" class="nav-item" style="border:dashed 2px var(--black);">ÄÄƒng xuáº¥t</a>      
+        <a asp-page="/Auth/Logout" class="nav-item" style="border:dashed 2px var(--black); text-align: center;">Đăng xuất</a>      
     </div>
 
     <!-- MAIN CONTENT -->
     @RenderBody()
+
+    <!-- GLOBAL BRUTAL CONFIRM MODAL -->
+    <div id="brutalConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(2px);">
+        <div style="background: var(--white); border: 4px solid var(--black); box-shadow: 8px 8px 0px var(--black); width: 400px; max-width: 90%; text-align: center; display: flex; flex-direction: column;">
+            <div style="background: var(--yellow); padding: 15px; border-bottom: 4px solid var(--black);">
+                <h3 style="margin: 0; font-weight: 900; font-size: 20px; text-transform: uppercase; color: var(--black);">
+                    <i class="fa-solid fa-triangle-exclamation"></i> XÁC NHẬN
+                </h3>
+            </div>
+            <div style="padding: 30px 20px;">
+                <p id="brutalConfirmMessage" style="font-weight: 800; font-size: 16px; color: var(--black); margin: 0; line-height: 1.5;"></p>
+            </div>
+            <div style="padding: 20px; border-top: 4px solid var(--black); background: var(--bg); display: flex; justify-content: center; gap: 15px;">
+                <button type="button" onclick="__brutalConfirmNo()" class="brutal-btn" style="background: #ccc; color: var(--black); border: 2px solid var(--black); padding: 10px 20px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); cursor: pointer;">HỦY BỎ</button>
+                <button type="button" onclick="__brutalConfirmYes()" class="brutal-btn" style="background: var(--pink); color: var(--white); border: 2px solid var(--black); padding: 10px 20px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); cursor: pointer;">XÁC NHẬN</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.12/signalr.min.js"></script>
+    <script>
+        // Global Brutal Confirm Logic
+        window.__brutalConfirmCallback = null;
+        function brutalConfirm(message, callback) {
+            document.getElementById('brutalConfirmMessage').innerText = message;
+            document.getElementById('brutalConfirmModal').style.display = 'flex';
+            window.__brutalConfirmCallback = callback;
+        }
+        function __brutalConfirmYes() {
+            document.getElementById('brutalConfirmModal').style.display = 'none';
+            if (window.__brutalConfirmCallback) {
+                window.__brutalConfirmCallback();
+                window.__brutalConfirmCallback = null;
+            }
+        }
+        function __brutalConfirmNo() {
+            document.getElementById('brutalConfirmModal').style.display = 'none';
+            window.__brutalConfirmCallback = null;
+        }
+
+        // Intercept all forms with data-confirm
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            const msg = form.getAttribute('data-confirm');
+            if (msg) {
+                e.preventDefault();
+                brutalConfirm(msg, function() {
+                    form.removeAttribute('data-confirm');
+                    form.submit();
+                });
+            }
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
