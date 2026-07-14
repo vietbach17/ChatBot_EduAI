@@ -9,6 +9,8 @@ namespace PresentationLayer.Pages.Admin
     public class DashboardModel : PageModel
     {
         private readonly IUserService _userService;
+        private readonly ISubjectService _subjectService;
+        private readonly IDocumentService _documentService;
         private readonly ISubscriptionService _subscriptionService;
 
         public int TotalUsers { get; set; }
@@ -16,9 +18,11 @@ namespace PresentationLayer.Pages.Admin
         public int TotalDocuments { get; set; }
         public decimal EstimatedRevenue { get; set; }
 
-        public DashboardModel(IUserService userService, ISubscriptionService subscriptionService)
+        public DashboardModel(IUserService userService, ISubjectService subjectService, IDocumentService documentService, ISubscriptionService subscriptionService)
         {
             _userService = userService;
+            _subjectService = subjectService;
+            _documentService = documentService;
             _subscriptionService = subscriptionService;
         }
 
@@ -27,9 +31,11 @@ namespace PresentationLayer.Pages.Admin
             var users = await _userService.GetAllUsersAsync(false);
             TotalUsers = users.Count();
 
-            // Stubbed for strict Member 5 scope (missing ISubjectService and IDocumentService)
-            TotalSubjects = 0;
-            TotalDocuments = 0;
+            var subjects = await _subjectService.GetAllSubjectsAsync(false);
+            TotalSubjects = subjects.Count();
+
+            var documents = await _documentService.GetAllDocumentsAsync();
+            TotalDocuments = documents.Count();
 
             var subscriptions = await _subscriptionService.GetAllSubscriptionsAsync();
             decimal revenue = 0;
