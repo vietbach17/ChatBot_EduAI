@@ -465,9 +465,8 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
-                        // Redirect to result page, or just alert and redirect
-                        window.location.href = '/Student/QuizList'; // We don't have Student Quiz Result page yet, so back to list.
-                        // Or we can create a result popup!
+                        // Redirect to result page
+                        window.location.href = '/Student/QuizResult?id=' + data.attemptId;
                     } else {
                         alert("Lỗi nộp bài: " + data.message);
                         window.location.reload();

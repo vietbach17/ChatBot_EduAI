@@ -389,8 +389,9 @@ namespace BussinessLayer.Services
             var resultDto = new QuizResultDto
             {
                 AttemptId = attempt.Id,
-                Score = attempt.Score,
-                CorrectCount = attempt.CorrectCount,
+                ShowScoreAfterSubmit = showAnswers,
+                Score = showAnswers ? attempt.Score : 0,
+                CorrectCount = showAnswers ? attempt.CorrectCount : 0,
                 TotalQuestions = attempt.TotalQuestions,
                 Status = attempt.Status,
                 SubmittedAt = attempt.EndTime,
@@ -403,7 +404,8 @@ namespace BussinessLayer.Services
                     
                     // Nếu giảng viên cho phép xem điểm/đáp án thì mới trả về
                     CorrectAnswer = showAnswers ? a.QuestionBank?.CorrectAnswer : null,
-                    IsCorrect = a.IsCorrect
+                    IsCorrect = showAnswers ? (bool?)a.IsCorrect : null,
+                    Explanation = null
                     
                 }).ToList()
             };

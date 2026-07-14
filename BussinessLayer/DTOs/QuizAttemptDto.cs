@@ -41,6 +41,7 @@ namespace BussinessLayer.DTOs
         public int TotalQuestions { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime? SubmittedAt { get; set; }
+        public bool ShowScoreAfterSubmit { get; set; }
         public List<ReviewQuestionDto> ReviewQuestions { get; set; } = new List<ReviewQuestionDto>();
     }
 
@@ -51,7 +52,7 @@ namespace BussinessLayer.DTOs
         public List<string> Options { get; set; } = new List<string>();
         public string? StudentAnswer { get; set; }
         public string? CorrectAnswer { get; set; }
-        public bool IsCorrect { get; set; }
+        public bool? IsCorrect { get; set; } // Null if score is hidden
         public string? Explanation { get; set; }
     }
 
