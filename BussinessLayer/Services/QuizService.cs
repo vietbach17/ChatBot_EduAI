@@ -80,19 +80,35 @@ namespace BussinessLayer.Services
             return quiz.Id;
         }
 
-        public Task<QuizStatisticsDto> GetQuizStatisticsAsync(int quizId, int lecturerId)
+        public async Task<QuizStatisticsDto> GetQuizStatisticsAsync(int quizId, int lecturerId)
         {
-            // TODO: Implement Logic tính điểm trung bình (sẽ làm sau)
             throw new NotImplementedException();
         }
 
         // ==========================================
         // 2. STUDENT: XEM CHI TIẾT, BẮT ĐẦU VÀ NỘP BÀI
         // ==========================================
-        public Task<QuizDetailDto> GetQuizDetailAsync(int quizId, int studentId)
+        public async Task<QuizDetailDto> GetQuizDetailAsync(int quizId, int studentId)
         {
-            // TODO
-            throw new NotImplementedException();
+            var quiz = await _quizRepo.GetByIdAsync(quizId);
+            if (quiz == null)
+                throw new Exception("Bài thi không tồn tại.");
+
+            var previousAttempts = await _attemptRepo.GetAttemptsByStudentAsync(studentId, quizId);
+
+            return new QuizDetailDto
+            {
+                Id = quiz.Id,
+                Title = quiz.Title,
+                Description = quiz.Description,
+                TimeLimitMinutes = quiz.TimeLimitMinutes,
+                MaxAttempts = quiz.MaxAttempts,
+                NumVariants = quiz.NumVariants,
+                GradingMethod = quiz.GradingMethod,
+                ShowScoreAfterSubmit = quiz.ShowScoreAfterSubmit,
+                HasPassword = !string.IsNullOrEmpty(quiz.AccessCode),
+                AttemptsDoneByCurrentUser = previousAttempts.Count()
+            };
         }
 
         public async Task<TakeQuizDto> StartQuizAsync(int studentId, int quizId, string? accessCode)
