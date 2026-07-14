@@ -1,0 +1,212 @@
+@page "{id:int}"
+@model PresentationLayer.Pages.Student.QuizResultModel
+@{
+    ViewData["Title"] = "Kết Quả Bài Thi";
+    ViewBag.ActiveMenu = "StudentQuizzes";
+}
+
+<style>
+    .brutal-card {
+        background-color: var(--white);
+        border: 3px solid var(--black);
+        box-shadow: 5px 5px 0px var(--black);
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+    .brutal-btn {
+        background-color: var(--yellow);
+        color: var(--black);
+        border: 2px solid var(--black);
+        padding: 10px 20px;
+        font-weight: 900;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 2px 2px 0px var(--black);
+        transition: 0.1s;
+        text-transform: uppercase;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .brutal-btn:active {
+        box-shadow: 0px 0px 0px var(--black);
+        transform: translate(2px, 2px);
+    }
+    .stat-box {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid var(--black);
+        text-align: center;
+        background-color: #f4f4f4;
+    }
+    .stat-title {
+        font-weight: 800;
+        font-size: 12px;
+        text-transform: uppercase;
+        color: #555;
+    }
+    .stat-value {
+        font-weight: 900;
+        font-size: 32px;
+        color: var(--black);
+        margin-top: 5px;
+    }
+    
+    .q-box {
+        border: 2px solid var(--black);
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #fff;
+    }
+    .q-text {
+        font-weight: 800;
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+    .opt-row {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        margin-bottom: 5px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .opt-selected {
+        border: 2px solid var(--blue);
+        background-color: #e3f2fd;
+    }
+    .opt-correct {
+        border: 2px solid var(--green);
+        background-color: #e8f5e9;
+    }
+    .opt-wrong {
+        border: 2px solid red;
+        background-color: #ffebee;
+    }
+    .badge {
+        font-size: 12px;
+        font-weight: 800;
+        padding: 2px 8px;
+        border: 1px solid var(--black);
+        text-transform: uppercase;
+    }
+    .badge.correct { background-color: var(--green); color: var(--black); }
+    .badge.wrong { background-color: #ffcccc; color: var(--black); }
+</style>
+
+<div class="main-wrapper" style="padding: 30px;">
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="brutal-card" style="background-color: #ffcccc; color: red;">
+            <h2 style="margin-top: 0;">Lỗi</h2>
+            <p><strong>@Model.ErrorMessage</strong></p>
+            <a asp-page="/Student/QuizList" class="brutal-btn">Quay lại danh sách</a>
+        </div>
+    }
+    else
+    {
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+            <h1 style="color: var(--blue); font-weight: 900; text-transform: uppercase; margin: 0;">
+                <i class="fa-solid fa-square-poll-vertical"></i> KẾT QUẢ BÀI THI
+            </h1>
+            <a asp-page="/Student/QuizList" class="brutal-btn" style="background-color: #eee;">
+                <i class="fa-solid fa-arrow-left"></i> Quay Lại
+            </a>
+        </div>
+
+        <div class="brutal-card">
+            <h2 style="margin-top: 0; margin-bottom: 20px; font-weight: 900; text-transform: uppercase;">
+                LẦN NỘP BÀI LÚC: @Model.Result.SubmittedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+            </h2>
+
+            @if (Model.Result.ShowScoreAfterSubmit)
+            {
+                <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                    <div class="stat-box" style="background-color: #e3f2fd;">
+                        <div class="stat-title">ĐIỂM SỐ</div>
+                        <div class="stat-value" style="color: var(--blue);">@Model.Result.Score.ToString("0.0") / 10</div>
+                    </div>
+                    <div class="stat-box" style="background-color: #e8f5e9;">
+                        <div class="stat-title">SỐ CÂU ĐÚNG</div>
+                        <div class="stat-value" style="color: var(--green);">@Model.Result.CorrectCount / @Model.Result.TotalQuestions</div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div style="background-color: var(--yellow); border: 2px solid var(--black); padding: 15px; font-weight: 800; margin-bottom: 20px; text-align: center;">
+                    <i class="fa-solid fa-lock"></i> Giảng viên đã ẩn điểm và đáp án cho bài thi này.
+                </div>
+            }
+
+            <h3 style="font-weight: 800; border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 20px;">CHI TIẾT CÁC CÂU HỎI</h3>
+
+            @{
+                int qIndex = 1;
+            }
+            @foreach (var q in Model.Result.ReviewQuestions)
+            {
+                <div class="q-box">
+                    <div class="q-text">
+                        <span style="color: var(--pink);">Câu @(qIndex++):</span> @q.QuestionText
+                        @if (Model.Result.ShowScoreAfterSubmit && q.IsCorrect.HasValue)
+                        {
+                            if (q.IsCorrect.Value)
+                            {
+                                <span class="badge correct" style="float: right;"><i class="fa-solid fa-check"></i> Đúng</span>
+                            }
+                            else
+                            {
+                                <span class="badge wrong" style="float: right;"><i class="fa-solid fa-xmark"></i> Sai</span>
+                            }
+                        }
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        @foreach (var opt in q.Options)
+                        {
+                            bool isSelected = opt == q.StudentAnswer;
+                            bool isCorrectAnswer = Model.Result.ShowScoreAfterSubmit && opt == q.CorrectAnswer;
+                            
+                            string rowClass = "opt-row";
+                            if (isSelected && isCorrectAnswer) rowClass += " opt-correct"; // Chọn đúng
+                            else if (isSelected && !isCorrectAnswer && Model.Result.ShowScoreAfterSubmit) rowClass += " opt-wrong"; // Chọn sai
+                            else if (!isSelected && isCorrectAnswer) rowClass += " opt-correct"; // Đáp án đúng mà không chọn
+                            else if (isSelected && !Model.Result.ShowScoreAfterSubmit) rowClass += " opt-selected"; // Chọn nhưng bị ẩn điểm
+
+                            <div class="@rowClass">
+                                <div>
+                                    @if(isSelected) { <i class="fa-solid fa-circle-dot"></i> } else { <i class="fa-regular fa-circle"></i> }
+                                    <span style="margin-left: 8px;">@opt</span>
+                                </div>
+                                
+                                <div>
+                                    @if (isSelected)
+                                    {
+                                        <span style="font-size: 11px; font-weight: 700; color: #555; font-style: italic; margin-right: 10px;">Lựa chọn của bạn</span>
+                                    }
+                                    
+                                    @if (isCorrectAnswer)
+                                    {
+                                        <span class="badge correct">Đáp án đúng</span>
+                                    }
+                                    @if (isSelected && !isCorrectAnswer && Model.Result.ShowScoreAfterSubmit)
+                                    {
+                                        <span class="badge wrong">Sai</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    @if (Model.Result.ShowScoreAfterSubmit && !string.IsNullOrEmpty(q.Explanation))
+                    {
+                        <div style="margin-top: 15px; padding: 10px; background-color: #fff3e0; border-left: 4px solid orange; font-weight: 600; font-size: 14px;">
+                            <i class="fa-solid fa-lightbulb"></i> Giải thích: @q.Explanation
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

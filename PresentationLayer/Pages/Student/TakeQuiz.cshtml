@@ -1,0 +1,513 @@
+@page "{id:int}"
+@using System.Text.Json
+@model PresentationLayer.Pages.Student.TakeQuizModel
+@{
+    ViewData["Title"] = "Làm Bài Thi";
+    Layout = null; // No sidebar, full screen focus like LMS
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FinalFinalFinalProject</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap');
+        
+        :root {
+            --pink: #eb2f64; --yellow: #f4cf45; --green: #5cb85c; 
+            --blue: #4fa8db; --black: #000; --white: #fff; --bg: #f4f4f6;
+        }
+
+        body {
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            background-image: radial-gradient(#d1d1d1 2px, transparent 2px);
+        }
+        .header {
+            background-color: var(--blue);
+            color: var(--white);
+            padding: 15px 30px;
+            border-bottom: 3px solid var(--black);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 20px auto;
+            gap: 20px;
+            padding: 0 20px;
+        }
+        .main-content {
+            flex: 3;
+        }
+        .sidebar {
+            flex: 1;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+        .brutal-card {
+            background-color: var(--white);
+            border: 3px solid var(--black);
+            box-shadow: 5px 5px 0px var(--black);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .timer-box {
+            background-color: var(--pink);
+            color: var(--black);
+            font-size: 32px;
+            font-weight: 900;
+            text-align: center;
+            padding: 15px;
+            border: 3px solid var(--black);
+            box-shadow: 4px 4px 0px var(--black);
+            margin-bottom: 20px;
+        }
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .nav-item {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--black);
+            font-weight: 800;
+            cursor: pointer;
+            background-color: var(--white);
+            transition: 0.1s;
+        }
+        .nav-item:hover {
+            background-color: #eee;
+        }
+        .nav-item.answered {
+            background-color: var(--blue);
+            color: var(--white);
+        }
+        .nav-item.current {
+            border-width: 4px;
+            border-color: var(--pink);
+        }
+        
+        .question-box {
+            background-color: var(--white);
+            border: 3px solid var(--black);
+            box-shadow: 4px 4px 0px var(--black);
+            padding: 25px;
+            margin-bottom: 20px;
+            display: none; /* hidden by default, shown via JS */
+        }
+        .question-box.active {
+            display: block;
+        }
+        .question-number {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--blue);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 2px solid var(--black);
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.1s;
+        }
+        .option-label:hover {
+            background-color: #f9f9f9;
+        }
+        .option-label input {
+            margin-right: 15px;
+            transform: scale(1.5);
+        }
+        .option-label.selected {
+            background-color: #e0f7fa;
+            border-color: var(--blue);
+        }
+        
+        .brutal-btn {
+            background-color: var(--yellow);
+            color: var(--black);
+            border: 3px solid var(--black);
+            padding: 12px 20px;
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px var(--black);
+            transition: 0.1s;
+            text-transform: uppercase;
+            text-align: center;
+            display: block;
+            width: 100%;
+        }
+        .brutal-btn:active {
+            box-shadow: 0px 0px 0px var(--black);
+            transform: translate(3px, 3px);
+        }
+        .brutal-btn.primary {
+            background-color: var(--green);
+        }
+        
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .pagination-controls button {
+            width: auto;
+            padding: 10px 30px;
+        }
+        
+        /* Modal Popup */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: var(--white);
+            border: 4px solid var(--black);
+            box-shadow: 8px 8px 0px var(--black);
+            padding: 30px;
+            max-width: 400px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div style="padding: 50px; text-align: center;">
+            <div class="brutal-card" style="display: inline-block; background-color: #ffcccc;">
+                <h1 style="color: red; margin: 0 0 10px 0;">Lỗi</h1>
+                <p style="font-weight: 600; font-size: 18px;">@Model.ErrorMessage</p>
+                <a href="/Student/QuizList" class="brutal-btn" style="width: auto; margin-top: 20px;">Quay lại</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="header">
+            <h1>@Model.QuizAttempt.Title</h1>
+            <a href="/Student/QuizList" style="color: var(--white); font-weight: 800; text-decoration: none;">
+                <i class="fa-solid fa-arrow-left"></i> Thoát
+            </a>
+        </div>
+
+        <div class="container">
+            <div class="main-content">
+                <div id="questions-container">
+                    <!-- JS will render questions here -->
+                </div>
+                
+                <div class="pagination-controls">
+                    <button id="btn-prev" class="brutal-btn" style="background-color: var(--white);" onclick="changePage(-1)">
+                        <i class="fa-solid fa-chevron-left"></i> Trang Trước
+                    </button>
+                    <button id="btn-next" class="brutal-btn" style="background-color: var(--white);" onclick="changePage(1)">
+                        Trang Sau <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="timer-box" id="timer">
+                    00:00:00
+                </div>
+                
+                <div class="brutal-card">
+                    <h3 style="margin-top: 0; font-weight: 900; text-transform: uppercase;">Danh sách câu hỏi</h3>
+                    <div class="nav-grid" id="nav-grid">
+                        <!-- JS will render nav squares here -->
+                    </div>
+                    
+                    <button class="brutal-btn primary" onclick="showConfirmPopup()">
+                        <i class="fa-solid fa-paper-plane"></i> NỘP BÀI
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirm Popup -->
+        <div class="modal-overlay" id="confirm-modal">
+            <div class="modal-content">
+                <h2 style="font-weight: 900; margin-top: 0;">XÁC NHẬN NỘP BÀI?</h2>
+                <p id="unanswered-warning" style="color: red; font-weight: 700; display: none;">
+                    Bạn còn <span id="unanswered-count"></span> câu hỏi chưa trả lời!
+                </p>
+                <p style="font-weight: 600;">Bạn có chắc chắn muốn nộp bài ngay bây giờ không?</p>
+                
+                <div style="display: flex; gap: 15px; margin-top: 25px;">
+                    <button class="brutal-btn" style="background-color: #ddd;" onclick="hideConfirmPopup()">Hủy</button>
+                    <button class="brutal-btn primary" onclick="submitQuiz()">Nộp Bài Bùp</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeout Popup -->
+        <div class="modal-overlay" id="timeout-modal">
+            <div class="modal-content">
+                <h2 style="font-weight: 900; margin-top: 0; color: red;">ĐÃ HẾT GIỜ!</h2>
+                <p style="font-weight: 600;">Thời gian làm bài đã kết thúc. Vui lòng nộp bài để hoàn tất!</p>
+                
+                <div style="display: flex; gap: 15px; margin-top: 25px; justify-content: center;">
+                    <button class="brutal-btn primary" onclick="submitQuiz()">Nộp Bài Bùp</button>
+                </div>
+            </div>
+        </div>
+        
+        @Html.AntiForgeryToken()
+
+        <script>
+            // Data from server
+            const attemptId = @Model.QuizAttempt.AttemptId;
+            const startTimeUtc = new Date('@Model.QuizAttempt.StartTime.ToString("o")'); // ISO-8601 UTC
+            const timeLimitMinutes = @Model.QuizAttempt.TimeLimitMinutes;
+            
+            // Raw questions (we will shuffle options in JS)
+            let questions = @Html.Raw(JsonSerializer.Serialize(Model.QuizAttempt.Questions));
+            
+            // Shuffle array function (Fisher-Yates)
+            function shuffle(array) {
+                let currentIndex = array.length,  randomIndex;
+                while (currentIndex > 0) {
+                    randomIndex = Math.floor(Math.random() * currentIndex);
+                    currentIndex--;
+                    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+                }
+                return array;
+            }
+
+            // Prepare questions (shuffle options)
+            questions.forEach((q, idx) => {
+                q.originalIndex = idx + 1; // 1-based
+                // Store the selected answer before shuffling so we can re-select it
+                let selected = q.SelectedAnswer;
+                shuffle(q.Options);
+                q.SelectedAnswer = selected; 
+            });
+
+            const pageSize = 5;
+            let currentPage = 1;
+            const totalPages = Math.ceil(questions.length / pageSize);
+
+            // Timer logic
+            const endTime = new Date(startTimeUtc.getTime() + timeLimitMinutes * 60000);
+            
+            let isTimeoutShown = false;
+            
+            function updateTimer() {
+                if (isTimeoutShown) return;
+                
+                const now = new Date();
+                const diff = endTime - now;
+                
+                if (diff <= 0) {
+                    document.getElementById('timer').innerText = "00:00:00";
+                    isTimeoutShown = true;
+                    document.getElementById('timeout-modal').style.display = 'flex';
+                    // We can also disable all inputs
+                    document.querySelectorAll('input[type="radio"]').forEach(el => el.disabled = true);
+                    return;
+                }
+                
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                document.getElementById('timer').innerText = 
+                    String(hours).padStart(2, '0') + ":" + 
+                    String(mins).padStart(2, '0') + ":" + 
+                    String(secs).padStart(2, '0');
+            }
+            setInterval(updateTimer, 1000);
+            updateTimer();
+
+            // Render Questions & Nav
+            function renderUI() {
+                renderNav();
+                renderPage();
+            }
+
+            function renderNav() {
+                const navGrid = document.getElementById('nav-grid');
+                navGrid.innerHTML = '';
+                
+                questions.forEach((q) => {
+                    const div = document.createElement('div');
+                    div.className = 'nav-item';
+                    if (q.SelectedAnswer) div.classList.add('answered');
+                    
+                    // Highlight if question is on current page
+                    const qPage = Math.ceil(q.originalIndex / pageSize);
+                    if (qPage === currentPage) {
+                        div.classList.add('current');
+                    }
+                    
+                    div.innerText = q.originalIndex;
+                    div.onclick = () => {
+                        currentPage = qPage;
+                        renderUI();
+                        // Scroll to question
+                        setTimeout(() => {
+                            const el = document.getElementById('qbox-' + q.originalIndex);
+                            if(el) el.scrollIntoView({behavior: 'smooth', block: 'center'});
+                        }, 50);
+                    };
+                    navGrid.appendChild(div);
+                });
+            }
+
+            function renderPage() {
+                const container = document.getElementById('questions-container');
+                container.innerHTML = '';
+                
+                const startIndex = (currentPage - 1) * pageSize;
+                const endIndex = Math.min(startIndex + pageSize, questions.length);
+                
+                for(let i = startIndex; i < endIndex; i++) {
+                    const q = questions[i];
+                    
+                    const box = document.createElement('div');
+                    box.className = 'question-box active';
+                    box.id = 'qbox-' + q.originalIndex;
+                    
+                    let html = `<div class="question-number">Câu ${q.originalIndex}</div>`;
+                    html += `<div class="question-text">${q.QuestionText}</div>`;
+                    
+                    q.Options.forEach((opt, oIdx) => {
+                        const isChecked = (q.SelectedAnswer === opt) ? 'checked' : '';
+                        const selectedClass = isChecked ? 'selected' : '';
+                        html += `
+                            <label class="option-label ${selectedClass}" onclick="selectOption(${i}, '${escapeHtml(opt)}')">
+                                <input type="radio" name="q-${q.QuestionBankId}" value="${escapeHtml(opt)}" ${isChecked}>
+                                <span>${escapeHtml(opt)}</span>
+                            </label>
+                        `;
+                    });
+                    
+                    box.innerHTML = html;
+                    container.appendChild(box);
+                }
+                
+                document.getElementById('btn-prev').style.visibility = (currentPage === 1) ? 'hidden' : 'visible';
+                document.getElementById('btn-next').style.visibility = (currentPage === totalPages) ? 'hidden' : 'visible';
+            }
+
+            function escapeHtml(unsafe) {
+                return unsafe
+                     .replace(/&/g, "&amp;")
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;")
+                     .replace(/"/g, "&quot;")
+                     .replace(/'/g, "&#039;");
+            }
+
+            // Expose selectOption to global for inline onclick
+            window.selectOption = function(qIndex, answer) {
+                questions[qIndex].SelectedAnswer = answer;
+                renderUI(); // Re-render to update nav grid and radio styling
+            }
+
+            window.changePage = function(delta) {
+                currentPage += delta;
+                if (currentPage < 1) currentPage = 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                renderUI();
+                window.scrollTo(0, 0);
+            }
+
+            // Submit logic
+            window.showConfirmPopup = function() {
+                const unanswered = questions.filter(q => !q.SelectedAnswer).length;
+                if (unanswered > 0) {
+                    document.getElementById('unanswered-warning').style.display = 'block';
+                    document.getElementById('unanswered-count').innerText = unanswered;
+                } else {
+                    document.getElementById('unanswered-warning').style.display = 'none';
+                }
+                document.getElementById('confirm-modal').style.display = 'flex';
+            }
+            
+            window.hideConfirmPopup = function() {
+                document.getElementById('confirm-modal').style.display = 'none';
+            }
+            
+            window.submitQuiz = function() {
+                document.getElementById('confirm-modal').innerHTML = '<div class="modal-content"><h2>Đang nộp bài...</h2></div>';
+                
+                const answers = questions.map(q => ({
+                    QuestionBankId: q.QuestionBankId,
+                    SelectedAnswer: q.SelectedAnswer
+                }));
+                
+                const payload = {
+                    AttemptId: attemptId,
+                    Answers: answers
+                };
+                
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                fetch('?handler=Submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        // Redirect to result page
+                        window.location.href = '/Student/QuizResult/' + data.attemptId;
+                    } else {
+                        alert("Lỗi nộp bài: " + data.message);
+                        window.location.reload();
+                    }
+                })
+                .catch(err => {
+                    alert("Lỗi kết nối!");
+                    hideConfirmPopup();
+                });
+            }
+
+            // Initial render
+            renderUI();
+        </script>
+    }
+</body>
+</html>

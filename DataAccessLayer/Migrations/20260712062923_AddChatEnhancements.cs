@@ -49,7 +49,6 @@ namespace DataAccessLayer.Migrations
                 column: "SubjectId",
                 principalTable: "Subjects",
                 principalColumn: "Id");
-
         }
 
         /// <inheritdoc />
