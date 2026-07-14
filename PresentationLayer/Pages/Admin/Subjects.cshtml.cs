@@ -7,27 +7,33 @@ using BussinessLayer.Services;
 using BussinessLayer.IServices;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Linq;
+using Microsoft.AspNetCore.SignalR;
+using PresentationLayer.SignalR;
+using PresentationLayer.ViewModels.Admin;
 
 namespace PresentationLayer.Pages.Admin
 {
     public class SubjectsModel : PageModel
     {
-        private readonly ISubjectService _subjectService = new MockSubjectService();
+        private readonly ISubjectService _subjectService;
         private readonly IUserService _userService;
+        private readonly IHubContext<SignalRHub> _hubContext;
 
-        public SubjectsModel(IUserService userService)
+        public SubjectsModel(ISubjectService subjectService, IUserService userService, IHubContext<SignalRHub> hubContext)
         {
+            _subjectService = subjectService;
             _userService = userService;
+            _hubContext = hubContext;
         }
 
         public IEnumerable<SubjectDto> Subjects { get; set; } = new List<SubjectDto>();
         public SelectList? Lecturers { get; set; }
 
         [BindProperty]
-        public ViewModels.Admin.SubjectCreateViewModel CreateModel { get; set; } = new ViewModels.Admin.SubjectCreateViewModel();
+        public SubjectCreateViewModel CreateModel { get; set; } = new SubjectCreateViewModel();
 
         [BindProperty]
-        public ViewModels.Admin.SubjectUpdateViewModel UpdateModel { get; set; } = new ViewModels.Admin.SubjectUpdateViewModel();
+        public SubjectUpdateViewModel UpdateModel { get; set; } = new SubjectUpdateViewModel();
 
         public async Task OnGetAsync()
         {
@@ -41,6 +47,7 @@ namespace PresentationLayer.Pages.Admin
             if (!string.IsNullOrWhiteSpace(CreateModel.Code) && !string.IsNullOrWhiteSpace(CreateModel.Name))
             {
                 await _subjectService.AddSubjectAsync(CreateModel.Code, CreateModel.Name, CreateModel.LecturerId);
+                await _hubContext.Clients.All.SendAsync("CourseChanged");
             }
             return RedirectToPage();
         }
@@ -50,6 +57,7 @@ namespace PresentationLayer.Pages.Admin
             if (UpdateModel.Id > 0 && !string.IsNullOrWhiteSpace(UpdateModel.Code) && !string.IsNullOrWhiteSpace(UpdateModel.Name))
             {
                 await _subjectService.UpdateSubjectAsync(UpdateModel.Id, UpdateModel.Code, UpdateModel.Name, UpdateModel.LecturerId);
+                await _hubContext.Clients.All.SendAsync("CourseChanged");
             }
             return RedirectToPage();
         }
@@ -57,81 +65,15 @@ namespace PresentationLayer.Pages.Admin
         public async Task<IActionResult> OnPostDeleteSubjectAsync(int id)
         {
             await _subjectService.SoftDeleteSubjectAsync(id);
+            await _hubContext.Clients.All.SendAsync("CourseChanged");
             return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostRestoreSubjectAsync(int id)
         {
             await _subjectService.RestoreSubjectAsync(id);
+            await _hubContext.Clients.All.SendAsync("CourseChanged");
             return RedirectToPage();
         }
     }
-
-    public interface ISubjectService
-    {
-        Task<IEnumerable<SubjectDto>> GetAllSubjectsAsync(bool includeDeleted);
-        Task AddSubjectAsync(string code, string name, int? lecturerId);
-        Task UpdateSubjectAsync(int id, string code, string name, int? lecturerId);
-        Task SoftDeleteSubjectAsync(int id);
-        Task RestoreSubjectAsync(int id);
-    }
-
-    public class MockSubjectService : ISubjectService
-    {
-        private static readonly List<SubjectDto> _subjects = new()
-        {
-            new SubjectDto { Id = 1, Code = "PRN222", Name = "C# Nâng cao", LecturerId = 2, LecturerName = "lecturer", IsDeleted = false },
-            new SubjectDto { Id = 2, Code = "AI101", Name = "Nhập môn AI", LecturerId = 2, LecturerName = "lecturer", IsDeleted = false }
-        };
-
-        public Task<IEnumerable<SubjectDto>> GetAllSubjectsAsync(bool includeDeleted)
-        {
-            var query = _subjects.AsEnumerable();
-            if (!includeDeleted) query = query.Where(s => !s.IsDeleted);
-            return Task.FromResult(query);
-        }
-
-        public Task AddSubjectAsync(string code, string name, int? lecturerId)
-        {
-            var id = _subjects.Count > 0 ? _subjects.Max(s => s.Id) + 1 : 1;
-            _subjects.Add(new SubjectDto
-            {
-                Id = id,
-                Code = code,
-                Name = name,
-                LecturerId = lecturerId,
-                LecturerName = lecturerId.HasValue ? "lecturer" : null,
-                IsDeleted = false
-            });
-            return Task.CompletedTask;
-        }
-
-        public Task UpdateSubjectAsync(int id, string code, string name, int? lecturerId)
-        {
-            var sub = _subjects.FirstOrDefault(s => s.Id == id);
-            if (sub != null)
-            {
-                sub.Code = code;
-                sub.Name = name;
-                sub.LecturerId = lecturerId;
-                sub.LecturerName = lecturerId.HasValue ? "lecturer" : null;
-            }
-            return Task.CompletedTask;
-        }
-
-        public Task SoftDeleteSubjectAsync(int id)
-        {
-            var sub = _subjects.FirstOrDefault(s => s.Id == id);
-            if (sub != null) sub.IsDeleted = true;
-            return Task.CompletedTask;
-        }
-
-        public Task RestoreSubjectAsync(int id)
-        {
-            var sub = _subjects.FirstOrDefault(s => s.Id == id);
-            if (sub != null) sub.IsDeleted = false;
-            return Task.CompletedTask;
-        }
-    }
 }
-
