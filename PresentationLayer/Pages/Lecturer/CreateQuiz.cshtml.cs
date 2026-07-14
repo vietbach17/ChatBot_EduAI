@@ -90,12 +90,14 @@ namespace PresentationLayer.Pages.Lecturer
 
             try
             {
+                QuizInput.SubjectId = SubjectId;
                 await _quizService.CreateQuizAsync(lecturerId, QuizInput);
-                return RedirectToPage("/Lecturer/ManageSubject", new { id = SubjectId });
+                TempData["SuccessMessage"] = "Bạn đã tạo đề thi thành công!";
+                return RedirectToPage("/Lecturer/CreateQuiz", new { SubjectId = SubjectId });
             }
             catch (System.Exception ex)
             {
-                ErrorMessage = ex.Message;
+                ErrorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 // Reload câu hỏi để khỏi lỗi UI
                 var questions = await _questionBankRepo.GetPagedAsync(SubjectId, null, null, null, 1, 1000);
                 QuestionsJson = JsonSerializer.Serialize(questions.Select(q => new { id = q.Id, questionText = q.Content, difficulty = q.Difficulty, type = q.QuestionType }));
