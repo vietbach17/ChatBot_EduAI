@@ -34,20 +34,23 @@ namespace BussinessLayer.Services
 
         public async Task<(bool Success, string Error)> CreateAsync(SubscriptionPlanDto dto)
         {
+            var name = dto.Name?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(name)) return (false, "Tên gói không được để trống.");
+
             // Kiểm tra tên trùng
-            var existing = await _repo.GetByNameAsync(dto.Name.Trim());
+            var existing = await _repo.GetByNameAsync(name);
             if (existing != null)
-                return (false, $"Tên gói '{dto.Name}' đã tồn tại.");
+                return (false, $"Tên gói '{name}' đã tồn tại.");
 
             await _repo.AddAsync(new SubscriptionPlan
             {
-                Name                 = dto.Name.Trim(),
-                Description          = dto.Description.Trim(),
+                Name                 = name,
+                Description          = dto.Description?.Trim() ?? string.Empty,
                 Price                = dto.Price,
                 MonthlyQuestionLimit = dto.MonthlyQuestionLimit,
                 IsActive             = dto.IsActive,
                 SortOrder            = dto.SortOrder,
-                Features             = dto.Features,
+                Features             = dto.Features ?? string.Empty,
                 DurationDays         = dto.DurationDays
             });
             return (true, string.Empty);
@@ -58,18 +61,21 @@ namespace BussinessLayer.Services
             var plan = await _repo.GetByIdAsync(dto.Id);
             if (plan == null) return (false, "Không tìm thấy gói.");
 
-            // Kiểm tra tên trùng với gói khác
-            var dup = await _repo.GetByNameAsync(dto.Name.Trim());
-            if (dup != null && dup.Id != dto.Id)
-                return (false, $"Tên gói '{dto.Name}' đã được sử dụng.");
+            var name = dto.Name?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(name)) return (false, "Tên gói không được để trống.");
 
-            plan.Name                 = dto.Name.Trim();
-            plan.Description          = dto.Description.Trim();
+            // Kiểm tra tên trùng với gói khác
+            var dup = await _repo.GetByNameAsync(name);
+            if (dup != null && dup.Id != dto.Id)
+                return (false, $"Tên gói '{name}' đã được sử dụng.");
+
+            plan.Name                 = name;
+            plan.Description          = dto.Description?.Trim() ?? string.Empty;
             plan.Price                = dto.Price;
             plan.MonthlyQuestionLimit = dto.MonthlyQuestionLimit;
             plan.IsActive             = dto.IsActive;
             plan.SortOrder            = dto.SortOrder;
-            plan.Features             = dto.Features;
+            plan.Features             = dto.Features ?? string.Empty;
             plan.DurationDays         = dto.DurationDays;
 
             await _repo.UpdateAsync(plan);

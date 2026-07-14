@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model PresentationLayer.Pages.Chat.IndexModel
 @{
     Layout = "_Layout";
@@ -122,7 +122,7 @@
         <i class="fa-solid fa-crown" style="color:#f59e0b;"></i>
         <span id="quotaPlanLabel">@Model.Info.CurrentPlan</span>
       </div>
-      <div style="font-size:11px;color:#555;">Luot hoi thang nay</div>
+      <div style="font-size:11px;color:#555;">Lượt hỏi tháng này</div>
       <div class="quota-bar-wrap">
         @{
           var ml = Model.Info.MonthlyLimit > 0 ? Model.Info.MonthlyLimit : 1;
@@ -132,14 +132,14 @@
         <div class="quota-bar-fill @bc" id="quotaBarFill" style="width:@(pct)%;"></div>
       </div>
       <div id="quotaCountLabel" style="font-size:11px;color:#333;">
-        @Model.Info.UsedCount / @(Model.Info.MonthlyLimit>=999999?"∞":Model.Info.MonthlyLimit.ToString()) cau hoi
+        @Model.Info.UsedCount / @(Model.Info.MonthlyLimit>=999999?"∞":Model.Info.MonthlyLimit.ToString()) câu hỏi
       </div>
-      @if(pct>=90){<div class="quota-warn">Sap het quota thang!</div>}
+      @if(pct>=90){<div class="quota-warn">Sắp hết quota tháng!</div>}
     </div>
 
     <!-- Nguon tai lieu -->
     <div style="display:flex;flex-direction:column;flex:1 1 0;min-height:120px;">
-      <div class="section-title">Nguon tai lieu</div>
+      <div class="section-title">Nguồn tài liệu</div>
       <div class="sources-box" id="sourcesBox">
         @{
           var idxDocs = Model.Documents
@@ -174,7 +174,7 @@
             </details>
           }
         } else {
-          <div style="font-size:11px;color:#777;text-align:center;padding:12px;">Chua co tai lieu.</div>
+          <div style="font-size:11px;color:#777;text-align:center;padding:12px;">Chưa có tài liệu.</div>
         }
       </div>
     </div>
@@ -182,11 +182,11 @@
     <!-- Lich su Chat -->
     <div style="display:flex;flex-direction:column;min-height:100px;max-height:210px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <div class="section-title" style="margin:0;">Lich su Chat</div>
-        <button onclick="createNewSession()" style="padding:3px 8px;font-size:10px;font-weight:800;background:var(--green);cursor:pointer;border:2px solid #000;box-shadow:1px 1px 0 #000;display:inline-flex;align-items:center;gap:4px;">+ MOI</button>
+        <div class="section-title" style="margin:0;">Lịch sử Chat</div>
+        <button onclick="createNewSession()" style="padding:3px 8px;font-size:10px;font-weight:800;background:var(--green);cursor:pointer;border:2px solid #000;box-shadow:1px 1px 0 #000;display:inline-flex;align-items:center;gap:4px;">+ MỚI</button>
       </div>
       <div id="sessionsListBox" class="sessions-box">
-        <div style="font-size:11px;color:#777;text-align:center;padding:8px;">Dang tai...</div>
+        <div style="font-size:11px;color:#777;text-align:center;padding:8px;">Đang tải...</div>
       </div>
     </div>
 
@@ -194,8 +194,8 @@
     <div style="display:flex;flex-direction:column;gap:10px;background:#fefefe;padding:10px;border:var(--border);box-shadow:2px 2px 0 var(--black);">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:12px;font-weight:700;">Du phong: <span style="color:var(--blue);font-weight:900;font-size:14px;" id="extraQuotaCount">@Model.Info.ExtraQuota</span></div>
-          <div style="font-size:10px;color:#777;">Dung khi het han muc</div>
+          <div style="font-size:12px;font-weight:700;">Dự phòng: <span style="color:var(--blue);font-weight:900;font-size:14px;" id="extraQuotaCount">@Model.Info.ExtraQuota</span></div>
+          <div style="font-size:10px;color:#777;">Dùng khi hết hạn mức</div>
         </div>
         <label style="position:relative;display:inline-block;width:44px;height:20px;">
           <input type="checkbox" id="toggleExtraQuotaChat" @(Model.Info.UseExtraQuota?"checked":"") style="opacity:0;width:0;height:0;">
@@ -206,12 +206,12 @@
       </div>
       <div style="height:1px;background:#e5e5e5;"></div>
       <div>
-        <div class="section-title" style="font-size:12px;margin:0 0 4px 0;">Pham vi kien thuc</div>
+        <div class="section-title" style="font-size:12px;margin:0 0 4px 0;">Phạm vi kiến thức</div>
         <div class="toggle-group">
-          <button class="toggle-btn" id="btnAll" style="font-size:10px;">Tat ca</button>
-          <button class="toggle-btn active" id="btnDocs" style="font-size:10px;">Trong tai lieu</button>
+          <button class="toggle-btn" id="btnAll" style="font-size:10px;">Tất cả</button>
+          <button class="toggle-btn active" id="btnDocs" style="font-size:10px;">Trong tài liệu</button>
         </div>
-        <div class="restriction-hint" id="restrictHint">Han che: Chi tra loi DUNG pham vi tai lieu.</div>
+        <div class="restriction-hint" id="restrictHint">Hạn chế: Chỉ trả lời ĐÚNG phạm vi tài liệu.</div>
       </div>
     </div>
   </div>
@@ -222,13 +222,12 @@
       <div class="chat-header">
         <button class="sidebar-toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
         <div class="chat-header-title">
-          <i class="fa-solid fa-robot"></i> TRO LY HOC TAP AI
-          <span id="streamingStatus" style="display:none;font-size:11px;color:var(--green);font-weight:700;"><i class="fa-solid fa-circle-notch fa-spin"></i> Dang tra loi...</span>
+          <i class="fa-solid fa-robot"></i> TRỢ LÝ HỌC TẬP AI
+          <span id="streamingStatus" style="display:none;font-size:11px;color:var(--green);font-weight:700;"><i class="fa-solid fa-circle-notch fa-spin"></i> Đang trả lời...</span>
         </div>
         <div class="chat-header-right">
-          <select id="modelSelector" class="model-select"><option value="gemini-2.5-flash">Gemini 2.5 Flash</option></select>
           <button onclick="clearChatHistory()" style="padding:5px 10px;font-size:10px;background:var(--white);font-weight:800;border:2px solid #000;box-shadow:1px 1px 0 #000;cursor:pointer;display:flex;align-items:center;gap:5px;">
-            <i class="fa-solid fa-trash-can"></i> XOA
+            <i class="fa-solid fa-trash-can"></i> XÓA
           </button>
         </div>
       </div>
@@ -236,14 +235,14 @@
         <div class="message message-bot">
           <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
           <div class="message-content">
-            <div class="message-sender">Tro ly AI</div>
-            <p class="message-text">Chao ban! Toi la tro ly hoc tap AI. Hay chon tai lieu o sidebar va gui cau hoi de bat dau nhe!</p>
+            <div class="message-sender">Trợ lý AI</div>
+            <p class="message-text">Chào bạn! Tôi là trợ lý học tập AI. Hãy chọn tài liệu ở sidebar và gửi câu hỏi để bắt đầu nhé!</p>
           </div>
         </div>
       </div>
       <div class="input-area">
-        <textarea id="messageInput" class="input-box" placeholder="Nhap cau hoi... (Enter = gui, Shift+Enter = xuong dong)" rows="1" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
-        <button class="send-btn" id="sendBtn" onclick="sendMessage()">Gui <i class="fa-solid fa-paper-plane"></i></button>
+        <textarea id="messageInput" class="input-box" placeholder="Nhập câu hỏi... (Enter = gửi, Shift+Enter = xuống dòng)" rows="1" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">Gửi <i class="fa-solid fa-paper-plane"></i></button>
       </div>
     </div>
   </div>
@@ -252,10 +251,10 @@
 <!-- QUOTA OVERLAY -->
 <div id="quotaOverlay" class="quota-modal-wrap">
   <div class="quota-modal">
-    <h2>Het luot hoi!</h2>
-    <p id="quotaOverlayMsg">Ban da dung het luot hoi trong chu ky nay.</p>
-    <a href="/Subscription" class="brutal-btn-upgrade">Nang cap goi ngay</a>
-    <button onclick="document.getElementById('quotaOverlay').style.display='none'" style="display:block;margin:12px auto 0;background:none;border:none;font-size:13px;cursor:pointer;color:#555;text-decoration:underline;">Dong</button>
+    <h2>Hết lượt hỏi!</h2>
+    <p id="quotaOverlayMsg">Bạn đã dùng hết lượt hỏi trong chu kỳ này.</p>
+    <a href="/Subscription" class="brutal-btn-upgrade">Nâng cấp gói ngay</a>
+    <button onclick="document.getElementById('quotaOverlay').style.display='none'" style="display:block;margin:12px auto 0;background:none;border:none;font-size:13px;cursor:pointer;color:#555;text-decoration:underline;">Đóng</button>
   </div>
 </div>
 
@@ -263,12 +262,24 @@
 <div id="previewModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;">
   <div style="background:#fff;border:3px solid #000;box-shadow:8px 8px 0 #000;width:650px;max-width:92%;padding:24px;display:flex;flex-direction:column;max-height:85vh;">
     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:12px;">
-      <h3 id="modalTitle" style="font-weight:900;font-size:17px;margin:0;color:var(--pink);">Xem truoc</h3>
+      <h3 id="modalTitle" style="font-weight:900;font-size:17px;margin:0;color:var(--pink);">Xem trước</h3>
       <button onclick="closePreviewModal()" style="background:none;border:none;font-size:22px;cursor:pointer;">&times;</button>
     </div>
-    <div id="modalContent" style="flex:1;overflow-y:auto;font-family:monospace;font-size:12px;white-space:pre-wrap;background:#f8f9fa;padding:12px;border:2px solid #000;max-height:55vh;">Dang tai...</div>
+    <div id="modalContent" style="flex:1;overflow-y:auto;font-family:monospace;font-size:12px;white-space:pre-wrap;background:#f8f9fa;padding:12px;border:2px solid #000;max-height:55vh;">Đang tải...</div>
     <div style="margin-top:14px;text-align:right;">
-      <button onclick="closePreviewModal()" style="background:#000;color:#fff;border:2px solid #000;padding:7px 18px;font-weight:900;cursor:pointer;">Dong</button>
+      <button onclick="closePreviewModal()" style="background:#000;color:#fff;border:2px solid #000;padding:7px 18px;font-weight:900;cursor:pointer;">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div id="deleteConfirmModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;">
+  <div style="background:#fff;border:4px solid #000;box-shadow:8px 8px 0 #000;width:400px;max-width:92%;padding:24px;text-align:center;">
+    <h2 style="font-weight:900;font-size:20px;color:#d93856;margin:0 0 12px;">Xác nhận xóa</h2>
+    <p id="deleteConfirmMsg" style="font-size:14px;color:#333;margin:0 0 24px;font-weight:600;">Bạn có chắc chắn muốn xóa không?</p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button id="btnCancelDelete" style="background:#fff;color:#000;border:2px solid #000;padding:8px 20px;font-weight:900;cursor:pointer;box-shadow:3px 3px 0 #000;transition:transform 0.1s;onmouseover=\"this.style.transform='translate(-2px,-2px)'\" onmouseout=\"this.style.transform='none'\">Hủy</button>
+      <button id="btnConfirmDelete" style="background:#d93856;color:#fff;border:2px solid #000;padding:8px 20px;font-weight:900;cursor:pointer;box-shadow:3px 3px 0 #000;transition:transform 0.1s;onmouseover=\"this.style.transform='translate(-2px,-2px)'\" onmouseout=\"this.style.transform='none'\">Xóa</button>
     </div>
   </div>
 </div>
@@ -363,7 +374,7 @@ function renderMdCit(text, cits) {
   html = html.replace(/\[(\d+)\]/g, function(match, p1) {
     var idx = parseInt(p1)-1;
     if (idx>=0&&idx<cits.length) {
-      var c=cits[idx], snippet=esc(c.snippet||""), fc=esc(c.fullContent||c.snippet||""), title=esc(c.documentTitle||"Tai lieu");
+      var c=cits[idx], snippet=esc(c.snippet||""), fc=esc(c.fullContent||c.snippet||""), title=esc(c.documentTitle||"Tài liệu");
       return "<span class=\"citation-badge\" data-title=\""+title+"\" data-fc=\""+fc+"\" onclick=\"openCit(this)\">"+p1+"<span class=\"citation-tooltip-content\"><strong style=\"color:var(--blue);display:block;margin-bottom:3px;\">"+title+"</strong><span style=\"font-style:italic;\">\""+snippet+"\"</span></span></span>";
     }
     return match;
@@ -371,7 +382,7 @@ function renderMdCit(text, cits) {
   return html;
 }
 function openCit(el) {
-  document.getElementById("modalTitle").textContent = "Trich dan: "+el.getAttribute("data-title");
+  document.getElementById("modalTitle").textContent = "Trích dẫn: "+el.getAttribute("data-title");
   document.getElementById("modalContent").textContent = el.getAttribute("data-fc");
   document.getElementById("previewModal").style.display = "flex";
 }
@@ -384,7 +395,7 @@ function appendBotActions(contentEl, rawText) {
   copyBtn.onclick = function() { navigator.clipboard.writeText(rawText).then(function(){copyBtn.textContent="DA COPY";setTimeout(function(){copyBtn.innerHTML="<i class=\"fa-regular fa-copy\"></i> COPY";},2000);}); };
   var regenBtn = document.createElement("button");
   regenBtn.style.cssText = "background:var(--white);color:var(--black);border:2px solid var(--black);padding:5px 10px;font-weight:800;font-size:10px;cursor:pointer;box-shadow:2px 2px 0 var(--black);";
-  regenBtn.innerHTML = "<i class=\"fa-solid fa-rotate-right\"></i> THU LAI";
+  regenBtn.innerHTML = "<i class=\"fa-solid fa-rotate-right\"></i> THỬ LẠI";
   regenBtn.onclick = regenerateMessage;
   bar.appendChild(copyBtn); bar.appendChild(regenBtn);
   contentEl.appendChild(bar);
@@ -393,24 +404,24 @@ function appendRemBadge(contentEl, remaining) {
   if (remaining===undefined||remaining===null) return;
   var q = document.createElement("span");
   q.style.cssText = "font-size:10px;color:#777;font-weight:bold;display:block;margin-top:6px;border-top:1px dashed #ddd;padding-top:5px;";
-  q.textContent = "(Con "+(remaining>=9999?"∞":remaining)+" luot hoi)";
+  q.textContent = "(Còn "+(remaining>=9999?"∞":remaining)+" lượt hỏi)";
   contentEl.appendChild(q);
 }
 function appendErrMsg(msg) {
   var err = document.createElement("div");
   err.className = "message message-bot";
-  err.innerHTML = "<div class=\"chat-avatar\" style=\"background:#d93856;\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\" style=\"border-color:#d93856;\"><div class=\"message-sender\" style=\"color:#d93856;\">He thong</div><p class=\"message-text\">"+esc(msg)+"</p></div>";
+  err.innerHTML = "<div class=\"chat-avatar\" style=\"background:#d93856;\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\" style=\"border-color:#d93856;\"><div class=\"message-sender\" style=\"color:#d93856;\">Hệ thống</div><p class=\"message-text\">"+esc(msg)+"</p></div>";
   chatMessages.appendChild(err); chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 function renderMessageUI(role, text, cits) {
   var div = document.createElement("div"), isUser = role==="user";
   div.className = isUser?"message message-user":"message message-bot";
   var icon = isUser?"fa-user":"fa-robot";
-  var sender = isUser?"Ban":"Tro ly AI";
+  var sender = isUser?"Bạn":"Trợ lý AI";
   var bodyHtml;
   if (isUser) {
     bodyHtml = "<p class=\"message-text\" data-raw=\""+esc(text)+"\">"+esc(text).replace(/\n/g,"<br>")+"</p>";
-    bodyHtml += "<div style=\"margin-top:8px;display:flex;gap:8px;justify-content:flex-end;\"><button onclick=\"cpyMsg(this)\" style=\"background:transparent;color:#666;border:none;font-weight:800;font-size:10px;cursor:pointer;\"><i class=\"fa-regular fa-copy\"></i> COPY</button><button onclick=\"editMsg(this)\" style=\"background:transparent;color:#666;border:none;font-weight:800;font-size:10px;cursor:pointer;\"><i class=\"fa-solid fa-pen\"></i> SUA</button></div>";
+    bodyHtml += "<div style=\"margin-top:8px;display:flex;gap:8px;justify-content:flex-end;\"><button onclick=\"cpyMsg(this)\" style=\"background:transparent;color:#666;border:none;font-weight:800;font-size:10px;cursor:pointer;\"><i class=\"fa-regular fa-copy\"></i> COPY</button><button onclick=\"editMsg(this)\" style=\"background:transparent;color:#666;border:none;font-weight:800;font-size:10px;cursor:pointer;\"><i class=\"fa-solid fa-pen\"></i> SỬA</button></div>";
   } else {
     bodyHtml = "<div class=\"message-text\" data-raw=\""+esc(text)+"\" style=\"font-weight:500;font-size:14px;line-height:1.65;\">"+renderMdCit(text,cits)+"</div>";
   }
@@ -441,14 +452,14 @@ function regenerateMessage() {
 function createStreamingBubble() {
   var div = document.createElement("div");
   div.className = "message message-bot streaming-bubble";
-  div.innerHTML = "<div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Tro ly AI</div><div class=\"message-text\" style=\"font-weight:500;font-size:14px;line-height:1.65;min-height:24px;\"></div></div>";
+  div.innerHTML = "<div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Trợ lý AI</div><div class=\"message-text\" style=\"font-weight:500;font-size:14px;line-height:1.65;min-height:24px;\"></div></div>";
   chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight;
   return div;
 }
 function showTypingIndicator() {
   var d = document.createElement("div");
   d.className = "message message-bot typing-indicator-msg";
-  d.innerHTML = "<div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Tro ly AI</div><p class=\"message-text\"><i class=\"fa-solid fa-circle-notch fa-spin\"></i> Dang suy nghi...</p></div>";
+  d.innerHTML = "<div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Trợ lý AI</div><p class=\"message-text\"><i class=\"fa-solid fa-circle-notch fa-spin\"></i> Đang suy nghĩ...</p></div>";
   chatMessages.appendChild(d); chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 function removeTypingIndicator() { document.querySelectorAll(".typing-indicator-msg").forEach(function(el){el.remove();}); }
@@ -458,11 +469,11 @@ function setStreamingUI(on) {
 }
 
 // ===== SESSIONS =====
-function normSession(s) { return {id:s.id,title:s.title||"Cuoc tro chuyen moi",messages:(s.messages||[]).map(function(m){return {role:m.role,text:m.text,citations:m.citations||[]};})}; }
+function normSession(s) { return {id:s.id,title:s.title||"Cuộc trò chuyện mới",messages:(s.messages||[]).map(function(m){return {role:m.role,text:m.text,citations:m.citations||[]};})}; }
 function renderSessionsList() {
   var box = document.getElementById("sessionsListBox"); if (!box) return;
   box.innerHTML = "";
-  if (sessions.length===0) { box.innerHTML="<div style=\"font-size:11px;color:#777;text-align:center;padding:8px;\">Chua co cuoc tro chuyen.</div>"; return; }
+  if (sessions.length===0) { box.innerHTML="<div style=\"font-size:11px;color:#777;text-align:center;padding:8px;\">Chưa có cuộc trò chuyện.</div>"; return; }
   sessions.forEach(function(s) {
     var isActive = s.id===currentSessionId;
     var item = document.createElement("div");
@@ -483,8 +494,8 @@ function renderSessionsList() {
 function renderMessages() {
   var s = sessions.find(function(x){return x.id===currentSessionId;});
   chatMessages.innerHTML = "";
-  if (s&&s.messages.length>0) { s.messages.forEach(function(m){renderMessageUI(m.role,m.text,m.citations||[]);}); }
-  else { chatMessages.innerHTML = "<div class=\"message message-bot\"><div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Tro ly AI</div><p class=\"message-text\">Hay chon tai lieu va gui cau hoi de bat dau!</p></div></div>"; }
+  if (s&&s.messages&&s.messages.length>0) { s.messages.forEach(function(m){renderMessageUI(m.role,m.text,m.citations||[]);}); }
+  else { chatMessages.innerHTML = "<div class=\"message message-bot\"><div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Trợ lý AI</div><p class=\"message-text\">Hãy chọn tài liệu và gửi câu hỏi để bắt đầu!</p></div></div>"; }
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 function switchSession(id) { currentSessionId=id; renderSessionsList(); renderMessages(); }
@@ -502,7 +513,7 @@ async function initSessions() {
     currentSessionId = sessions[0].id;
     renderSessionsList(); renderMessages();
   } catch(e) {
-    document.getElementById("sessionsListBox").innerHTML = "<div style=\"font-size:11px;color:#d93856;padding:8px;\">Khong the tai lich su.</div>";
+    document.getElementById("sessionsListBox").innerHTML = "<div style=\"font-size:11px;color:#d93856;padding:8px;\">Không thể tải lịch sử.</div>";
     renderMessages();
   }
 }
@@ -513,18 +524,33 @@ async function createNewSession() {
   sessions.unshift(s); currentSessionId=s.id;
   renderSessionsList(); renderMessages();
 }
+function showDeleteConfirm(msg) {
+  return new Promise(function(resolve) {
+    document.getElementById("deleteConfirmMsg").textContent = msg;
+    var modal = document.getElementById("deleteConfirmModal");
+    var btnOk = document.getElementById("btnConfirmDelete");
+    var btnCancel = document.getElementById("btnCancelDelete");
+    var cleanup = function() { modal.style.display = "none"; btnOk.onclick = null; btnCancel.onclick = null; };
+    btnOk.onclick = function() { cleanup(); resolve(true); };
+    btnCancel.onclick = function() { cleanup(); resolve(false); };
+    modal.style.display = "flex";
+  });
+}
+
 async function deleteSession(id) {
-  if (!confirm("Xoa cuoc hoi thoai nay?")) return;
+  var ok = await showDeleteConfirm("Xóa cuộc hội thoại này?");
+  if (!ok) return;
   await apiPost("?handler=DeleteSession",{sessionId:id});
   sessions = sessions.filter(function(s){return s.id!==id;});
   if (sessions.length===0) { await createNewSession(); }
   else { if (currentSessionId===id) currentSessionId=sessions[0]?.id||null; renderSessionsList(); renderMessages(); }
 }
 async function clearChatHistory() {
-  if (!confirm("Xoa toan bo tin nhan trong cuoc hoi thoai nay?")) return;
+  var ok = await showDeleteConfirm("Xóa toàn bộ tin nhắn trong cuộc hội thoại này?");
+  if (!ok) return;
   await apiPost("?handler=ClearSession",{sessionId:currentSessionId});
   var s = sessions.find(function(x){return x.id===currentSessionId;});
-  if (s) { s.messages=[]; s.title="Cuoc tro chuyen moi"; }
+  if (s) { s.messages=[]; s.title="Cuộc trò chuyện mới"; }
   renderSessionsList(); renderMessages();
 }
 
@@ -628,13 +654,13 @@ document.getElementById("btnAll")?.addEventListener("click",function(){
   restrictToDocs=false;
   document.getElementById("btnAll").classList.add("active");
   document.getElementById("btnDocs").classList.remove("active");
-  document.getElementById("restrictHint").textContent="Tat ca: Tra loi tu do bang kien thuc cua AI.";
+  document.getElementById("restrictHint").textContent="Tất cả: Trả lời tự do bằng kiến thức của AI.";
 });
 document.getElementById("btnDocs")?.addEventListener("click",function(){
   restrictToDocs=true;
   document.getElementById("btnDocs").classList.add("active");
   document.getElementById("btnAll").classList.remove("active");
-  document.getElementById("restrictHint").textContent="Han che: Chi tra loi DUNG pham vi tai lieu.";
+  document.getElementById("restrictHint").textContent="Hạn chế: Chỉ trả lời ĐÚNG phạm vi tài liệu.";
 });
 
 // ===== EXTRA QUOTA TOGGLE =====
@@ -659,18 +685,7 @@ if (toggleExtraQ) {
 
 // ===== LOAD MODELS =====
 async function loadModels() {
-  try {
-    var res=await fetch("?handler=Models"), data=await res.json();
-    var sel=document.getElementById("modelSelector");
-    if (data.success&&data.models&&data.models.length>0) {
-      sel.innerHTML="";
-      data.models.forEach(function(m){
-        var opt=document.createElement("option"); opt.value=m.id; opt.textContent=m.displayName;
-        if (m.id==="gemini-2.5-flash"||m.id==="gemini-2.0-flash") opt.selected=true;
-        sel.appendChild(opt);
-      });
-    }
-  } catch(e) {}
+  /* Models are now handled server-side, selection is hidden from user */
 }
 
 // ===== INIT =====

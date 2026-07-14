@@ -13,9 +13,18 @@
 <div class="main-wrapper">
     <div style="padding: 30px;">
         <div style="margin-bottom: 20px;">
-            <a asp-page="/Lecturer/MySubjects" style="color: var(--black); text-decoration: none; font-weight: 800; font-size: 14px;">
-                <i class="fa-solid fa-arrow-left"></i> QUAY LẠI MÔN PHỤ TRÁCH
-            </a>
+            @if (Model.IsAdmin)
+            {
+                <a asp-page="/Admin/Subjects" style="color: var(--black); text-decoration: none; font-weight: 800; font-size: 14px;">
+                    <i class="fa-solid fa-arrow-left"></i> QUAY LẠI QUẢN LÝ MÔN HỌC
+                </a>
+            }
+            else
+            {
+                <a asp-page="/Lecturer/MySubjects" style="color: var(--black); text-decoration: none; font-weight: 800; font-size: 14px;">
+                    <i class="fa-solid fa-arrow-left"></i> QUAY LẠI MÔN PHỤ TRÁCH
+                </a>
+            }
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
@@ -224,7 +233,7 @@
     </div>
 </div>
 
-@if(Model.IsOwner && Model.ActivityLogs != null)
+@if((Model.IsOwner || Model.IsAdmin) && Model.ActivityLogs != null)
 {
     <!-- MODAL LỊCH SỬ -->
     <div id="activityLogModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">

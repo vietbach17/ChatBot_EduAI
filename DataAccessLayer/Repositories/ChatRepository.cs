@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -87,7 +87,7 @@ namespace DataAccessLayer.Repositories
                 .FirstOrDefaultAsync(s => s.Id == sessionId);
             if (session == null) return;
             _context.ChatMessages.RemoveRange(session.Messages);
-            session.Title = "Cuoc tro chuyen moi";
+            session.Title = "Cuộc trò chuyện mới";
             session.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
