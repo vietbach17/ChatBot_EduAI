@@ -135,16 +135,12 @@ namespace BussinessLayer.Services
                 var inProgress = attempts.Any(a => a.QuizId == q.Id && a.Status == "InProgress");
 
                 string status = "Chưa làm";
-                if (isCompleted)
-                    status = "Hoàn thành";
-                else if (inProgress)
+                if (inProgress)
                     status = "Đang làm";
-                // TODO: Thêm logic "Hết hạn" nếu có field DueDate sau này
-
-                if (studentAttemptsCount >= q.MaxAttempts)
-                {
+                else if (studentAttemptsCount >= q.MaxAttempts)
                     status = "Hết lượt";
-                }
+                else if (isCompleted)
+                    status = "Hoàn thành";
 
                 result.Add(new StudentQuizDto
                 {
@@ -184,6 +180,20 @@ namespace BussinessLayer.Services
                 HasPassword = !string.IsNullOrEmpty(quiz.AccessCode),
                 AttemptsDoneByCurrentUser = previousAttempts.Count()
             };
+        }
+
+        public async Task<List<QuizSummaryDto>> GetQuizzesBySubjectAsync(int subjectId)
+        {
+            var quizzes = await _quizRepo.GetBySubjectOrLecturerAsync(subjectId, null);
+            return quizzes.Select(q => new QuizSummaryDto
+            {
+                Id = q.Id,
+                Title = q.Title,
+                SubjectId = q.SubjectId,
+                TimeLimitMinutes = q.TimeLimitMinutes,
+                NumVariants = q.NumVariants,
+                CreatedAt = q.CreatedAt
+            }).ToList();
         }
 
         public async Task<TakeQuizDto> StartQuizAsync(int studentId, int quizId, string? accessCode)
@@ -298,7 +308,15 @@ namespace BussinessLayer.Services
         private List<string> GetOptionsList(QuestionBank? qb)
         {
             var options = new List<string>();
-            if (qb == null || string.IsNullOrEmpty(qb.OptionsJson)) 
+            if (qb == null) 
+                return options;
+                
+            if (qb.QuestionType == "TrueFalse")
+            {
+                return new List<string> { "True", "False" };
+            }
+
+            if (string.IsNullOrEmpty(qb.OptionsJson))
                 return options;
 
             try

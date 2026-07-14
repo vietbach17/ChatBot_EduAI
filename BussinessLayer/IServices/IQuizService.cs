@@ -8,6 +8,7 @@ namespace BussinessLayer.IServices
         // === LECTURER ACTIONS ===
         Task<int> CreateQuizAsync(int lecturerId, CreateQuizDto dto);
         Task<QuizStatisticsDto> GetQuizStatisticsAsync(int quizId, int lecturerId);
+        Task<List<QuizSummaryDto>> GetQuizzesBySubjectAsync(int subjectId);
 
         // === STUDENT ACTIONS ===
         Task<List<StudentQuizDto>> GetStudentQuizzesAsync(int studentId);

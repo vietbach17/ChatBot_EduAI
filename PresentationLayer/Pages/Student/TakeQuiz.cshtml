@@ -15,11 +15,19 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap');
+        
+        :root {
+            --pink: #eb2f64; --yellow: #f4cf45; --green: #5cb85c; 
+            --blue: #4fa8db; --black: #000; --white: #fff; --bg: #f4f4f6;
+        }
+
         body {
-            background-color: #f4f4f4;
+            background-color: var(--bg);
             margin: 0;
             padding: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Montserrat', sans-serif;
+            background-image: radial-gradient(#d1d1d1 2px, transparent 2px);
         }
         .header {
             background-color: var(--blue);
@@ -466,7 +474,7 @@
                 .then(data => {
                     if(data.success) {
                         // Redirect to result page
-                        window.location.href = '/Student/QuizResult?id=' + data.attemptId;
+                        window.location.href = '/Student/QuizResult/' + data.attemptId;
                     } else {
                         alert("Lỗi nộp bài: " + data.message);
                         window.location.reload();

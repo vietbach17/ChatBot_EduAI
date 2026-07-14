@@ -62,4 +62,14 @@ namespace BussinessLayer.DTOs
         public int AttemptsCount { get; set; }
         public string Status { get; set; } = string.Empty; // "Chưa làm", "Đang làm", "Hoàn thành", "Hết hạn"
     }
+
+    public class QuizSummaryDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public int SubjectId { get; set; }
+        public int TimeLimitMinutes { get; set; }
+        public int NumVariants { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
 }
