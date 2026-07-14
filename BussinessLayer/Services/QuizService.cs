@@ -48,7 +48,7 @@ namespace BussinessLayer.Services
             if (dto.Variants.Any())
             {
                 quiz.TotalQuestions = dto.Variants.First().QuestionIds.Count;
-                quiz.QuestionsPerAttempt = quiz.TotalQuestions;
+                
             }
 
             await _quizRepo.AddAsync(quiz); // Lấy được quiz.Id sau khi lưu
@@ -181,28 +181,118 @@ namespace BussinessLayer.Services
 
         private List<string> GetOptionsList(QuestionBank? qb)
         {
-            
             var options = new List<string>();
-            if (qb == null) return options;
+            if (qb == null || string.IsNullOrEmpty(qb.OptionsJson)) 
+                return options;
 
-            if (!string.IsNullOrEmpty(qb.OptionA)) options.Add(qb.OptionA);
-            if (!string.IsNullOrEmpty(qb.OptionB)) options.Add(qb.OptionB);
-            if (!string.IsNullOrEmpty(qb.OptionC)) options.Add(qb.OptionC);
-            if (!string.IsNullOrEmpty(qb.OptionD)) options.Add(qb.OptionD);
+            try
+            {
+                var parsedOptions = System.Text.Json.JsonSerializer.Deserialize<List<string>>(qb.OptionsJson);
+                if (parsedOptions != null)
+                {
+                    options = parsedOptions;
+                }
+            }
+            catch
+            {
+                // Fallback nếu chuỗi JSON bị lỗi
+            }
 
             return options;
         }
 
-        public Task<QuizResultDto> SubmitQuizAsync(int studentId, SubmitQuizDto dto)
+        public async Task<QuizResultDto> SubmitQuizAsync(int studentId, SubmitQuizDto dto)
         {
-            // TODO
-            throw new NotImplementedException();
+            var attempt = await _attemptRepo.GetAttemptWithAnswersAsync(dto.AttemptId);
+            
+            if (attempt == null || attempt.StudentId != studentId)
+                throw new Exception("Lần làm bài không tồn tại hoặc bạn không có quyền truy cập.");
+
+            if (attempt.Status != "InProgress")
+                throw new Exception("Bài thi này đã được nộp hoặc đã xử lý.");
+
+            int correctCount = 0;
+
+            // Chấm điểm từng câu
+            foreach (var answerRecord in attempt.Answers)
+            {
+                // Tìm câu trả lời mà sinh viên gửi lên
+                var submittedAnswer = dto.Answers.FirstOrDefault(a => a.QuestionBankId == answerRecord.QuestionBankId);
+                
+                if (submittedAnswer != null && !string.IsNullOrEmpty(submittedAnswer.SelectedAnswer))
+                {
+                    answerRecord.SelectedAnswer = submittedAnswer.SelectedAnswer;
+                    
+                    // So sánh với đáp án đúng trong QuestionBank
+                    if (answerRecord.QuestionBank != null && 
+                        answerRecord.SelectedAnswer.Trim().Equals(answerRecord.QuestionBank.CorrectAnswer.Trim(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        answerRecord.IsCorrect = true;
+                        correctCount++;
+                    }
+                    else
+                    {
+                        answerRecord.IsCorrect = false;
+                    }
+                }
+                else
+                {
+                    // Bỏ trống
+                    answerRecord.SelectedAnswer = null;
+                    answerRecord.IsCorrect = false;
+                }
+            }
+
+            // Cập nhật điểm (Thang điểm 10)
+            attempt.CorrectCount = correctCount;
+            if (attempt.TotalQuestions > 0)
+            {
+                attempt.Score = Math.Round((decimal)correctCount / attempt.TotalQuestions * 10m, 2);
+            }
+            
+            attempt.EndTime = DateTime.UtcNow;
+            attempt.Status = "Graded";
+
+            await _attemptRepo.UpdateAttemptAsync(attempt);
+
+            // Trả về kết quả
+            return await GetAttemptResultAsync(attempt.Id, studentId);
         }
 
-        public Task<QuizResultDto> GetAttemptResultAsync(int attemptId, int studentId)
+        public async Task<QuizResultDto> GetAttemptResultAsync(int attemptId, int studentId)
         {
-            // TODO
-            throw new NotImplementedException();
+            var attempt = await _attemptRepo.GetAttemptWithAnswersAsync(attemptId);
+            
+            if (attempt == null || attempt.StudentId != studentId)
+                throw new Exception("Lần làm bài không tồn tại hoặc bạn không có quyền truy cập.");
+
+            // Cần lấy thêm config của Quiz để biết có được phép xem đáp án không
+            var quiz = await _quizRepo.GetByIdAsync(attempt.QuizId);
+            bool showAnswers = quiz?.ShowScoreAfterSubmit ?? true;
+
+            var resultDto = new QuizResultDto
+            {
+                AttemptId = attempt.Id,
+                Score = attempt.Score,
+                CorrectCount = attempt.CorrectCount,
+                TotalQuestions = attempt.TotalQuestions,
+                Status = attempt.Status,
+                SubmittedAt = attempt.EndTime,
+                ReviewQuestions = attempt.Answers.Select(a => new ReviewQuestionDto
+                {
+                    QuestionBankId = a.QuestionBankId,
+                    QuestionText = a.QuestionBank?.Content ?? "N/A",
+                    Options = GetOptionsList(a.QuestionBank),
+                    StudentAnswer = a.SelectedAnswer,
+                    
+                    // Nếu giảng viên cho phép xem điểm/đáp án thì mới trả về
+                    CorrectAnswer = showAnswers ? a.QuestionBank?.CorrectAnswer : null,
+                    IsCorrect = a.IsCorrect
+                    
+                }).ToList()
+            };
+
+            return resultDto;
         }
     }
 }
