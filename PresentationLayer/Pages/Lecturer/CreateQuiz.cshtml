@@ -1,0 +1,255 @@
+@page
+@model PresentationLayer.Pages.Lecturer.CreateQuizModel
+@{
+    ViewData["Title"] = "Tạo Bài Thi Mới";
+}
+
+<style>
+    .brutal-card {
+        background-color: var(--white);
+        border: 2px solid var(--black);
+        box-shadow: 4px 4px 0px var(--black);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .brutal-input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid var(--black);
+        font-family: inherit;
+        font-size: 16px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        transition: 0.1s;
+    }
+    .brutal-input:focus {
+        outline: none;
+        border-color: var(--pink);
+        box-shadow: 2px 2px 0px var(--pink);
+    }
+    .brutal-btn {
+        background-color: var(--yellow);
+        color: var(--black);
+        border: 2px solid var(--black);
+        padding: 10px 20px;
+        font-weight: 900;
+        font-size: 16px;
+        cursor: pointer;
+        box-shadow: 3px 3px 0px var(--black);
+        transition: 0.1s;
+        text-transform: uppercase;
+    }
+    .brutal-btn:active {
+        box-shadow: 0px 0px 0px var(--black);
+        transform: translate(3px, 3px);
+    }
+    .btn-pink { background-color: var(--pink); color: white; }
+    
+    .dual-pane {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+    }
+    .left-pane { flex: 6; }
+    .right-pane {
+        flex: 4;
+        position: sticky;
+        top: 20px;
+        height: 85vh;
+        overflow-y: auto;
+    }
+    
+    .variant-card {
+        border: 2px dashed #888;
+        padding: 15px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .variant-card.active {
+        border: 2px solid var(--pink);
+        background-color: #fff0f5;
+    }
+    
+    .question-item {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: white;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .question-item:hover {
+        border-color: var(--black);
+        background-color: #f9f9f9;
+    }
+</style>
+
+<div class="main-wrapper" style="padding: 20px;">
+    <h1 style="color: var(--pink); font-weight: 900; text-transform: uppercase; margin-bottom: 20px;">Tạo Bài Thi Mới</h1>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="brutal-card" style="background-color: #ffcccc; color: red;">
+            <strong>Lỗi:</strong> @Model.ErrorMessage
+        </div>
+    }
+
+    <form method="post" id="quizForm">
+        <input type="hidden" id="VariantsJson" name="VariantsJson" value="[]" />
+
+        <div class="dual-pane">
+            <!-- LEFT PANE: CONFIGURATION -->
+            <div class="left-pane">
+                <div class="brutal-card">
+                    <h2 style="font-weight: 800; margin-bottom: 15px;">1. Thông tin chung</h2>
+                    
+                    <label style="font-weight: 700;">Tên bài thi</label>
+                    <input type="text" asp-for="QuizInput.Title" class="brutal-input" required placeholder="VD: Kiểm tra giữa kỳ AI..." />
+
+                    <label style="font-weight: 700;">Mô tả</label>
+                    <textarea asp-for="QuizInput.Description" class="brutal-input" rows="3" placeholder="Ghi chú thêm cho sinh viên..."></textarea>
+
+                    <div style="display: flex; gap: 15px;">
+                        <div style="flex: 1;">
+                            <label style="font-weight: 700;">Thời gian (phút)</label>
+                            <input type="number" asp-for="QuizInput.TimeLimitMinutes" class="brutal-input" min="1" required />
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-weight: 700;">Số lần thi tối đa</label>
+                            <input type="number" asp-for="QuizInput.MaxAttempts" class="brutal-input" min="1" required />
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 15px;">
+                        <label style="font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" asp-for="QuizInput.IsShuffled" style="width: 20px; height: 20px;" />
+                            Đảo vị trí đáp án (A,B,C,D)
+                        </label>
+                        <label style="font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" asp-for="QuizInput.ShowScoreAfterSubmit" style="width: 20px; height: 20px;" />
+                            Cho phép xem điểm & đáp án
+                        </label>
+                    </div>
+
+                    <label style="font-weight: 700;">Cách tính điểm</label>
+                    <select asp-for="QuizInput.GradingMethod" class="brutal-input">
+                        <option value="Highest">Lấy điểm cao nhất</option>
+                        <option value="Average">Lấy điểm trung bình</option>
+                        <option value="Latest">Lấy điểm lần cuối</option>
+                    </select>
+                </div>
+
+                <div class="brutal-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2 style="font-weight: 800; margin: 0;">2. Cấu trúc Mã Đề</h2>
+                        <button type="button" class="brutal-btn btn-pink" onclick="addVariant()" style="padding: 5px 10px; font-size: 14px;">+ Thêm Mã Đề</button>
+                    </div>
+                    
+                    <div id="variants-container">
+                        <!-- Variants will be rendered here by JS -->
+                    </div>
+                </div>
+
+                <button type="submit" class="brutal-btn" style="width: 100%; font-size: 20px; padding: 15px;" onclick="prepareSubmit()">
+                    🚀 LƯU VÀ PHÁT HÀNH BÀI THI
+                </button>
+            </div>
+
+            <!-- RIGHT PANE: QUESTION BANK -->
+            <div class="right-pane brutal-card" style="background-color: #f4f4f4;">
+                <h3 style="font-weight: 800; margin-top: 0;">Ngân Hàng Câu Hỏi</h3>
+                <input type="text" id="searchInput" class="brutal-input" placeholder="Tìm kiếm câu hỏi..." onkeyup="renderQuestions()" />
+                
+                <div id="questions-list" style="margin-top: 10px;">
+                    <!-- Questions will be rendered here by JS -->
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- DATA SCRIPT -->
+<script>
+    const bankQuestions = @Html.Raw(Model.QuestionsJson);
+    let variants = [
+        { index: 1, questionIds: [] } // Default 1 variant
+    ];
+    let activeVariantIndex = 1;
+
+    function renderQuestions() {
+        const container = document.getElementById('questions-list');
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        container.innerHTML = '';
+
+        bankQuestions.forEach(q => {
+            if (q.questionText.toLowerCase().includes(searchTerm)) {
+                const div = document.createElement('div');
+                div.className = 'question-item';
+                div.innerHTML = `
+                    <div style="flex: 1; font-size: 13px;">
+                        <strong style="color: var(--pink)">[${q.difficulty || 'Normal'}]</strong> 
+                        ${q.questionText.substring(0, 80)}...
+                    </div>
+                    <button type="button" onclick="addToActiveVariant(${q.id})" style="background: var(--black); color: white; border: none; padding: 5px 10px; cursor: pointer; font-weight: bold;">+</button>
+                `;
+                container.appendChild(div);
+            }
+        });
+    }
+
+    function renderVariants() {
+        const container = document.getElementById('variants-container');
+        container.innerHTML = '';
+
+        variants.forEach(v => {
+            const div = document.createElement('div');
+            div.className = 'variant-card ' + (v.index === activeVariantIndex ? 'active' : '');
+            div.onclick = () => { activeVariantIndex = v.index; renderVariants(); };
+            
+            div.innerHTML = `
+                <div style="font-weight: 800; font-size: 16px; margin-bottom: 10px;">
+                    Mã đề ${v.index} <span style="font-weight: normal; font-size: 14px; color: #666;">(${v.questionIds.length} câu)</span>
+                </div>
+                <div style="font-size: 13px; color: #444;">
+                    ${v.questionIds.length === 0 ? '<i>Nhấn vào câu hỏi ở cột phải để thêm vào mã đề này.</i>' : 'Các ID: ' + v.questionIds.join(', ')}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addVariant() {
+        const newIndex = variants.length > 0 ? Math.max(...variants.map(v => v.index)) + 1 : 1;
+        variants.push({ index: newIndex, questionIds: [] });
+        activeVariantIndex = newIndex;
+        renderVariants();
+    }
+
+    function addToActiveVariant(qId) {
+        const variant = variants.find(v => v.index === activeVariantIndex);
+        if (variant) {
+            if (!variant.questionIds.includes(qId)) {
+                variant.questionIds.push(qId);
+                renderVariants();
+            } else {
+                alert("Câu hỏi này đã có trong mã đề hiện tại!");
+            }
+        }
+    }
+
+    function prepareSubmit() {
+        // Prepare the JSON to match List<VariantQuestionsDto>
+        const payload = variants.map(v => ({
+            VariantIndex: v.index,
+            QuestionIds: v.questionIds
+        }));
+        document.getElementById('VariantsJson').value = JSON.stringify(payload);
+    }
+
+    // Initialize
+    renderQuestions();
+    renderVariants();
+</script>
