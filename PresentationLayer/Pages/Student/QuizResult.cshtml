@@ -163,10 +163,21 @@
                     </div>
 
                     <div style="margin-top: 15px;">
-                        @foreach (var opt in q.Options)
+                        @for (int i = 0; i < q.Options.Count; i++)
                         {
-                            bool isSelected = opt == q.StudentAnswer;
-                            bool isCorrectAnswer = Model.Result.ShowScoreAfterSubmit && opt == q.CorrectAnswer;
+                            var opt = q.Options[i];
+                            var optValue = opt;
+                            var displayPrefix = "";
+                            
+                            // Nếu là trắc nghiệm nhiều lựa chọn, giá trị lưu trữ là A, B, C, D
+                            if (q.Options.Count > 2 || (opt != "True" && opt != "False"))
+                            {
+                                optValue = ((char)('A' + i)).ToString();
+                                displayPrefix = optValue + ". ";
+                            }
+
+                            bool isSelected = optValue == q.StudentAnswer;
+                            bool isCorrectAnswer = Model.Result.ShowScoreAfterSubmit && optValue == q.CorrectAnswer;
                             
                             string rowClass = "opt-row";
                             if (isSelected && isCorrectAnswer) rowClass += " opt-correct"; // Chọn đúng
@@ -177,7 +188,7 @@
                             <div class="@rowClass">
                                 <div>
                                     @if(isSelected) { <i class="fa-solid fa-circle-dot"></i> } else { <i class="fa-regular fa-circle"></i> }
-                                    <span style="margin-left: 8px;">@opt</span>
+                                    <span style="margin-left: 8px;"><strong>@displayPrefix</strong>@opt</span>
                                 </div>
                                 
                                 <div>

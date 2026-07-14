@@ -19,6 +19,7 @@ namespace BussinessLayer.DTOs
         public List<DocumentDto> Documents { get; set; } = new List<DocumentDto>();
     }
 
+    /// <summary>DTO Chương học thuộc một môn: tiêu đề, thứ tự và danh sách tài liệu.</summary>
     public class ChapterDto
     {
         public int Id { get; set; }

@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
-using DataAccessLayer.Entities;
 
-namespace BussinessLayer.Services
+namespace BussinessLayer.IServices
 {
     /// <summary>
     /// Giao diện dịch vụ Quản lý Ngân hàng Câu hỏi.
@@ -19,14 +18,14 @@ namespace BussinessLayer.Services
             int page,
             int pageSize);
         Task<bool> AddQuestionAsync(CreateQuestionDto createDto, int lecturerId);
-        Task<bool> UpdateQuestionAsync(int id, CreateQuestionDto updateDto);
-        Task<bool> DeleteQuestionAsync(int id);
-        Task<IEnumerable<Subject>> GetAllSubjectsAsync();
+        Task<bool> UpdateQuestionAsync(int id, CreateQuestionDto updateDto, int userId);
+        Task<bool> DeleteQuestionAsync(int id, int userId);
+        Task<IEnumerable<SubjectDto>> GetAllSubjectsAsync();
         Task<Dictionary<string, int>> GetQuestionStatisticsAsync(int subjectId);
 
         // Trash bin service methods
         Task<(IEnumerable<QuestionBankDto> Items, int TotalCount)> GetDeletedPagedQuestionsAsync(int page, int pageSize);
-        Task<bool> RestoreQuestionAsync(int id);
-        Task<bool> HardDeleteQuestionAsync(int id);
+        Task<bool> RestoreQuestionAsync(int id, int userId);
+        Task<bool> HardDeleteQuestionAsync(int id, int userId);
     }
 }

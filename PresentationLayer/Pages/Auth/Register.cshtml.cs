@@ -54,7 +54,7 @@ namespace PresentationLayer.Pages.Auth
                 return Page();
             }
 
-            TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+            TempData["AuthSuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
             return RedirectToPage("/Auth/Login");
         }
     }

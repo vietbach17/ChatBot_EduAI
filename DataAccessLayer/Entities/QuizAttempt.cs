@@ -5,6 +5,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Lượt làm bài thi của sinh viên. Lưu thông tin mã đề được gán, thời gian bắt đầu/kết thúc,
+    /// điểm số, trạng thái (Đang làm/Đã chấm) và danh sách câu trả lời.
+    /// </summary>
     public class QuizAttempt
     {
         [Key]

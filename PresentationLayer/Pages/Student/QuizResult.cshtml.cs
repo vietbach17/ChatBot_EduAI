@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace PresentationLayer.Pages.Student
 {
     [Authorize(Roles = "Student")]
+    /// <summary>PageModel trang Kết quả bài thi (Sinh viên). Hiển thị điểm số và cho phép xem lại từng câu hỏi.</summary>
     public class QuizResultModel : PageModel
     {
         private readonly IQuizService _quizService;

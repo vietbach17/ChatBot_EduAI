@@ -1,0 +1,260 @@
+@page "{id:int}"
+@model PresentationLayer.Pages.Student.QuizSummaryModel
+@{
+    ViewData["Title"] = "Tổng Kết Bài Thi";
+    ViewBag.ActiveMenu = "StudentQuizzes";
+}
+
+@section Styles {
+<style>
+    .summary-layout {
+        display: flex;
+        gap: 25px;
+        max-width: 1100px;
+        margin: 30px auto;
+        padding: 0 20px;
+        align-items: flex-start;
+    }
+    .summary-main { flex: 3; }
+    .summary-nav-panel { flex: 1; position: sticky; top: 20px; }
+
+    .quiz-title {
+        font-size: 20px;
+        font-weight: 900;
+        text-transform: uppercase;
+        color: var(--black);
+        margin-bottom: 4px;
+    }
+    .quiz-subtitle {
+        font-size: 13px;
+        font-weight: 700;
+        color: #777;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 20px;
+    }
+    .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 3px solid var(--black);
+        margin-bottom: 20px;
+    }
+    .summary-table th {
+        background-color: var(--black);
+        color: var(--white);
+        padding: 10px 14px;
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 13px;
+        border: 2px solid var(--black);
+        text-align: left;
+    }
+    .summary-table td {
+        padding: 10px 14px;
+        border: 2px solid #ddd;
+        font-weight: 700;
+        font-size: 14px;
+    }
+    .summary-table tr:nth-child(even) td { background-color: #f9f9f9; }
+    .q-num { color: var(--pink); font-weight: 900; }
+    .status-answered { color: var(--green); }
+    .status-unanswered { color: #777; }
+
+    .action-row {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        border-top: 3px solid var(--black);
+        padding-top: 18px;
+        margin-top: 5px;
+    }
+    .btn-back-quiz {
+        background-color: var(--yellow);
+        color: var(--black);
+        border: 3px solid var(--black);
+        padding: 10px 20px;
+        font-weight: 900;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+        box-shadow: 4px 4px 0px var(--black);
+        text-transform: uppercase;
+        transition: 0.1s;
+    }
+    .btn-back-quiz:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0px var(--black); }
+    .btn-submit {
+        background-color: var(--green);
+        color: var(--white);
+        border: 3px solid var(--black);
+        padding: 10px 20px;
+        font-weight: 900;
+        font-size: 14px;
+        box-shadow: 4px 4px 0px var(--black);
+        text-transform: uppercase;
+        transition: 0.1s;
+        cursor: pointer;
+    }
+    .btn-submit:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0px var(--black); }
+
+    /* Right panel */
+    .nav-panel-box {
+        background: var(--white);
+        border: 3px solid var(--black);
+        box-shadow: 4px 4px 0px var(--black);
+    }
+    .nav-panel-header {
+        background-color: var(--black);
+        color: var(--white);
+        padding: 12px 15px;
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+    .nav-panel-body { padding: 15px; }
+    .nav-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+        gap: 8px;
+    }
+    .nav-cell {
+        border: 2px solid var(--black);
+        border-radius: 2px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        height: 38px;
+        background-color: var(--white);
+        font-size: 13px;
+        font-weight: 800;
+    }
+    .nav-cell-num {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .nav-cell-bar-answered { height: 10px; background-color: var(--blue); }
+    .nav-cell-bar-unanswered { height: 10px; background-color: #ddd; }
+
+    .legend {
+        margin-top: 15px;
+        font-size: 12px;
+        font-weight: 700;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .legend-dot { width: 14px; height: 14px; border: 2px solid var(--black); flex-shrink: 0; }
+
+    .error-card {
+        background-color: #ffcccc;
+        border: 3px solid red;
+        box-shadow: 4px 4px 0px red;
+        padding: 20px;
+        font-weight: 700;
+        color: red;
+    }
+</style>
+}
+
+<div class="summary-layout">
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div style="flex:1;">
+            <div class="error-card">
+                <strong>Lỗi:</strong> @Model.ErrorMessage
+                <br/><br/>
+                <a href="/Student/QuizList" style="color: red; font-weight: 900;">← Quay lại danh sách</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Left: Summary Table -->
+        <div class="summary-main">
+            <div class="quiz-title">@Model.QuizAttempt.Title</div>
+            <div class="quiz-subtitle">Tổng kết bài làm</div>
+
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>Câu hỏi</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.QuizAttempt.Questions.Count; i++)
+                    {
+                        var q = Model.QuizAttempt.Questions[i];
+                        int displayNum = i + 1;
+                        bool hasAnswer = !string.IsNullOrEmpty(q.SelectedAnswer);
+                        <tr>
+                            <td><span class="q-num">@displayNum</span></td>
+                            <td>
+                                @if (hasAnswer)
+                                {
+                                    <span class="status-answered"><i class="fa-solid fa-check"></i> Đã lưu đáp án</span>
+                                }
+                                else
+                                {
+                                    <span class="status-unanswered"><i class="fa-regular fa-circle"></i> Chưa trả lời</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (Model.UnansweredCount > 0)
+            {
+                <div style="background-color: #fff3cd; border: 3px solid #ffc107; padding: 12px 16px; font-weight: 800; color: #856404; margin-bottom: 20px;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Bạn còn <strong>@Model.UnansweredCount câu</strong> chưa trả lời. Bạn có muốn quay lại hoàn thành không?
+                </div>
+            }
+
+            <div class="action-row">
+                <a href="/Student/TakeQuiz/@Model.QuizAttempt.AttemptId" class="btn-back-quiz">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại làm tiếp
+                </a>
+                <form method="post" asp-page-handler="Submit">
+                    <button type="submit" class="btn-submit" onclick="return confirm('Xác nhận nộp bài? Hành động này không thể hoàn tác!')">
+                        <i class="fa-solid fa-paper-plane"></i> Nộp bài
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right: Quiz Navigation -->
+        <div class="summary-nav-panel">
+            <div class="nav-panel-box">
+                <div class="nav-panel-header">
+                    <i class="fa-solid fa-map-pin"></i> Điều hướng
+                </div>
+                <div class="nav-panel-body">
+                    <div class="nav-grid">
+                        @for (int i = 0; i < Model.QuizAttempt.Questions.Count; i++)
+                        {
+                            var q = Model.QuizAttempt.Questions[i];
+                            bool hasAnswer = !string.IsNullOrEmpty(q.SelectedAnswer);
+                            <div class="nav-cell">
+                                <div class="nav-cell-num">@(i+1)</div>
+                                <div class="@(hasAnswer ? "nav-cell-bar-answered" : "nav-cell-bar-unanswered")"></div>
+                            </div>
+                        }
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background-color: var(--blue);"></div>
+                            <span>Đã trả lời (@Model.AnsweredCount)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background-color: #ddd;"></div>
+                            <span>Chưa trả lời (@Model.UnansweredCount)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace BussinessLayer.IServices
 {
+    /// <summary>Thông tin một model Gemini: mã định danh và tên hiển thị.</summary>
     public record GeminiModelInfo(string Id, string DisplayName);
 
     /// <summary>

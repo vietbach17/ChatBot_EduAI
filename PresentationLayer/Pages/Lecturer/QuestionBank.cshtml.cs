@@ -6,9 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using BussinessLayer.DTOs;
-using BussinessLayer.Services;
 using BussinessLayer.IServices;
-using DataAccessLayer.Entities;
 
 namespace PresentationLayer.Pages.Lecturer
 {
@@ -51,7 +49,7 @@ namespace PresentationLayer.Pages.Lecturer
 
         // Data lists
         public IEnumerable<QuestionBankDto> Questions { get; set; } = new List<QuestionBankDto>();
-        public IEnumerable<Subject> Subjects { get; set; } = new List<Subject>();
+        public IEnumerable<SubjectDto> Subjects { get; set; } = new List<SubjectDto>();
 
         // Forms and actions
         public CreateQuestionDto NewQuestion { get; set; } = new CreateQuestionDto();
@@ -126,7 +124,12 @@ namespace PresentationLayer.Pages.Lecturer
                 EditQuestion.OptionsJson = null;
             }
 
-            var success = await _questionService.UpdateQuestionAsync(EditQuestionId, EditQuestion);
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Challenge();
+            var user = await _userService.GetUserByUsernameAsync(username);
+            if (user == null) return Challenge();
+
+            var success = await _questionService.UpdateQuestionAsync(EditQuestionId, EditQuestion, user.Id);
             if (success)
             {
                 StatusMessage = "Thành công: Cập nhật câu hỏi thành công.";
@@ -141,7 +144,12 @@ namespace PresentationLayer.Pages.Lecturer
 
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
-            var success = await _questionService.DeleteQuestionAsync(id);
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Challenge();
+            var user = await _userService.GetUserByUsernameAsync(username);
+            if (user == null) return Challenge();
+
+            var success = await _questionService.DeleteQuestionAsync(id, user.Id);
             if (success)
             {
                 StatusMessage = "Thành công: Xóa câu hỏi thành công.";
@@ -209,7 +217,12 @@ namespace PresentationLayer.Pages.Lecturer
 
         public async Task<IActionResult> OnPostRestoreAsync(int id)
         {
-            var success = await _questionService.RestoreQuestionAsync(id);
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Challenge();
+            var user = await _userService.GetUserByUsernameAsync(username);
+            if (user == null) return Challenge();
+
+            var success = await _questionService.RestoreQuestionAsync(id, user.Id);
             if (success)
             {
                 StatusMessage = "Thành công: Khôi phục câu hỏi thành công.";
@@ -223,7 +236,12 @@ namespace PresentationLayer.Pages.Lecturer
 
         public async Task<IActionResult> OnPostHardDeleteAsync(int id)
         {
-            var success = await _questionService.HardDeleteQuestionAsync(id);
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Challenge();
+            var user = await _userService.GetUserByUsernameAsync(username);
+            if (user == null) return Challenge();
+
+            var success = await _questionService.HardDeleteQuestionAsync(id, user.Id);
             if (success)
             {
                 StatusMessage = "Thành công: Xóa vĩnh viễn câu hỏi thành công.";

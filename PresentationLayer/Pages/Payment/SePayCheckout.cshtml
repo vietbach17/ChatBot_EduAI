@@ -114,6 +114,27 @@
         transform: translate(4px, 4px);
         box-shadow: 0 0 0 0 var(--black);
     }
+    .btn-action:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+    .status-message {
+        font-weight: 800;
+        font-size: 14px;
+        padding: 12px;
+        border: var(--border);
+        text-align: center;
+        display: none;
+    }
+    .status-message.pending {
+        background: var(--yellow);
+        display: block;
+    }
+    .status-message.success {
+        background: var(--green);
+        color: var(--white);
+        display: block;
+    }
 </style>
 
 <div class="checkout-container">
@@ -152,10 +173,69 @@
                 <span>Vui lòng giữ nguyên nội dung chuyển khoản <strong>@Model.Content</strong> để hệ thống duyệt tự động.</span>
             </div>
 
+            <div id="statusMessage" class="status-message"></div>
+
             <div class="actions">
-                <a href="@Model.ReturnUrl" class="btn-action primary">Tôi đã chuyển khoản xong</a>
+                <button type="button" id="checkPaymentBtn" class="btn-action primary" onclick="checkPaymentStatus()">Tôi đã chuyển khoản xong</button>
                 <a href="/Subscription/Index" class="btn-action secondary">Hủy giao dịch</a>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const transactionId = @Model.TransactionId;
+        const returnUrl = @Html.Raw(Json.Serialize(Model.ReturnUrl));
+
+        const checkBtn = document.getElementById('checkPaymentBtn');
+        const statusMessage = document.getElementById('statusMessage');
+
+        function showMessage(text, type) {
+            statusMessage.textContent = text;
+            statusMessage.className = 'status-message ' + type;
+        }
+
+        function goToReturnUrl() {
+            showMessage('Thanh toán thành công! Đang chuyển trang...', 'success');
+            setTimeout(() => { window.location.href = returnUrl; }, 800);
+        }
+
+        function checkPaymentStatus() {
+            checkBtn.disabled = true;
+            checkBtn.textContent = 'Đang kiểm tra...';
+
+            fetch(`/Payment/SePayCheckout?handler=CheckStatus&transactionId=${transactionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.status === 'Success') {
+                        goToReturnUrl();
+                    } else {
+                        showMessage('Chưa ghi nhận thanh toán, vui lòng đợi vài giây rồi thử lại.', 'pending');
+                        checkBtn.disabled = false;
+                        checkBtn.textContent = 'Tôi đã chuyển khoản xong';
+                    }
+                })
+                .catch(() => {
+                    showMessage('Không thể kiểm tra trạng thái thanh toán, vui lòng thử lại.', 'pending');
+                    checkBtn.disabled = false;
+                    checkBtn.textContent = 'Tôi đã chuyển khoản xong';
+                });
+        }
+
+        // Tự động chuyển trang ngay khi webhook SePay xác nhận thanh toán, không cần bấm nút
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl('/courseHub')
+            .build();
+
+        connection.on('PaymentStatusUpdated', function (updatedTransactionId, newStatus) {
+            if (updatedTransactionId == transactionId && newStatus === 'Success') {
+                goToReturnUrl();
+            }
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+    </script>
+}

@@ -38,6 +38,7 @@ namespace PresentationLayer.Controllers
         }
     }
 
+    /// <summary>Payload bật/tắt việc sử dụng lượt hỏi dự phòng của người dùng.</summary>
     public class ToggleRequest
     {
         public bool UseExtraQuota { get; set; }

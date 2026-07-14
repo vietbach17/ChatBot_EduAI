@@ -6,7 +6,7 @@
     <title>@ViewData["Title"] - EduManager</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap');
+        @@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;700;800;900&display=swap');
         
         :root {
             --pink: #eb2f64; --yellow: #f4cf45; --green: #5cb85c; 
@@ -15,7 +15,7 @@
             --shadow: 4px 4px 0px 0px var(--black);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Be Vietnam Pro', sans-serif; }
         
         body {
             background-color: var(--bg);
@@ -25,13 +25,13 @@
         }
 
         .sidebar {
-            width: 260px; background: var(--white); border-right: var(--border);
+            width: 280px; background: var(--white); border-right: var(--border);
             padding: 30px 20px; display: flex; flex-direction: column; gap: 15px;
             height: 100vh; flex-shrink: 0;
         }
         .logo { color: var(--pink); font-size: 22px; font-weight: 900; margin-bottom: 20px; }
         .nav-item {
-            padding: 12px 15px; font-weight: 800; color: var(--black);
+            padding: 12px 15px; font-weight: 800; color: var(--black); font-size: 14px;
             text-decoration: none; display: flex; align-items: center; gap: 12px;
             border: 3px solid transparent; transition: 0.1s;
         }
@@ -96,6 +96,8 @@
             <a asp-page="/Admin/Subscriptions" class="nav-item @(ViewBag.ActiveMenu == "AdminSubscriptions" ? "active" : "")"><i class="fa-solid fa-users"></i> QL NGƯỜI ĐĂNG KÝ</a>
             <a asp-page="/Admin/Plans" class="nav-item @(ViewBag.ActiveMenu == "AdminPlans" ? "active" : "")"><i class="fa-solid fa-tags"></i> QL LOẠI GÓI</a>
             <a asp-page="/Admin/PaymentHistory" class="nav-item @(ViewBag.ActiveMenu == "PaymentHistory" ? "active" : "")"><i class="fa-solid fa-file-invoice-dollar"></i> LỊCH SỬ TT</a>
+            <a asp-page="/Admin/QuestionBanks" class="nav-item @(ViewBag.ActiveMenu == "QuestionBanks" ? "active" : "")"><i class="fa-solid fa-clock-rotate-left"></i> LỊCH SỬ CÂU HỎI</a>
+            <a asp-page="/Admin/Reports" class="nav-item @(ViewBag.ActiveMenu == "AdminReports" ? "active" : "")"><i class="fa-solid fa-flag"></i> QL BÁO CÁO</a>
         }
         else if (userRole == "Lecturer")
         {
@@ -105,6 +107,7 @@
             <a asp-page="/Lecturer/MyDocuments" class="nav-item @(ViewBag.ActiveMenu == "LecturerDocuments" ? "active" : "")"><i class="fa-regular fa-file-lines"></i> TÀI LIỆU CỦA TÔI</a>
             <a asp-page="/Lecturer/QuestionBank" class="nav-item @(ViewBag.ActiveMenu == "QuestionBank" ? "active" : "")"><i class="fa-solid fa-database"></i> NGÂN HÀNG CÂU HỎI</a>
             <a asp-page="/Lecturer/AIGenerateQuestions" class="nav-item @(ViewBag.ActiveMenu == "AIGenerateQuestions" ? "active" : "")"><i class="fa-solid fa-robot"></i> AI TẠO CÂU HỎI</a>
+            <a asp-page="/Report/MyReports" class="nav-item @(ViewBag.ActiveMenu == "Reports" ? "active" : "")"><i class="fa-solid fa-headset"></i> BÁO CÁO & HỖ TRỢ</a>
 
         }
         else
@@ -117,6 +120,7 @@
             <a asp-page="/Chat/Index"  class="nav-item @(ViewBag.ActiveMenu == "AI" ? "active" : "")"><i class="fa-solid fa-robot"></i> CHAT AI</a>
             <a asp-page="/Subscription/Index" class="nav-item @(ViewBag.ActiveMenu == "Subscription" ? "active" : "")"><i class="fa-solid fa-crown"></i> GÓI HỘI VIÊN</a>
             <a asp-page="/PaymentHistory/Index" class="nav-item @(ViewBag.ActiveMenu == "PaymentHistory" ? "active" : "")"><i class="fa-solid fa-file-invoice-dollar"></i> LỊCH SỬ TT</a>
+            <a asp-page="/Report/MyReports" class="nav-item @(ViewBag.ActiveMenu == "Reports" ? "active" : "")"><i class="fa-solid fa-headset"></i> BÁO CÁO & HỖ TRỢ</a>
         }
         
         <a asp-page="/Auth/Profile" class="user-profile" style="text-decoration: none; cursor: pointer; transition: 0.1s;">

@@ -3,6 +3,7 @@ using System;
 
 namespace BussinessLayer.DTOs
 {
+    /// <summary>DTO yêu cầu gửi tin nhắn chat: câu hỏi, phiên chat, tài liệu được chọn và model AI.</summary>
     public class ChatRequestDto
     {
         public string Message { get; set; } = string.Empty;
@@ -13,6 +14,7 @@ namespace BussinessLayer.DTOs
         public string? ModelName { get; set; }
     }
 
+    /// <summary>DTO một tin nhắn trong hội thoại: vai trò (người dùng/AI), nội dung, thời gian và nguồn trích dẫn.</summary>
     public class ChatMessageDto
     {
         public string Role { get; set; } = string.Empty;
@@ -21,6 +23,7 @@ namespace BussinessLayer.DTOs
         public List<CitationDto> Citations { get; set; } = new List<CitationDto>();
     }
 
+    /// <summary>DTO một phiên trò chuyện: tiêu đề, thời điểm tạo và danh sách tin nhắn.</summary>
     public class ChatSessionDto
     {
         public int Id { get; set; }
@@ -29,11 +32,13 @@ namespace BussinessLayer.DTOs
         public List<ChatMessageDto> Messages { get; set; } = new List<ChatMessageDto>();
     }
 
+    /// <summary>DTO thao tác trên phiên chat (xóa / xóa nội dung) theo Id phiên.</summary>
     public class ChatSessionActionDto
     {
         public int SessionId { get; set; }
     }
 
+    /// <summary>DTO phản hồi chat: câu trả lời AI, trạng thái, số lượt hỏi còn lại và nguồn trích dẫn.</summary>
     public class ChatResponseDto
     {
         public bool Success { get; set; }
@@ -46,6 +51,7 @@ namespace BussinessLayer.DTOs
         public List<CitationDto> Citations { get; set; } = new List<CitationDto>();
     }
 
+    /// <summary>DTO nguồn trích dẫn: tài liệu, môn, chương và đoạn nội dung mà AI dùng để trả lời.</summary>
     public class CitationDto
     {
         public int DocumentId { get; set; }

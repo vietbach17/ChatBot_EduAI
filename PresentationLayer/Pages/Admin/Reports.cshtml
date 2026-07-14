@@ -1,0 +1,170 @@
+@page
+@model PresentationLayer.Pages.Admin.ReportsModel
+@{
+    ViewData["Title"] = "Quản lý Báo cáo";
+    ViewBag.ActiveMenu = "AdminReports";
+
+    string StatusBadge(string status) => status switch
+    {
+        "Pending" => "background: var(--yellow); color: var(--black);",
+        "InProgress" => "background: var(--blue); color: var(--white);",
+        "Resolved" => "background: var(--green); color: var(--white);",
+        "Rejected" => "background: #ff4d4f; color: var(--white);",
+        _ => "background: #ccc; color: var(--black);"
+    };
+    int Count(string s) => Model.StatusCounts.TryGetValue(s, out var c) ? c : 0;
+}
+
+@section Styles {
+    <style>
+        .r-card { background: var(--white); border: var(--border); box-shadow: 4px 4px 0px var(--black); padding: 20px; margin-bottom: 20px; }
+        .stat-box { background: var(--white); border: 3px solid var(--black); box-shadow: 4px 4px 0px var(--black); padding: 15px 20px; flex: 1; text-align: center; }
+        .stat-num { font-size: 28px; font-weight: 900; }
+        .stat-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #666; }
+        .status-badge { display: inline-block; padding: 4px 12px; border: 2px solid var(--black); font-weight: 900; font-size: 11px; text-transform: uppercase; box-shadow: 1px 1px 0px var(--black); }
+        .r-input { width: 100%; padding: 10px; border: 2px solid var(--black); font-family: inherit; font-size: 14px; font-weight: 700; }
+        .r-btn { background: var(--pink); color: var(--white); border: 2px solid var(--black); padding: 10px 18px; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 2px 2px 0px var(--black); text-transform: uppercase; }
+        .r-btn:active { box-shadow: 0 0 0 0 var(--black); transform: translate(2px, 2px); }
+        .filter-select { border: 2px solid var(--black); padding: 8px 12px; font-weight: 700; }
+    </style>
+}
+
+<div class="main-wrapper" style="padding: 30px;">
+    <h1 style="color: var(--pink); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 20px;">
+        <i class="fa-solid fa-flag"></i> QUẢN LÝ BÁO CÁO
+    </h1>
+
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        <div class="r-card" style="background: #d4f8d4; border-color: var(--green);">✅ @Model.StatusMessage</div>
+    }
+
+    <!-- THỐNG KÊ -->
+    <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+        <div class="stat-box"><div class="stat-num" style="color: var(--yellow);">@Count("Pending")</div><div class="stat-label">Chờ xử lý</div></div>
+        <div class="stat-box"><div class="stat-num" style="color: var(--blue);">@Count("InProgress")</div><div class="stat-label">Đang xử lý</div></div>
+        <div class="stat-box"><div class="stat-num" style="color: var(--green);">@Count("Resolved")</div><div class="stat-label">Đã xử lý</div></div>
+        <div class="stat-box"><div class="stat-num" style="color: #ff4d4f;">@Count("Rejected")</div><div class="stat-label">Từ chối</div></div>
+    </div>
+
+    <!-- BỘ LỌC -->
+    <div class="r-card" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+        <form method="get" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+            <div>
+                <div style="font-weight: 800; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Vai trò người gửi</div>
+                <select name="FilterRole" class="filter-select">
+                    <option value="">Tất cả</option>
+                    <option value="Student" selected="@(Model.FilterRole == "Student")">Sinh viên</option>
+                    <option value="Lecturer" selected="@(Model.FilterRole == "Lecturer")">Giảng viên</option>
+                </select>
+            </div>
+            <div>
+                <div style="font-weight: 800; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Trạng thái</div>
+                <select name="FilterStatus" class="filter-select">
+                    <option value="">Tất cả</option>
+                    <option value="Pending" selected="@(Model.FilterStatus == "Pending")">Chờ xử lý</option>
+                    <option value="InProgress" selected="@(Model.FilterStatus == "InProgress")">Đang xử lý</option>
+                    <option value="Resolved" selected="@(Model.FilterStatus == "Resolved")">Đã xử lý</option>
+                    <option value="Rejected" selected="@(Model.FilterStatus == "Rejected")">Từ chối</option>
+                </select>
+            </div>
+            <button type="submit" class="r-btn"><i class="fa-solid fa-filter"></i> Lọc</button>
+            <a asp-page="/Admin/Reports" class="r-btn" style="background: #ccc; color: var(--black); text-decoration: none;">Xóa lọc</a>
+        </form>
+    </div>
+
+    <!-- DANH SÁCH -->
+    <h2 style="font-weight: 900; font-size: 18px; margin: 10px 0 15px;">Danh sách báo cáo (@Model.Reports.Count)</h2>
+
+    @if (!Model.Reports.Any())
+    {
+        <div class="r-card" style="text-align: center; background: #f9f9f9;">
+            <i class="fa-regular fa-folder-open" style="font-size: 40px; color: #bbb;"></i>
+            <p style="font-weight: 800; color: #777; margin-top: 10px;">Không có báo cáo nào khớp bộ lọc.</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var r in Model.Reports)
+        {
+            <div class="r-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+                            <span class="status-badge" style="background: @(r.ReporterRole == "Lecturer" ? "var(--blue); color: var(--white)" : "var(--yellow); color: var(--black)");">
+                                @(r.ReporterRole == "Lecturer" ? "Giảng viên" : "Sinh viên")
+                            </span>
+                            <span class="status-badge" style="background: #eee; color: var(--black);">@r.CategoryLabel</span>
+                            <span class="status-badge" style="@StatusBadge(r.Status)">@r.StatusLabel</span>
+                        </div>
+                        <h3 style="font-weight: 900; font-size: 17px; margin-bottom: 5px;">@r.Title</h3>
+                        <div style="font-size: 12px; font-weight: 700; color: #777; margin-bottom: 10px;">
+                            <i class="fa-solid fa-user"></i> @r.ReporterName
+                            <span style="margin-left: 12px;"><i class="fa-regular fa-clock"></i> @r.CreatedAt.AddHours(7).ToString("dd/MM/yyyy HH:mm")</span>
+                            @if (r.RelatedTransactionId.HasValue)
+                            {
+                                <span style="margin-left: 12px; color: var(--blue);"><i class="fa-solid fa-link"></i> Giao dịch #@r.RelatedTransactionId</span>
+                            }
+                        </div>
+                        <p style="font-weight: 600; font-size: 14px; color: #333; white-space: pre-wrap; margin-bottom: 10px;">@r.Description</p>
+
+                        @if (!string.IsNullOrEmpty(r.ImageUrl))
+                        {
+                            <a href="@r.ImageUrl" target="_blank">
+                                <img src="@r.ImageUrl" alt="Ảnh đính kèm" style="max-width: 200px; max-height: 200px; border: 2px solid var(--black); object-fit: cover;" />
+                            </a>
+                        }
+
+                        @if (!string.IsNullOrEmpty(r.AdminResponse))
+                        {
+                            <div style="background: #eef6ff; border: 2px solid var(--blue); padding: 12px; margin-top: 12px;">
+                                <div style="font-weight: 900; font-size: 12px; color: var(--blue); margin-bottom: 5px;">
+                                    <i class="fa-solid fa-reply"></i> PHẢN HỒI@(string.IsNullOrEmpty(r.HandledByAdminName) ? "" : $" — {r.HandledByAdminName}")
+                                    @if (r.UpdatedAt.HasValue) { <span style="color:#888; font-weight:700;"> (@r.UpdatedAt.Value.AddHours(7).ToString("dd/MM HH:mm"))</span> }
+                                </div>
+                                <p style="font-weight: 700; font-size: 14px; white-space: pre-wrap;">@r.AdminResponse</p>
+                            </div>
+                        }
+                    </div>
+
+                    <button type="button" class="r-btn" style="white-space: nowrap;" onclick="toggleRespond(@r.Id)">
+                        <i class="fa-solid fa-pen"></i> Xử lý
+                    </button>
+                </div>
+
+                <!-- FORM XỬ LÝ (ẩn/hiện) -->
+                <div id="respond-@r.Id" style="display: none; margin-top: 15px; border-top: 2px dashed #ccc; padding-top: 15px;">
+                    <form method="post" asp-page-handler="Respond">
+                        <input type="hidden" name="reportId" value="@r.Id" />
+                        <div style="display: flex; gap: 15px; align-items: flex-end; margin-bottom: 12px;">
+                            <div style="flex: 0 0 200px;">
+                                <div style="font-weight: 800; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Cập nhật trạng thái</div>
+                                <select name="status" class="r-input">
+                                    <option value="Pending" selected="@(r.Status == "Pending")">Chờ xử lý</option>
+                                    <option value="InProgress" selected="@(r.Status == "InProgress")">Đang xử lý</option>
+                                    <option value="Resolved" selected="@(r.Status == "Resolved")">Đã xử lý</option>
+                                    <option value="Rejected" selected="@(r.Status == "Rejected")">Từ chối</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="font-weight: 800; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Nội dung phản hồi</div>
+                        <textarea name="adminResponse" class="r-input" rows="3" placeholder="Nhập phản hồi gửi tới người báo cáo...">@r.AdminResponse</textarea>
+                        <div style="margin-top: 12px; display: flex; gap: 10px;">
+                            <button type="submit" class="r-btn"><i class="fa-solid fa-paper-plane"></i> Lưu & Phản hồi</button>
+                            <button type="button" class="r-btn" style="background: #ccc; color: var(--black);" onclick="toggleRespond(@r.Id)">Đóng</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function toggleRespond(id) {
+            const el = document.getElementById('respond-' + id);
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+}

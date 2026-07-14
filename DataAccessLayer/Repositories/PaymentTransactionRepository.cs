@@ -27,13 +27,13 @@ namespace DataAccessLayer.Repositories
                 .FirstOrDefaultAsync(t => t.Id == id);
 
         public async Task<IEnumerable<PaymentTransaction>> GetByUserIdAsync(int userId)
-            => await _context.PaymentTransactions.Include(t => t.User).Include(t => t.SubscriptionPlan).Where(t => t.UserId == userId).OrderByDescending(t => t.CreatedAt).ToListAsync();
+            => await _context.PaymentTransactions.Include(t => t.User).Include(t => t.SubscriptionPlan).Include(t => t.AddonPackage).Where(t => t.UserId == userId).OrderByDescending(t => t.CreatedAt).ToListAsync();
 
         public async Task<IEnumerable<PaymentTransaction>> GetByStatusAsync(string status)
             => await _context.PaymentTransactions.Where(t => t.Status == status).ToListAsync();
 
         public async Task<IEnumerable<PaymentTransaction>> GetAllAsync()
-            => await _context.PaymentTransactions.Include(t => t.User).Include(t => t.SubscriptionPlan).ToListAsync();
+            => await _context.PaymentTransactions.Include(t => t.User).Include(t => t.SubscriptionPlan).Include(t => t.AddonPackage).ToListAsync();
 
         public async Task<PaymentTransaction?> GetByTxnRefAsync(string txnRef)
             => await _context.PaymentTransactions

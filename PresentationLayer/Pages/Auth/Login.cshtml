@@ -340,9 +340,9 @@
             <h1>ĐĂNG NHẬP 👋 🔒</h1>
             <p class="subtitle">Chào mừng bạn quay trở lại với hệ thống học tập!</p>
 
-            @if (TempData["SuccessMessage"] != null)
+            @if (TempData["AuthSuccessMessage"] != null)
             {
-                <div class="alert-success">@TempData["SuccessMessage"]</div>
+                <div class="alert-success">@TempData["AuthSuccessMessage"]</div>
             }
 
             <form method="post">

@@ -1,5 +1,6 @@
 namespace PresentationLayer.ViewModels.Admin
 {
+    /// <summary>ViewModel tạo mới gói đăng ký: tên, mô tả, giá, giới hạn câu hỏi và thứ tự hiển thị.</summary>
     public class PlanCreateViewModel
     {
         public string Name { get; set; } = string.Empty;
@@ -10,6 +11,7 @@ namespace PresentationLayer.ViewModels.Admin
         public bool IsActive { get; set; } = true;
     }
 
+    /// <summary>ViewModel cập nhật gói đăng ký hiện có.</summary>
     public class PlanUpdateViewModel
     {
         public int Id { get; set; }

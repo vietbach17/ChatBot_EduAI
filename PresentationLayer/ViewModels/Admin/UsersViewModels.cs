@@ -1,5 +1,6 @@
 namespace PresentationLayer.ViewModels.Admin
 {
+    /// <summary>ViewModel tạo mới người dùng: tên đăng nhập, mật khẩu, vai trò và email.</summary>
     public class UserCreateViewModel
     {
         public string Username { get; set; } = string.Empty;
@@ -8,6 +9,7 @@ namespace PresentationLayer.ViewModels.Admin
         public string? Email { get; set; }
     }
 
+    /// <summary>ViewModel cập nhật người dùng (mật khẩu để trống nếu không đổi).</summary>
     public class UserUpdateViewModel
     {
         public int Id { get; set; }

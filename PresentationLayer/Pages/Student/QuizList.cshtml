@@ -62,6 +62,69 @@
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 20px;
     }
+
+    /* Custom SweetAlert Brutalist */
+    .swal-brutal-popup {
+        border: 4px solid var(--black) !important;
+        border-radius: 0 !important;
+        box-shadow: 8px 8px 0px var(--black) !important;
+        padding: 30px !important;
+        background: var(--white) !important;
+    }
+    .swal-brutal-title {
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+        color: var(--pink) !important;
+        font-size: 24px !important;
+        margin-bottom: 10px !important;
+    }
+    .swal-brutal-input {
+        border: 3px solid var(--black) !important;
+        border-radius: 0 !important;
+        box-shadow: 4px 4px 0px var(--black) !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 16px !important;
+        padding: 10px 15px !important;
+        width: 85% !important;
+        margin: 0 auto 20px auto !important;
+    }
+    .swal-brutal-input:focus {
+        outline: none !important;
+        border-color: var(--blue) !important;
+        box-shadow: 4px 4px 0px var(--blue) !important;
+    }
+    .swal-brutal-btn {
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 900 !important;
+        border: 3px solid var(--black) !important;
+        border-radius: 0 !important;
+        box-shadow: 4px 4px 0px var(--black) !important;
+        text-transform: uppercase !important;
+        padding: 10px 20px !important;
+        cursor: pointer !important;
+        margin: 0 10px !important;
+    }
+    .swal-brutal-confirm {
+        background-color: var(--pink) !important;
+        color: var(--white) !important;
+    }
+    .swal-brutal-cancel {
+        background-color: #ccc !important;
+        color: var(--black) !important;
+    }
+    .swal-brutal-btn:active {
+        box-shadow: 0 0 0 0 var(--black) !important;
+        transform: translate(4px, 4px) !important;
+    }
+    .swal-brutal-validation {
+        background: var(--yellow) !important;
+        color: var(--black) !important;
+        font-weight: 900 !important;
+        border: 2px solid var(--black) !important;
+        border-radius: 0 !important;
+    }
 </style>
 
 <div class="main-wrapper" style="padding: 30px;">
@@ -111,19 +174,19 @@
                         
                         @if (quiz.Status == "Hết lượt")
                         {
-                            <a href="#" class="brutal-btn disabled" onclick="return false;">Hết Lượt</a>
+                            <a href="/Student/QuizInfo/@quiz.QuizId" class="brutal-btn" style="background-color: #eee; color: var(--black);">Xem Kết Quả</a>
                         }
                         else if (quiz.Status == "Hoàn thành")
                         {
-                            <a asp-page="/Student/TakeQuiz" asp-route-id="@quiz.QuizId" class="brutal-btn" style="background-color: var(--yellow); color: var(--black);">Làm Lại</a>
+                            <button type="button" class="brutal-btn" style="background-color: var(--yellow); color: var(--black);" onclick="takeQuiz(@quiz.QuizId, @(quiz.HasPassword ? "true" : "false"))">Làm Lại</button>
                         }
                         else if (quiz.Status == "Đang làm")
                         {
-                            <a asp-page="/Student/TakeQuiz" asp-route-id="@quiz.QuizId" class="brutal-btn" style="background-color: orange; color: var(--black);">Tiếp Tục</a>
+                            <button type="button" class="brutal-btn" style="background-color: orange; color: var(--black);" onclick="resumeQuiz(@quiz.QuizId, @(quiz.HasPassword ? "true" : "false"))">Tiếp Tục</button>
                         }
                         else
                         {
-                            <a asp-page="/Student/TakeQuiz" asp-route-id="@quiz.QuizId" class="brutal-btn" style="background-color: var(--pink);">Vào Làm</a>
+                            <button type="button" class="brutal-btn" style="background-color: var(--pink);" onclick="takeQuiz(@quiz.QuizId, @(quiz.HasPassword ? "true" : "false"))">Vào Làm</button>
                         }
                     </div>
                 </div>
@@ -131,3 +194,130 @@
         </div>
     }
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Hàm POST data để tạo attempt mới
+    function startNewQuizAttempt(quizId, accessCode) {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = '/Student/TakeQuiz/' + quizId + '?handler=Start';
+        
+        // Add CSRF token manually (ASP.NET Core Razor Pages includes it in all forms, but since we create dynamically, we get it from an existing token if needed, or just let it pass if disabled. Wait, Razor Pages might require AntiForgeryToken! We should include it)
+        const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        if (antiForgeryToken) {
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '__RequestVerificationToken';
+            tokenInput.value = antiForgeryToken;
+            form.appendChild(tokenInput);
+        }
+
+        if (accessCode) {
+            const codeInput = document.createElement('input');
+            codeInput.type = 'hidden';
+            codeInput.name = 'accessCode';
+            codeInput.value = accessCode;
+            form.appendChild(codeInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function resumeQuiz(quizId, hasPassword) {
+        if (!hasPassword) {
+            window.location.href = '/Student/TakeQuiz/' + quizId;
+            return;
+        }
+        // Giống takeQuiz nhưng dùng redirect thay vì POST
+        Swal.fire({
+            title: 'BÀI THI CÓ MẬT KHẨU',
+            input: 'password',
+            inputPlaceholder: 'Nhập mật khẩu truy cập...',
+            showCancelButton: true,
+            confirmButtonText: 'TIẾP TỤC',
+            cancelButtonText: 'QUAY LẠI',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'swal-brutal-popup',
+                title: 'swal-brutal-title',
+                input: 'swal-brutal-input',
+                confirmButton: 'swal-brutal-btn swal-brutal-confirm',
+                cancelButton: 'swal-brutal-btn swal-brutal-cancel',
+                validationMessage: 'swal-brutal-validation'
+            },
+            showLoaderOnConfirm: true,
+            preConfirm: (pwd) => {
+                if (!pwd) {
+                    Swal.showValidationMessage('Vui lòng nhập mật khẩu!');
+                    return false;
+                }
+                return fetch(`/Student/QuizList?handler=CheckPassword&quizId=${quizId}&accessCode=${encodeURIComponent(pwd)}`)
+                    .then(response => response.ok ? response.json() : Promise.reject('Lỗi mạng'))
+                    .then(data => data.success ? pwd : Promise.reject(data.message))
+                    .catch(error => { Swal.showValidationMessage(error); return false; });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                window.location.href = '/Student/TakeQuiz/' + quizId + '?AccessCode=' + encodeURIComponent(result.value);
+            }
+        });
+    }
+
+    function takeQuiz(quizId, hasPassword) {
+        if (!hasPassword) {
+            startNewQuizAttempt(quizId, '');
+            return;
+        }
+
+        Swal.fire({
+            title: 'BÀI THI CÓ MẬT KHẨU',
+            input: 'password',
+            inputPlaceholder: 'Nhập mật khẩu truy cập...',
+            showCancelButton: true,
+            confirmButtonText: 'VÀO LÀM',
+            cancelButtonText: 'QUAY LẠI',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'swal-brutal-popup',
+                title: 'swal-brutal-title',
+                input: 'swal-brutal-input',
+                confirmButton: 'swal-brutal-btn swal-brutal-confirm',
+                cancelButton: 'swal-brutal-btn swal-brutal-cancel',
+                validationMessage: 'swal-brutal-validation'
+            },
+            showLoaderOnConfirm: true,
+            preConfirm: (pwd) => {
+                if (!pwd) {
+                    Swal.showValidationMessage('Vui lòng nhập mật khẩu!');
+                    return false;
+                }
+                return fetch(`/Student/QuizList?handler=CheckPassword&quizId=${quizId}&accessCode=${encodeURIComponent(pwd)}`)
+                    .then(response => response.ok ? response.json() : Promise.reject('Lỗi mạng'))
+                    .then(data => data.success ? pwd : Promise.reject(data.message))
+                    .catch(error => { Swal.showValidationMessage(error); return false; });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                startNewQuizAttempt(quizId, result.value);
+            }
+        });
+    }
+
+    // SignalR cho phép tự động cập nhật danh sách bài thi khi giảng viên thay đổi (thêm/sửa/xóa)
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/courseHub")
+        .build();
+
+    connection.on("CourseChanged", function () {
+        // Tự động tải lại trang khi có sự thay đổi về bài thi
+        window.location.reload();
+    });
+
+    connection.start().catch(function (err) {
+        return console.error(err.toString());
+    });
+</script>

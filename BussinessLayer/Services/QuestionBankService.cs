@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
+using BussinessLayer.IServices;
 using DataAccessLayer;
 using DataAccessLayer.Entities;
 using DataAccessLayer.IRepositories;
@@ -17,11 +18,13 @@ namespace BussinessLayer.Services
     {
         private readonly IQuestionBankRepository _repository;
         private readonly ApplicationDbContext _context;
+        private readonly IQuestionBankActivityLogService _activityLogService;
 
-        public QuestionBankService(IQuestionBankRepository repository, ApplicationDbContext context)
+        public QuestionBankService(IQuestionBankRepository repository, ApplicationDbContext context, IQuestionBankActivityLogService activityLogService)
         {
             _repository = repository;
             _context = context;
+            _activityLogService = activityLogService;
         }
 
         public async Task<QuestionBankDto?> GetQuestionByIdAsync(int id)
@@ -66,13 +69,27 @@ namespace BussinessLayer.Services
             };
 
             await _repository.AddAsync(question);
+            
+            await _activityLogService.LogActivityAsync(question.Id, lecturerId, "Created", question.Content);
+
             return true;
         }
 
-        public async Task<bool> UpdateQuestionAsync(int id, CreateQuestionDto updateDto)
+        public async Task<bool> UpdateQuestionAsync(int id, CreateQuestionDto updateDto, int userId)
         {
             var question = await _repository.GetByIdAsync(id);
             if (question == null || updateDto == null) return false;
+
+            // Serialize old content to JSON
+            var oldContentJson = System.Text.Json.JsonSerializer.Serialize(new {
+                SubjectId = question.SubjectId,
+                Content = question.Content,
+                QuestionType = question.QuestionType,
+                OptionsJson = question.OptionsJson,
+                CorrectAnswer = question.CorrectAnswer,
+                Difficulty = question.Difficulty,
+                Tags = question.Tags
+            });
 
             question.SubjectId = updateDto.SubjectId;
             question.Content = updateDto.Content;
@@ -83,21 +100,36 @@ namespace BussinessLayer.Services
             question.Tags = updateDto.Tags;
 
             await _repository.UpdateAsync(question);
+
+            await _activityLogService.LogActivityAsync(question.Id, userId, "Edited", question.Content, oldContentJson);
+
             return true;
         }
 
-        public async Task<bool> DeleteQuestionAsync(int id)
+        public async Task<bool> DeleteQuestionAsync(int id, int userId)
         {
             var question = await _repository.GetByIdAsync(id);
             if (question == null) return false;
 
             await _repository.DeleteAsync(id);
+            
+            await _activityLogService.LogActivityAsync(question.Id, userId, "Deleted", question.Content);
+
             return true;
         }
 
-        public async Task<IEnumerable<Subject>> GetAllSubjectsAsync()
+        public async Task<IEnumerable<SubjectDto>> GetAllSubjectsAsync()
         {
-            return await _context.Subjects.OrderBy(s => s.Code).ToListAsync();
+            return await _context.Subjects
+                .OrderBy(s => s.Code)
+                .Select(s => new SubjectDto
+                {
+                    Id = s.Id,
+                    Code = s.Code,
+                    Name = s.Name,
+                    IsDeleted = s.IsDeleted
+                })
+                .ToListAsync();
         }
 
         public async Task<Dictionary<string, int>> GetQuestionStatisticsAsync(int subjectId)
@@ -154,15 +186,25 @@ namespace BussinessLayer.Services
             return (dtos, totalCount);
         }
 
-        public async Task<bool> RestoreQuestionAsync(int id)
+        public async Task<bool> RestoreQuestionAsync(int id, int userId)
         {
-            await _repository.RestoreAsync(id);
+            var question = await _repository.GetByIdAsync(id);
+            if (question != null)
+            {
+                await _repository.RestoreAsync(id);
+                await _activityLogService.LogActivityAsync(question.Id, userId, "Restored", question.Content);
+            }
             return true;
         }
 
-        public async Task<bool> HardDeleteQuestionAsync(int id)
+        public async Task<bool> HardDeleteQuestionAsync(int id, int userId)
         {
-            await _repository.HardDeleteAsync(id);
+            var question = await _repository.GetByIdAsync(id);
+            if (question != null)
+            {
+                await _repository.HardDeleteAsync(id);
+                await _activityLogService.LogActivityAsync(null, userId, "HardDeleted", question.Content);
+            }
             return true;
         }
     }

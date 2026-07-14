@@ -36,7 +36,7 @@ namespace BussinessLayer.Gateways
             
             // Redirect to our internal SePayCheckout page instead of external QR tool
             string safeReturnUrl = request.ReturnUrl ?? "/";
-            var url = $"/Payment/SePayCheckout?bankId={bankId}&accountNo={accountNo}&amount={amount}&content={content}&returnUrl={Uri.EscapeDataString(safeReturnUrl)}";
+            var url = $"/Payment/SePayCheckout?bankId={bankId}&accountNo={accountNo}&amount={amount}&content={content}&returnUrl={Uri.EscapeDataString(safeReturnUrl)}&transactionId={request.TransactionId}";
             return Task.FromResult(url);
         }
 

@@ -66,58 +66,113 @@
 
     <form method="post">
         <input type="hidden" asp-for="QuizId" />
+        <input type="hidden" asp-for="SubjectId" />
         
         <div class="brutal-card">
             <h2 style="font-weight: 800; margin-bottom: 15px;">Thông tin chung</h2>
             
             <label style="font-weight: 700;">Tên bài thi</label>
-            <input type="text" asp-for="QuizInput.Title" class="brutal-input" required placeholder="VD: Kiểm tra giữa kỳ AI..." />
+            <input type="text" asp-for="QuizInput.Title" class="brutal-input" required placeholder="VD: Kiểm tra giữa kỳ AI..." disabled="@(Model.IsAdmin ? "disabled" : null)" />
 
             <label style="font-weight: 700;">Mô tả</label>
-            <textarea asp-for="QuizInput.Description" class="brutal-input" rows="3" placeholder="Ghi chú thêm cho sinh viên..."></textarea>
+            <textarea asp-for="QuizInput.Description" class="brutal-input" rows="3" placeholder="Ghi chú thêm cho sinh viên..." disabled="@(Model.IsAdmin ? "disabled" : null)"></textarea>
 
             <div style="display: flex; gap: 15px;">
                 <div style="flex: 1;">
                     <label style="font-weight: 700;">Thời gian (phút)</label>
-                    <input type="number" asp-for="QuizInput.TimeLimitMinutes" class="brutal-input" min="1" required />
+                    <input type="number" asp-for="QuizInput.TimeLimitMinutes" class="brutal-input" min="1" required disabled="@(Model.IsAdmin ? "disabled" : null)" />
                 </div>
                 <div style="flex: 1;">
                     <label style="font-weight: 700;">Số lần thi tối đa</label>
-                    <input type="number" asp-for="QuizInput.MaxAttempts" class="brutal-input" min="1" required />
+                    <input type="number" asp-for="QuizInput.MaxAttempts" class="brutal-input" min="1" required disabled="@(Model.IsAdmin ? "disabled" : null)" />
                 </div>
             </div>
 
             <label style="font-weight: 700;">Mật khẩu truy cập (Tùy chọn)</label>
-            <input type="text" asp-for="QuizInput.AccessCode" class="brutal-input" placeholder="Để trống nếu không cần mật khẩu" />
+            <input type="text" asp-for="QuizInput.AccessCode" class="brutal-input" placeholder="Để trống nếu không cần mật khẩu" disabled="@(Model.IsAdmin ? "disabled" : null)" />
 
             <div style="display: flex; gap: 15px;">
                 <div style="flex: 1;">
                     <label style="font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
-                        <input type="checkbox" asp-for="QuizInput.ShowScoreAfterSubmit" style="width: 20px; height: 20px;" />
+                        <input type="checkbox" asp-for="QuizInput.ShowScoreAfterSubmit" style="width: 20px; height: 20px;" disabled="@(Model.IsAdmin ? "disabled" : null)" />
                         Hiển thị điểm sau khi nộp
                     </label>
                 </div>
                 <div style="flex: 1;">
                     <label style="font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
-                        <input type="checkbox" asp-for="QuizInput.IsShuffled" style="width: 20px; height: 20px;" />
+                        <input type="checkbox" asp-for="QuizInput.IsShuffled" style="width: 20px; height: 20px;" disabled="@(Model.IsAdmin ? "disabled" : null)" />
                         Đảo vị trí đáp án (A,B,C,D)
                     </label>
                 </div>
             </div>
 
             <label style="font-weight: 700;">Cách tính điểm (nếu thi nhiều lần)</label>
-            <select asp-for="QuizInput.GradingMethod" class="brutal-input">
+            <select asp-for="QuizInput.GradingMethod" class="brutal-input" disabled="@(Model.IsAdmin ? "disabled" : null)">
                 <option value="Highest">Lấy điểm cao nhất</option>
                 <option value="Average">Lấy điểm trung bình</option>
                 <option value="Latest">Lấy điểm lần cuối</option>
             </select>
 
             <div style="margin-top: 20px; display: flex; gap: 15px;">
-                <button type="submit" class="brutal-btn" style="width: 100%;">LƯU THAY ĐỔI</button>
-                <button type="button" onclick="history.back()" class="brutal-btn" style="background-color: var(--white); color: var(--black); text-align: center; width: 100%;">
+                @if (!Model.IsAdmin)
+                {
+                    <button type="submit" class="brutal-btn" style="width: 100%;">LƯU THAY ĐỔI</button>
+                }
+                <a href="/Lecturer/ManageSubject?SubjectId=@Model.SubjectId" class="brutal-btn" style="background-color: var(--white); color: var(--black); text-align: center; width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
                     QUAY LẠI
-                </button>
+                </a>
             </div>
         </div>
     </form>
+
+    @if (Model.QuizQuestions != null && Model.QuizQuestions.Any())
+    {
+        <div class="brutal-card">
+            <h2 style="font-weight: 800; margin-bottom: 15px; color: var(--pink);">
+                <i class="fa-solid fa-list-check"></i> Danh sách câu hỏi (@Model.QuizQuestions.Count)
+            </h2>
+
+            @foreach (var group in Model.QuizQuestions.GroupBy(q => q.VariantIndex).OrderBy(g => g.Key))
+            {
+                <div style="margin-bottom: 20px; border: 2px solid var(--black); padding: 15px; background: #f9f9f9;">
+                    <h3 style="font-weight: 900; font-size: 16px; margin-bottom: 10px; color: var(--blue);">MÃ ĐỀ @group.Key</h3>
+                    @{ int qIndex = 1; }
+                    @foreach (var q in group)
+                    {
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ccc;">
+                            <div style="font-weight: 800; font-size: 14px; margin-bottom: 8px;">
+                                Câu @qIndex: @q.Content
+                            </div>
+                            
+                            @if (q.Options != null && q.Options.Any())
+                            {
+                                <div style="margin-bottom: 8px; font-size: 13px; margin-left: 15px;">
+                                    @for (int i = 0; i < q.Options.Count; i++)
+                                    {
+                                        char letter = (char)('A' + i);
+                                        <div style="margin-bottom: 4px;">
+                                            <strong>@letter.</strong> @q.Options[i]
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <div style="font-size: 13px;">
+                                <span style="background: var(--green); color: var(--white); padding: 2px 6px; font-weight: 800; border: 1px solid var(--black); margin-right: 10px;">
+                                    Đáp án: @q.CorrectAnswer
+                                </span>
+                                @if (!string.IsNullOrEmpty(q.Explanation))
+                                {
+                                    <span style="color: #666; font-style: italic;">
+                                        Giải thích: @q.Explanation
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                        qIndex++;
+                    }
+                </div>
+            }
+        </div>
+    }
 </div>

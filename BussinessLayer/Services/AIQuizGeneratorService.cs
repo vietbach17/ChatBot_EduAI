@@ -134,12 +134,25 @@ Yêu cầu chi tiết:
             }
         }
 
-        public async Task<IEnumerable<AIGenerationLog>> GetGenerationLogsAsync(int lecturerId)
+        public async Task<IEnumerable<AIGenerationLogDto>> GetGenerationLogsAsync(int lecturerId)
         {
             return await _context.AIGenerationLogs
                 .Include(l => l.Subject)
                 .Where(l => l.LecturerId == lecturerId)
                 .OrderByDescending(l => l.CreatedAt)
+                .Select(l => new AIGenerationLogDto
+                {
+                    Id = l.Id,
+                    SubjectId = l.SubjectId,
+                    SubjectCode = l.Subject.Code,
+                    SubjectName = l.Subject.Name,
+                    Topic = l.Topic,
+                    Difficulty = l.Difficulty,
+                    QuestionType = l.QuestionType,
+                    Quantity = l.Quantity,
+                    CreatedAt = l.CreatedAt,
+                    GeneratedQuestionsJson = l.GeneratedQuestionsJson
+                })
                 .ToListAsync();
         }
     }

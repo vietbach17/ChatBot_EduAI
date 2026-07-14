@@ -6,9 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using BussinessLayer.DTOs;
-using BussinessLayer.Services;
 using BussinessLayer.IServices;
-using DataAccessLayer.Entities;
 
 namespace PresentationLayer.Pages.Lecturer
 {
@@ -41,8 +39,8 @@ namespace PresentationLayer.Pages.Lecturer
         [BindProperty]
         public List<SelectedQuestionViewModel> GeneratedQuestions { get; set; } = new List<SelectedQuestionViewModel>();
 
-        public IEnumerable<Subject> Subjects { get; set; } = new List<Subject>();
-        public IEnumerable<AIGenerationLog> GenerationLogs { get; set; } = new List<AIGenerationLog>();
+        public IEnumerable<SubjectDto> Subjects { get; set; } = new List<SubjectDto>();
+        public IEnumerable<AIGenerationLogDto> GenerationLogs { get; set; } = new List<AIGenerationLogDto>();
 
         [TempData]
         public string? StatusMessage { get; set; }
@@ -167,7 +165,7 @@ namespace PresentationLayer.Pages.Lecturer
             return new JsonResult(new {
                 success = true,
                 topic = target.Topic,
-                subjectName = target.Subject.Name,
+                subjectName = target.SubjectName,
                 difficulty = target.Difficulty,
                 questionType = target.QuestionType,
                 createdAt = target.CreatedAt.ToString("dd/MM/yyyy HH:mm"),
@@ -190,6 +188,7 @@ namespace PresentationLayer.Pages.Lecturer
         }
     }
 
+    /// <summary>ViewModel một câu hỏi do AI sinh ra, kèm cờ chọn để giảng viên duyệt trước khi lưu.</summary>
     public class SelectedQuestionViewModel
     {
         public bool IsSelected { get; set; }

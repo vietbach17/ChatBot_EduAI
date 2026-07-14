@@ -2,7 +2,6 @@ using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using BussinessLayer.Services;
-using BussinessLayer.IServices;
 using DataAccessLayer;
 using DataAccessLayer.Repositories;
 using DataAccessLayer.IRepositories;
@@ -33,11 +32,14 @@ builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanReposito
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<IDocumentActivityLogRepository, DocumentActivityLogRepository>();
+builder.Services.AddScoped<IQuizActivityLogRepository, QuizActivityLogRepository>();
+builder.Services.AddScoped<IQuestionBankActivityLogRepository, QuestionBankActivityLogRepository>();
 builder.Services.AddScoped<IQuestionBankRepository, QuestionBankRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
 builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
 builder.Services.AddScoped<IAddonPackageRepository, AddonPackageRepository>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
 
 // Services
 builder.Services.AddHttpClient();
@@ -49,6 +51,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ISubjectService, SubjectService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IDocumentActivityLogService, DocumentActivityLogService>();
+builder.Services.AddScoped<IQuizActivityLogService, QuizActivityLogService>();
+builder.Services.AddScoped<IQuestionBankActivityLogService, QuestionBankActivityLogService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
 builder.Services.AddScoped<IVNPayService, VNPayService>();
@@ -62,6 +66,7 @@ builder.Services.AddScoped<PaymentGatewayFactory>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IPaymentHistoryService, PaymentHistoryService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 // builder.Services.AddScoped<IQuizAttemptService, QuizAttemptService>(); // (uncomment when implemented)
 builder.Services.AddHostedService<QuotaResetBackgroundService>();
 

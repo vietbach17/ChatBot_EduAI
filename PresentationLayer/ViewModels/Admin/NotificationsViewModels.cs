@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PresentationLayer.ViewModels.Admin
 {
+    /// <summary>ViewModel gửi thông báo qua email: đối tượng nhận, tiêu đề và nội dung.</summary>
     public class NotificationSendViewModel
     {
         public string TargetAudience { get; set; } = "All";

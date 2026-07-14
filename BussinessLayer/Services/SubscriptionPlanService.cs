@@ -17,11 +17,34 @@ namespace BussinessLayer.Services
     public class SubscriptionPlanService : ISubscriptionPlanService
     {
         private readonly ISubscriptionPlanRepository _repo;
+        private readonly IAddonPackageRepository _addonRepo;
 
-        public SubscriptionPlanService(ISubscriptionPlanRepository repo)
+        public SubscriptionPlanService(ISubscriptionPlanRepository repo, IAddonPackageRepository addonRepo)
         {
             _repo = repo;
+            _addonRepo = addonRepo;
         }
+
+        public async Task<List<AddonPackageDto>> GetActiveAddonsAsync()
+        {
+            var addons = await _addonRepo.GetAllActiveAsync();
+            return addons.Select(ToAddonDto).ToList();
+        }
+
+        public async Task<AddonPackageDto?> GetAddonByIdAsync(int id)
+        {
+            var addon = await _addonRepo.GetByIdAsync(id);
+            return addon == null ? null : ToAddonDto(addon);
+        }
+
+        private static AddonPackageDto ToAddonDto(AddonPackage a) => new AddonPackageDto
+        {
+            Id = a.Id,
+            Name = a.Name,
+            Price = a.Price,
+            QuotaAmount = a.QuotaAmount,
+            IsActive = a.IsActive
+        };
 
         public async Task<IEnumerable<SubscriptionPlanDto>> GetAllAsync()
         {

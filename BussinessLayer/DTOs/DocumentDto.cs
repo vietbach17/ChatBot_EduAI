@@ -23,6 +23,7 @@ namespace BussinessLayer.DTOs
         public bool IsDeleted { get; set; }
     }
 
+    /// <summary>Trạng thái xử lý tài liệu: Đang xử lý, Đã lập chỉ mục (embedding), hoặc Lỗi.</summary>
     public enum DocumentStatus
     {
         Processing = 0,

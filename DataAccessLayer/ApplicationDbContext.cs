@@ -22,6 +22,8 @@ namespace DataAccessLayer
         public DbSet<AddonPackage> AddonPackages { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
         public DbSet<DocumentActivityLog> DocumentActivityLogs { get; set; }
+        public DbSet<QuizActivityLog> QuizActivityLogs { get; set; }
+        public DbSet<QuestionBankActivityLog> QuestionBankActivityLogs { get; set; }
         public DbSet<QuestionBank> QuestionBanks { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<QuizQuestion> QuizQuestions { get; set; }
@@ -29,6 +31,7 @@ namespace DataAccessLayer
         public DbSet<AIGenerationLog> AIGenerationLogs { get; set; }
         public DbSet<QuizAttempt> QuizAttempts { get; set; }
         public DbSet<QuizAnswer> QuizAnswers { get; set; }
+        public DbSet<Report> Reports { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -236,6 +239,19 @@ namespace DataAccessLayer
                 .WithMany()
                 .HasForeignKey(qa => qa.QuestionBankId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Report: xóa người gửi thì xóa luôn báo cáo; admin xử lý dùng Restrict để tránh multiple cascade path
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.Reporter)
+                .WithMany()
+                .HasForeignKey(r => r.ReporterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.HandledByAdmin)
+                .WithMany()
+                .HasForeignKey(r => r.HandledByAdminId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

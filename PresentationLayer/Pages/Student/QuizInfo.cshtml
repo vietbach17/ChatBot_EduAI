@@ -1,0 +1,364 @@
+@page "{id:int}"
+@model PresentationLayer.Pages.Student.QuizInfoModel
+@{
+    ViewData["Title"] = "Thông tin bài thi";
+    ViewBag.ActiveMenu = "StudentQuizzes";
+}
+
+@section Styles {
+<style>
+    .quiz-info-wrapper {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+    .quiz-header-banner {
+        background-color: var(--pink);
+        color: var(--white);
+        padding: 30px;
+        border: 4px solid var(--black);
+        box-shadow: 6px 6px 0px var(--black);
+        margin-bottom: 30px;
+    }
+    .quiz-title-tag {
+        font-size: 32px;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin: 0 0 10px 0;
+    }
+    .quiz-desc {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+    }
+    .quiz-meta-flex {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    .meta-item {
+        background: var(--white);
+        border: 3px solid var(--black);
+        box-shadow: 3px 3px 0px var(--black);
+        padding: 15px 20px;
+        font-weight: 800;
+        font-size: 14px;
+        flex: 1;
+        min-width: 200px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .meta-item i { font-size: 18px; color: var(--blue); }
+    .quiz-action-area {
+        background: #f4f4f4;
+        border: 3px solid var(--black);
+        padding: 25px;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .btn-start-quiz {
+        background-color: var(--yellow);
+        color: var(--black);
+        border: 4px solid var(--black);
+        padding: 15px 40px;
+        font-weight: 900;
+        font-size: 20px;
+        text-transform: uppercase;
+        box-shadow: 4px 4px 0px var(--black);
+        cursor: pointer;
+        transition: 0.1s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+    }
+    .btn-start-quiz:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--black); }
+    .brutal-input {
+        border: 3px solid var(--black);
+        padding: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        width: 300px;
+        max-width: 100%;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    .no-more-attempts {
+        font-size: 18px;
+        font-weight: 800;
+        color: red;
+    }
+    .attempts-header {
+        font-size: 22px;
+        font-weight: 900;
+        text-transform: uppercase;
+        border-bottom: 4px solid var(--black);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .attempts-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 3px solid var(--black);
+        margin-bottom: 30px;
+        background: var(--white);
+    }
+    .attempts-table th {
+        background-color: var(--black);
+        color: var(--white);
+        padding: 15px;
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 14px;
+        border: 2px solid var(--black);
+        text-align: left;
+    }
+    .attempts-table td {
+        padding: 15px;
+        border: 2px solid var(--black);
+        font-weight: 700;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+    .attempts-table tr:nth-child(even) td { background-color: #f9f9f9; }
+    .status-graded { color: var(--green); font-weight: 900; }
+    .status-inprogress { color: orange; font-weight: 900; }
+    .btn-review {
+        background-color: var(--blue);
+        color: var(--white);
+        border: 2px solid var(--black);
+        padding: 8px 15px;
+        font-weight: 800;
+        font-size: 13px;
+        text-decoration: none;
+        display: inline-block;
+        box-shadow: 2px 2px 0px var(--black);
+        text-transform: uppercase;
+        transition: 0.1s;
+    }
+    .btn-review:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px var(--black); }
+    .btn-continue {
+        background-color: var(--yellow);
+        color: var(--black);
+        border: 2px solid var(--black);
+        padding: 8px 15px;
+        font-weight: 800;
+        font-size: 13px;
+        text-decoration: none;
+        display: inline-block;
+        box-shadow: 2px 2px 0px var(--black);
+        text-transform: uppercase;
+        transition: 0.1s;
+    }
+    .btn-continue:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px var(--black); }
+    .btn-back {
+        background-color: var(--white);
+        color: var(--black);
+        border: 3px solid var(--black);
+        padding: 12px 25px;
+        font-weight: 900;
+        font-size: 16px;
+        text-decoration: none;
+        display: inline-block;
+        box-shadow: 4px 4px 0px var(--black);
+        text-transform: uppercase;
+        transition: 0.1s;
+        cursor: pointer;
+    }
+    .btn-back:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--black); }
+    .empty-notice {
+        background: #f9f9f9;
+        border: 3px dashed var(--black);
+        padding: 30px;
+        text-align: center;
+        font-weight: 800;
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 30px;
+    }
+    .error-card {
+        background-color: #ffcccc;
+        border: 3px solid red;
+        box-shadow: 4px 4px 0px red;
+        padding: 20px;
+        font-weight: 700;
+        color: red;
+        margin-bottom: 20px;
+    }
+</style>
+}
+
+<div class="quiz-info-wrapper">
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="error-card">
+            <strong><i class="fa-solid fa-triangle-exclamation"></i> Lỗi:</strong> @Model.ErrorMessage
+        </div>
+    }
+    else
+    {
+        <div class="quiz-header-banner">
+            <h1 class="quiz-title-tag"><i class="fa-solid fa-file-signature"></i> @Model.QuizInfo.Title</h1>
+            @if (!string.IsNullOrEmpty(Model.QuizInfo.Description))
+            {
+                <p class="quiz-desc">@Model.QuizInfo.Description</p>
+            }
+        </div>
+
+        <div class="quiz-meta-flex">
+            <div class="meta-item">
+                <i class="fa-solid fa-rotate-right"></i> 
+                <span>Số lượt làm: <strong>@Model.QuizInfo.MaxAttempts</strong></span>
+            </div>
+            <div class="meta-item">
+                <i class="fa-solid fa-clock"></i> 
+                <span>Thời gian: <strong>@Model.QuizInfo.TimeLimitMinutes phút</strong></span>
+            </div>
+            <div class="meta-item">
+                <i class="fa-solid fa-star"></i> 
+                <span>Tính điểm: <strong>@Model.QuizInfo.GradingMethod</strong></span>
+            </div>
+            @if (Model.QuizInfo.HasPassword)
+            {
+                <div class="meta-item" style="color: var(--pink);">
+                    <i class="fa-solid fa-lock" style="color: var(--pink);"></i> 
+                    <strong>Bài thi có mật khẩu</strong>
+                </div>
+            }
+        </div>
+
+        @if (true)
+        {
+            var inProgressAttempt = Model.QuizInfo.Attempts?.FirstOrDefault(a => a.Status == "InProgress");
+            bool canTakeMore = Model.QuizInfo.MaxAttempts == 0 || (Model.QuizInfo.Attempts?.Count ?? 0) < Model.QuizInfo.MaxAttempts;
+
+            <div class="quiz-action-area">
+                @if (inProgressAttempt != null)
+                {
+                    <h3 style="margin-top: 0; font-weight: 900; color: orange;"><i class="fa-solid fa-spinner"></i> BẠN CÓ BÀI THI ĐANG LÀM DỞ</h3>
+                    <a href="/Student/TakeQuiz/@inProgressAttempt.AttemptId" class="btn-start-quiz">
+                        <i class="fa-solid fa-play"></i> TIẾP TỤC LÀM BÀI
+                    </a>
+                }
+                else if (canTakeMore)
+                {
+                    <form method="post" action="/Student/TakeQuiz/@Model.QuizInfo.Id?handler=Start" class="start-quiz-form">
+                        @if (Model.QuizInfo.HasPassword)
+                        {
+                            <div style="margin-bottom: 15px;">
+                                <label style="font-weight: 900; font-size: 16px; display: block; margin-bottom: 10px;">
+                                    <i class="fa-solid fa-key"></i> NHẬP MẬT KHẨU BÀI THI:
+                                </label>
+                                <input type="password" name="accessCode" required class="brutal-input" placeholder="Mật khẩu..." />
+                            </div>
+                        }
+                        <button type="submit" class="btn-start-quiz">
+                            <i class="fa-solid fa-rocket"></i> BẮT ĐẦU LÀM BÀI
+                        </button>
+                        @Html.AntiForgeryToken()
+                    </form>
+                }
+                else
+                {
+                    <div class="no-more-attempts">
+                        <i class="fa-solid fa-ban"></i> Bạn đã hết số lượt làm bài cho phép.
+                    </div>
+                }
+            </div>
+        }
+
+
+
+        <div class="attempts-header">Các lượt làm bài của bạn</div>
+
+        @if (Model.QuizInfo.Attempts != null && Model.QuizInfo.Attempts.Any())
+        {
+            <table class="attempts-table">
+                <thead>
+                    <tr>
+                        <th>Lượt</th>
+                        <th>Trạng Thái</th>
+                        <th>Điểm</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int attemptNumber = 1;
+                        foreach (var attempt in Model.QuizInfo.Attempts)
+                        {
+                            <tr>
+                                <td style="font-weight: 900; font-size: 16px;">@attemptNumber</td>
+                                <td>
+                                    @if (attempt.Status == "Graded")
+                                    {
+                                        <span class="status-graded"><i class="fa-solid fa-check-circle"></i> Đã hoàn thành</span>
+                                    }
+                                    else if (attempt.Status == "InProgress")
+                                    {
+                                        <span class="status-inprogress"><i class="fa-solid fa-spinner"></i> Đang làm</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@attempt.Status</span>
+                                    }
+                                    <div style="font-size: 12px; color: #555; font-weight: 600; margin-top: 6px;">
+                                        <i class="fa-regular fa-clock"></i> Bắt đầu: @attempt.StartTime.ToString("dd/MM/yyyy HH:mm")
+                                    </div>
+                                    @if (attempt.Status == "Graded" && attempt.EndTime.HasValue)
+                                    {
+                                        <div style="font-size: 12px; color: #555; font-weight: 600;">
+                                            <i class="fa-solid fa-flag-checkered"></i> Nộp bài: @attempt.EndTime.Value.ToString("dd/MM/yyyy HH:mm")
+                                        </div>
+                                    }
+                                </td>
+                                <td style="font-size: 18px; font-weight: 900;">
+                                    @if (attempt.Status == "Graded" && Model.QuizInfo.ShowScoreAfterSubmit)
+                                    {
+                                        <span style="color: var(--blue);">@attempt.Score.ToString("0.00")</span>
+                                    }
+                                    else if (attempt.Status == "Graded")
+                                    {
+                                        <span style="color: #777; font-style: italic; font-size: 14px;">Ẩn</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #ccc;">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (attempt.Status == "Graded")
+                                    {
+                                        <a href="/Student/QuizResult/@attempt.AttemptId" class="btn-review">
+                                            <i class="fa-solid fa-eye"></i> Xem lại
+                                        </a>
+                                    }
+                                    else if (attempt.Status == "InProgress")
+                                    {
+                                        <a href="/Student/TakeQuiz/@attempt.AttemptId" class="btn-continue">
+                                            <i class="fa-solid fa-play"></i> Tiếp tục
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                            attemptNumber++;
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-notice">
+                <i class="fa-solid fa-inbox" style="font-size: 32px; margin-bottom: 15px; display: block;"></i>
+                Bạn chưa thực hiện lượt làm bài nào.
+            </div>
+        }
+
+        <a href="/Student/QuizList" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> QUAY LẠI DANH SÁCH
+        </a>
+    }
+</div>

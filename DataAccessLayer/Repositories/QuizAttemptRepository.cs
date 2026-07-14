@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessLayer.Repositories
 {
+    /// <summary>Repository truy vấn Lượt làm bài thi và câu trả lời của sinh viên từ PostgreSQL.</summary>
     public class QuizAttemptRepository : IQuizAttemptRepository
     {
         private readonly ApplicationDbContext _context;
@@ -32,6 +33,7 @@ namespace DataAccessLayer.Repositories
         public async Task<QuizAttempt?> GetAttemptWithAnswersAsync(int id)
         {
             return await _context.QuizAttempts
+                .Include(q => q.Quiz)
                 .Include(q => q.Answers)
                 .ThenInclude(a => a.QuestionBank)
                 .FirstOrDefaultAsync(q => q.Id == id);

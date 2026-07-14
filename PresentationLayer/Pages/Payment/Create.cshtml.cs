@@ -22,22 +22,19 @@ namespace PresentationLayer.Pages.Payment
         private readonly ISubscriptionPlanService _planService;
         private readonly IPaymentService _paymentService;
         private readonly PaymentGatewayFactory _gatewayFactory;
-        private readonly DataAccessLayer.IRepositories.IAddonPackageRepository _addonRepository;
 
         public CreateModel(
             ISubscriptionPlanService planService,
             IPaymentService paymentService,
-            PaymentGatewayFactory gatewayFactory,
-            DataAccessLayer.IRepositories.IAddonPackageRepository addonRepository)
+            PaymentGatewayFactory gatewayFactory)
         {
             _planService = planService;
             _paymentService = paymentService;
             _gatewayFactory = gatewayFactory;
-            _addonRepository = addonRepository;
         }
 
         public SubscriptionPlanDto? Plan { get; set; }
-        public DataAccessLayer.Entities.AddonPackage? Addon { get; set; }
+        public AddonPackageDto? Addon { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string? plan, int? addonId)
         {
@@ -48,7 +45,7 @@ namespace PresentationLayer.Pages.Payment
 
             if (addonId.HasValue)
             {
-                var targetAddon = await _addonRepository.GetByIdAsync(addonId.Value);
+                var targetAddon = await _planService.GetAddonByIdAsync(addonId.Value);
                 if (targetAddon == null || !targetAddon.IsActive || targetAddon.Price <= 0)
                 {
                     return RedirectToPage("/Subscription/Index");
@@ -96,7 +93,7 @@ namespace PresentationLayer.Pages.Payment
                 if (addonId.HasValue)
                 {
                     transaction = await _paymentService.CreateAddonTransactionAsync(userId, addonId.Value, paymentMethod);
-                    var addon = await _addonRepository.GetByIdAsync(addonId.Value);
+                    var addon = await _planService.GetAddonByIdAsync(addonId.Value);
                     orderDesc = $"Thanh toan mua goi nap them {addon?.Name} cho account {User.Identity?.Name}";
                 }
                 else

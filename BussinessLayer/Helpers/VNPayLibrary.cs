@@ -5,6 +5,9 @@ using System.Text;
 
 namespace BussinessLayer.Helpers
 {
+    /// <summary>
+    /// Thư viện hỗ trợ tích hợp VNPay: dựng URL thanh toán, tạo và kiểm tra chữ ký bảo mật (HMAC-SHA512).
+    /// </summary>
     public class VNPayLibrary
     {
         private SortedList<string, string> _requestData = new SortedList<string, string>(new VNPayCompare());
@@ -95,6 +98,7 @@ namespace BussinessLayer.Helpers
         }
     }
 
+    /// <summary>Bộ so sánh chuỗi theo thứ tự Ordinal, dùng để sắp xếp tham số VNPay trước khi ký.</summary>
     public class VNPayCompare : IComparer<string>
     {
         public int Compare(string? x, string? y)
@@ -107,6 +111,7 @@ namespace BussinessLayer.Helpers
         }
     }
 
+    /// <summary>Tiện ích mã hóa cho VNPay: băm HMAC-SHA512 và lấy địa chỉ IP máy khách.</summary>
     public static class Utils
     {
         public static string HmacSHA512(string key, string inputData)

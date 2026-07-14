@@ -9,6 +9,10 @@ using DataAccessLayer.IRepositories;
 
 namespace BussinessLayer.Services
 {
+    /// <summary>
+    /// Dịch vụ Quản lý Bài thi. Xử lý nghiệp vụ tạo/sửa/xóa bài thi và chia mã đề cho Giảng viên,
+    /// cùng luồng làm bài của Sinh viên: bắt đầu, lưu tiến trình, nộp bài và chấm điểm.
+    /// </summary>
     public class QuizService : IQuizService
     {
         private readonly IQuizRepository _quizRepo;
@@ -80,10 +84,10 @@ namespace BussinessLayer.Services
             return quiz.Id;
         }
 
-        public async Task<QuizStatisticsDto> GetQuizStatisticsAsync(int quizId, int lecturerId)
+        public async Task<QuizStatisticsDto> GetQuizStatisticsAsync(int quizId, int lecturerId, bool isAdmin = false)
         {
             var quiz = await _quizRepo.GetByIdIncludeDeletedAsync(quizId);
-            if (quiz == null || quiz.LecturerId != lecturerId)
+            if (quiz == null || (!isAdmin && quiz.LecturerId != lecturerId))
                 throw new Exception("Bài thi không tồn tại hoặc bạn không có quyền truy cập.");
 
             var attempts = await _attemptRepo.GetAllAttemptsForQuizAsync(quizId);
@@ -92,6 +96,7 @@ namespace BussinessLayer.Services
             var stats = new QuizStatisticsDto
             {
                 QuizId = quiz.Id,
+                SubjectId = quiz.SubjectId,
                 QuizTitle = quiz.Title,
                 TotalAttempts = gradedAttempts.Count,
                 AverageScore = 0,
@@ -118,14 +123,15 @@ namespace BussinessLayer.Services
             return stats;
         }
 
-        public async Task<UpdateQuizDto> GetQuizForUpdateAsync(int lecturerId, int quizId)
+        public async Task<UpdateQuizDto> GetQuizForUpdateAsync(int lecturerId, int quizId, bool isAdmin = false)
         {
             var quiz = await _quizRepo.GetByIdAsync(quizId);
-            if (quiz == null || quiz.LecturerId != lecturerId)
+            if (quiz == null || (!isAdmin && quiz.LecturerId != lecturerId))
                 throw new Exception("Bài thi không tồn tại hoặc bạn không có quyền cập nhật.");
 
             return new UpdateQuizDto
             {
+                SubjectId = quiz.SubjectId,
                 Title = quiz.Title,
                 Description = quiz.Description,
                 TimeLimitMinutes = quiz.TimeLimitMinutes,
@@ -137,10 +143,47 @@ namespace BussinessLayer.Services
             };
         }
 
-        public async Task UpdateQuizAsync(int lecturerId, int quizId, UpdateQuizDto dto)
+        public async Task<List<QuizQuestionDetailDto>> GetQuizQuestionsDetailAsync(int quizId, int lecturerId, bool isAdmin = false)
         {
             var quiz = await _quizRepo.GetByIdAsync(quizId);
-            if (quiz == null || quiz.LecturerId != lecturerId)
+            if (quiz == null || (!isAdmin && quiz.LecturerId != lecturerId))
+                throw new Exception("Bài thi không tồn tại hoặc bạn không có quyền truy cập.");
+
+            var allQuestions = await _quizRepo.GetQuizQuestionsAsync(quizId);
+            var result = new List<QuizQuestionDetailDto>();
+
+            foreach (var q in allQuestions)
+            {
+                if (q.QuestionBank == null) continue;
+
+                var options = new List<string>();
+                if (!string.IsNullOrEmpty(q.QuestionBank.OptionsJson))
+                {
+                    try { options = System.Text.Json.JsonSerializer.Deserialize<List<string>>(q.QuestionBank.OptionsJson) ?? new List<string>(); }
+                    catch { }
+                }
+
+                result.Add(new QuizQuestionDetailDto
+                {
+                    QuestionId = q.QuestionBankId,
+                    VariantIndex = q.VariantIndex,
+                    Content = q.QuestionBank.Content,
+                    QuestionType = q.QuestionBank.QuestionType,
+                    Difficulty = q.QuestionBank.Difficulty,
+                    CorrectAnswer = q.QuestionBank.CorrectAnswer ?? "",
+                    // Ngân hàng câu hỏi hiện chưa lưu lời giải thích -> để trống.
+                    Explanation = string.Empty,
+                    Options = options
+                });
+            }
+
+            return result;
+        }
+
+        public async Task UpdateQuizAsync(int lecturerId, int quizId, UpdateQuizDto dto, bool isAdmin = false)
+        {
+            var quiz = await _quizRepo.GetByIdAsync(quizId);
+            if (quiz == null || (!isAdmin && quiz.LecturerId != lecturerId))
                 throw new Exception("Bài thi không tồn tại hoặc bạn không có quyền cập nhật.");
 
             quiz.Title = dto.Title;
@@ -155,10 +198,10 @@ namespace BussinessLayer.Services
             await _quizRepo.UpdateAsync(quiz);
         }
 
-        public async Task DeleteQuizAsync(int lecturerId, int quizId)
+        public async Task DeleteQuizAsync(int lecturerId, int quizId, bool isAdmin = false)
         {
             var quiz = await _quizRepo.GetByIdAsync(quizId);
-            if (quiz == null || quiz.LecturerId != lecturerId)
+            if (quiz == null || (!isAdmin && quiz.LecturerId != lecturerId))
                 throw new Exception("Bài thi không tồn tại hoặc bạn không có quyền xóa.");
 
             await _quizRepo.DeleteAsync(quizId);
@@ -169,12 +212,25 @@ namespace BussinessLayer.Services
         // ==========================================
         public async Task<List<StudentQuizDto>> GetStudentQuizzesAsync(int studentId)
         {
-            var quizzes = await _quizRepo.GetQuizzesForStudentAsync(studentId);
+            var activeQuizzes = await _quizRepo.GetQuizzesForStudentAsync(studentId);
             var attempts = await _attemptRepo.GetAttemptsByStudentAsync(studentId);
+
+            // Bổ sung các bài thi đã bị xóa nhưng sinh viên đã có lịch sử làm bài
+            var attemptedQuizIds = attempts.Select(a => a.QuizId).Distinct().ToList();
+            var activeQuizIds = activeQuizzes.Select(q => q.Id).ToList();
+            var missingQuizIds = attemptedQuizIds.Except(activeQuizIds).ToList();
+
+            var allQuizzesList = activeQuizzes.ToList();
+
+            if (missingQuizIds.Any())
+            {
+                var deletedQuizzes = await _quizRepo.GetQuizzesByIdsIncludeDeletedAsync(missingQuizIds);
+                allQuizzesList.AddRange(deletedQuizzes);
+            }
 
             var result = new List<StudentQuizDto>();
 
-            foreach (var q in quizzes)
+            foreach (var q in allQuizzesList)
             {
                 var studentAttemptsCount = attempts.Count(a => a.QuizId == q.Id);
                 var isCompleted = attempts.Any(a => a.QuizId == q.Id && a.Status == "Graded");
@@ -198,11 +254,49 @@ namespace BussinessLayer.Services
                     TimeLimitMinutes = q.TimeLimitMinutes,
                     MaxAttempts = q.MaxAttempts,
                     AttemptsCount = studentAttemptsCount,
-                    Status = status
+                    Status = status,
+                    HasPassword = !string.IsNullOrEmpty(q.AccessCode),
+                    LatestAttemptId = attempts.Where(a => a.QuizId == q.Id).OrderByDescending(a => a.StartTime).FirstOrDefault()?.Id
                 });
             }
 
             return result.OrderByDescending(q => q.CreatedAt).ToList();
+        }
+
+        public async Task<(bool Success, string Message)> CheckQuizAccessCodeAsync(int studentId, int quizId, string? accessCode)
+        {
+            var quiz = await _quizRepo.GetByIdAsync(quizId);
+            if (quiz == null) return (false, "Bài thi không tồn tại.");
+
+            // Nếu sinh viên đang có bài làm dở, cho phép quay lại mà không cần nhập lại mật khẩu
+            // (đồng nhất với logic trong StartQuizAsync).
+            var previousAttempts = await _attemptRepo.GetAttemptsByStudentAsync(studentId, quizId);
+            if (previousAttempts.Any(a => a.Status == "InProgress"))
+                return (true, string.Empty);
+
+            if (!string.IsNullOrEmpty(quiz.AccessCode) && quiz.AccessCode != accessCode)
+                return (false, "Mật khẩu bài thi không chính xác.");
+            return (true, string.Empty);
+        }
+
+        public async Task<TakeQuizDto?> GetInProgressAttemptSummaryAsync(int studentId, int attemptId)
+        {
+            var attempt = await _attemptRepo.GetAttemptWithAnswersAsync(attemptId);
+            if (attempt == null || attempt.StudentId != studentId || attempt.Status != "InProgress")
+                return null;
+
+            return new TakeQuizDto
+            {
+                AttemptId = attempt.Id,
+                Title = attempt.Quiz?.Title ?? "Bài thi",
+                StartTime = attempt.StartTime,
+                TimeLimitMinutes = attempt.Quiz?.TimeLimitMinutes ?? 0,
+                Questions = attempt.Answers.Select(a => new TakeQuizQuestionDto
+                {
+                    QuestionBankId = a.QuestionBankId,
+                    SelectedAnswer = a.SelectedAnswer
+                }).ToList()
+            };
         }
 
         public async Task<QuizDetailDto> GetQuizDetailAsync(int quizId, int studentId)
@@ -224,7 +318,16 @@ namespace BussinessLayer.Services
                 GradingMethod = quiz.GradingMethod,
                 ShowScoreAfterSubmit = quiz.ShowScoreAfterSubmit,
                 HasPassword = !string.IsNullOrEmpty(quiz.AccessCode),
-                AttemptsDoneByCurrentUser = previousAttempts.Count()
+                AttemptsDoneByCurrentUser = previousAttempts.Count(),
+                Attempts = previousAttempts.Select(a => new QuizAttemptSummaryDto
+                {
+                    AttemptId = a.Id,
+                    StudentName = "", // Not needed for student view
+                    StartTime = a.StartTime,
+                    EndTime = a.EndTime,
+                    Score = a.Score,
+                    Status = a.Status
+                }).OrderBy(a => a.StartTime).ToList()
             };
         }
 
@@ -242,7 +345,7 @@ namespace BussinessLayer.Services
             }).ToList();
         }
 
-        public async Task<TakeQuizDto> StartQuizAsync(int studentId, int quizId, string? accessCode)
+        public async Task<TakeQuizDto> StartQuizAsync(int studentId, int quizId, string? accessCode, bool createNew = false)
         {
             var quiz = await _quizRepo.GetByIdAsync(quizId);
             if (quiz == null)
@@ -257,12 +360,18 @@ namespace BussinessLayer.Services
             if (quiz.EndTime.HasValue && DateTime.UtcNow > quiz.EndTime.Value)
                 throw new Exception("Đã hết hạn làm bài.");
 
-            if (!string.IsNullOrEmpty(quiz.AccessCode) && quiz.AccessCode != accessCode)
-                throw new Exception("Mật khẩu bài thi không chính xác.");
-
             var previousAttempts = await _attemptRepo.GetAttemptsByStudentAsync(studentId, quizId);
             
             var inProgressAttempt = previousAttempts.FirstOrDefault(a => a.Status == "InProgress");
+            
+            // Nếu đã có bài đang làm dở, cho phép quay lại mà không cần check mật khẩu lại
+            if (inProgressAttempt == null)
+            {
+                // Chỉ check mật khẩu khi bắt đầu lượt MỚI
+                if (!string.IsNullOrEmpty(quiz.AccessCode) && quiz.AccessCode != accessCode)
+                    throw new Exception("Mật khẩu bài thi không chính xác.");
+            }
+
             if (inProgressAttempt != null)
             {
                 var attemptWithAnswers = await _attemptRepo.GetAttemptWithAnswersAsync(inProgressAttempt.Id);
@@ -285,6 +394,9 @@ namespace BussinessLayer.Services
                     };
                 }
             }
+
+            if (!createNew)
+                throw new Exception("NO_IN_PROGRESS");
 
             if (previousAttempts.Count() >= quiz.MaxAttempts)
                 throw new Exception("Bạn đã hết số lần làm bài.");
@@ -381,6 +493,33 @@ namespace BussinessLayer.Services
             return options;
         }
 
+        public async Task SaveQuizProgressAsync(int studentId, SubmitQuizDto dto)
+        {
+            var attempt = await _attemptRepo.GetAttemptWithAnswersAsync(dto.AttemptId);
+            
+            if (attempt == null || attempt.StudentId != studentId)
+                throw new Exception("Lần làm bài không tồn tại hoặc bạn không có quyền truy cập.");
+
+            if (attempt.Status != "InProgress")
+                throw new Exception("Bài thi này đã được nộp, không thể lưu.");
+
+            foreach (var answerRecord in attempt.Answers)
+            {
+                var submittedAnswer = dto.Answers.FirstOrDefault(a => a.QuestionBankId == answerRecord.QuestionBankId);
+                
+                if (submittedAnswer != null && !string.IsNullOrEmpty(submittedAnswer.SelectedAnswer))
+                {
+                    answerRecord.SelectedAnswer = submittedAnswer.SelectedAnswer;
+                }
+                else
+                {
+                    answerRecord.SelectedAnswer = null;
+                }
+            }
+
+            await _attemptRepo.UpdateAttemptAsync(attempt);
+        }
+
         public async Task<QuizResultDto> SubmitQuizAsync(int studentId, SubmitQuizDto dto)
         {
             var attempt = await _attemptRepo.GetAttemptWithAnswersAsync(dto.AttemptId);
@@ -396,14 +535,17 @@ namespace BussinessLayer.Services
             // Chấm điểm từng câu
             foreach (var answerRecord in attempt.Answers)
             {
-                // Tìm câu trả lời mà sinh viên gửi lên
-                var submittedAnswer = dto.Answers.FirstOrDefault(a => a.QuestionBankId == answerRecord.QuestionBankId);
+                // Nếu dto có truyền đáp án lên thì cập nhật lại, nếu không thì dùng đáp án đã lưu
+                var submittedAnswer = dto.Answers?.FirstOrDefault(a => a.QuestionBankId == answerRecord.QuestionBankId);
                 
-                if (submittedAnswer != null && !string.IsNullOrEmpty(submittedAnswer.SelectedAnswer))
+                if (submittedAnswer != null)
                 {
-                    answerRecord.SelectedAnswer = submittedAnswer.SelectedAnswer;
-                    
-                    // So sánh với đáp án đúng trong QuestionBank
+                    answerRecord.SelectedAnswer = string.IsNullOrEmpty(submittedAnswer.SelectedAnswer) ? null : submittedAnswer.SelectedAnswer;
+                }
+
+                // Chấm điểm dựa trên answerRecord.SelectedAnswer hiện tại
+                if (!string.IsNullOrEmpty(answerRecord.SelectedAnswer))
+                {
                     if (answerRecord.QuestionBank != null && 
                         answerRecord.SelectedAnswer.Trim().Equals(answerRecord.QuestionBank.CorrectAnswer.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
@@ -417,8 +559,6 @@ namespace BussinessLayer.Services
                 }
                 else
                 {
-                    // Bỏ trống
-                    answerRecord.SelectedAnswer = null;
                     answerRecord.IsCorrect = false;
                 }
             }

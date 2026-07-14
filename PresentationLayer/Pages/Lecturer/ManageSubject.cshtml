@@ -36,7 +36,7 @@
             {
                 <div style="display: flex; gap: 10px;">
                     <button type="button" onclick="document.getElementById('activityLogModal').style.display='flex'" class="brutal-btn" style="background-color: #fff; color: var(--black); border: 2px solid var(--black); padding: 8px 15px; font-weight: 900; box-shadow: 2px 2px 0px var(--black);">
-                        <i class="fa-solid fa-clock-rotate-left"></i> LỊCH SỬ
+                        <i class="fa-solid fa-clock-rotate-left"></i> LỊCH SỬ HOẠT ĐỘNG
                     </button>
                     @if (Model.IsOwner)
                     {
@@ -75,14 +75,17 @@
                                     <a href="/Lecturer/QuizResults?QuizId=@quiz.Id" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 2px solid var(--black); padding: 5px 10px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); text-decoration: none; font-size: 12px;">
                                         <i class="fa-solid fa-chart-simple"></i> THỐNG KÊ
                                     </a>
-                                    <a href="/Lecturer/UpdateQuiz?QuizId=@quiz.Id" class="brutal-btn" style="background-color: var(--blue); color: var(--white); border: 2px solid var(--black); padding: 5px 10px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); text-decoration: none; font-size: 12px;">
-                                        <i class="fa-solid fa-pen"></i> SỬA
-                                    </a>
-                                    <form method="post" asp-page-handler="DeleteQuiz" asp-route-id="@Model.Subject.Id" asp-route-quizId="@quiz.Id" data-confirm="Xóa bài thi '@quiz.Title'? Hành động này không thể hoàn tác nhưng điểm sinh viên đã làm sẽ được giữ lại!" style="display:inline;">
-                                        <button type="submit" class="brutal-btn" style="background-color: #ff4d4f; color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; box-shadow: 2px 2px 0px var(--black);">
-                                            <i class="fa-solid fa-trash"></i> XÓA
-                                        </button>
-                                    </form>
+                                    @if (Model.IsOwner)
+                                    {
+                                        <a href="/Lecturer/UpdateQuiz?QuizId=@quiz.Id" class="brutal-btn" style="background-color: var(--blue); color: var(--white); border: 2px solid var(--black); padding: 5px 10px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); text-decoration: none; font-size: 12px;">
+                                            <i class="fa-solid fa-pen"></i> SỬA
+                                        </a>
+                                        <form method="post" asp-page-handler="DeleteQuiz" asp-route-id="@Model.Subject.Id" asp-route-quizId="@quiz.Id" data-confirm="Xóa bài thi '@quiz.Title'? Hành động này không thể hoàn tác nhưng điểm sinh viên đã làm sẽ được giữ lại!" style="display:inline;">
+                                            <button type="submit" class="brutal-btn" style="background-color: #ff4d4f; color: white; border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 12px; box-shadow: 2px 2px 0px var(--black);">
+                                                <i class="fa-solid fa-trash"></i> XÓA
+                                            </button>
+                                        </form>
+                                    }
                                 </div>
                             </div>
                         }
@@ -248,9 +251,9 @@
         <div style="background: var(--white); border: 4px solid var(--black); padding: 30px; box-shadow: 8px 8px 0px var(--black); width: 800px; max-width: 90%; max-height: 80vh; overflow-y: auto; position: relative;">
             <button type="button" onclick="document.getElementById('activityLogModal').style.display='none'" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; font-weight: 900; cursor: pointer;">&times;</button>
             <h2 style="font-weight: 900; font-size: 22px; color: var(--green); border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase;">
-                <i class="fa-solid fa-clock-rotate-left"></i> LỊCH SỬ THAY ĐỔI TÀI LIỆU
+                <i class="fa-solid fa-clock-rotate-left"></i> LỊCH SỬ HOẠT ĐỘNG
             </h2>
-            
+
             @if(Model.ActivityLogs.Any())
             {
                 <table style="width: 100%; border-collapse: collapse; text-align: left;">
@@ -258,8 +261,9 @@
                         <tr style="background-color: var(--black); color: var(--white); font-weight: 800; font-size: 14px;">
                             <th style="padding: 10px; border: 2px solid var(--black);">Thời gian</th>
                             <th style="padding: 10px; border: 2px solid var(--black);">Giảng viên</th>
+                            <th style="padding: 10px; border: 2px solid var(--black);">Loại</th>
                             <th style="padding: 10px; border: 2px solid var(--black);">Hành động</th>
-                            <th style="padding: 10px; border: 2px solid var(--black);">Tài liệu</th>
+                            <th style="padding: 10px; border: 2px solid var(--black);">Nội dung</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -269,16 +273,28 @@
                                 <td style="padding: 10px; border: 2px solid var(--black);">@ToVnTime(log.Timestamp)</td>
                                 <td style="padding: 10px; border: 2px solid var(--black);">@log.UserName</td>
                                 <td style="padding: 10px; border: 2px solid var(--black);">
+                                    @if(log.Kind == "Quiz") { <span style="color: var(--pink);"><i class="fa-solid fa-file-signature"></i> Bài thi</span> }
+                                    else { <span style="color: var(--blue);"><i class="fa-solid fa-file-lines"></i> Tài liệu</span> }
+                                </td>
+                                <td style="padding: 10px; border: 2px solid var(--black);">
                                     @if(log.Action == "Uploaded") { <span style="color: var(--blue);"><i class="fa-solid fa-upload"></i> Đã tải lên</span> }
+                                    else if(log.Action == "Created") { <span style="color: var(--green);"><i class="fa-solid fa-plus"></i> Đã tạo</span> }
+                                    else if(log.Action == "Updated") { <span style="color: var(--yellow);"><i class="fa-solid fa-pen"></i> Đã sửa</span> }
                                     else if(log.Action == "Deleted") { <span style="color: #dc2626;"><i class="fa-solid fa-trash"></i> Đã xóa</span> }
                                     else if(log.Action == "Moved") { <span style="color: var(--green);"><i class="fa-solid fa-arrows-up-down-left-right"></i> Đã chuyển</span> }
                                     else { @log.Action }
                                 </td>
                                 <td style="padding: 10px; border: 2px solid var(--black);">
-                                    @log.DocumentTitle
-                                    @if (log.DocumentId.HasValue)
+                                    @log.Title
+                                    @if (log.LinkId.HasValue && log.Kind == "Document")
                                     {
-                                        <a href="/ViewDocument?id=@log.DocumentId" target="_blank" style="margin-left: 10px; font-size: 12px; color: var(--blue); font-weight: 900; text-decoration: none; border: 1px solid var(--black); padding: 2px 6px; background-color: var(--white); box-shadow: 1px 1px 0px var(--black);">
+                                        <a href="/ViewDocument?id=@log.LinkId" target="_blank" style="margin-left: 10px; font-size: 12px; color: var(--blue); font-weight: 900; text-decoration: none; border: 1px solid var(--black); padding: 2px 6px; background-color: var(--white); box-shadow: 1px 1px 0px var(--black);">
+                                            <i class="fa-solid fa-eye"></i> Xem
+                                        </a>
+                                    }
+                                    else if (log.LinkId.HasValue && log.Kind == "Quiz")
+                                    {
+                                        <a asp-page="/Lecturer/UpdateQuiz" asp-route-QuizId="@log.LinkId" target="_blank" style="margin-left: 10px; font-size: 12px; color: var(--blue); font-weight: 900; text-decoration: none; border: 1px solid var(--black); padding: 2px 6px; background-color: var(--white); box-shadow: 1px 1px 0px var(--black);">
                                             <i class="fa-solid fa-eye"></i> Xem
                                         </a>
                                     }

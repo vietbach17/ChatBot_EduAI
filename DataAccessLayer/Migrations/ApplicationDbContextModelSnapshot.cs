@@ -534,6 +534,44 @@ namespace DataAccessLayer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DataAccessLayer.Entities.QuestionBankActivityLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("OldContentJson")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("QuestionBankId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("QuestionSnippet")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionBankId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("QuestionBankActivityLogs");
+                });
+
             modelBuilder.Entity("DataAccessLayer.Entities.Quiz", b =>
                 {
                     b.Property<int>("Id")
@@ -608,6 +646,43 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("SubjectId");
 
                     b.ToTable("Quizzes");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuizActivityLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("QuizId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("QuizTitle")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("QuizActivityLogs");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.QuizAnswer", b =>
@@ -710,6 +785,68 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("QuizId");
 
                     b.ToTable("QuizQuestions");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminResponse")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("HandledByAdminId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("RelatedTransactionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReporterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReporterRole")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HandledByAdminId");
+
+                    b.HasIndex("ReporterId");
+
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Subject", b =>
@@ -1100,6 +1237,23 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Subject");
                 });
 
+            modelBuilder.Entity("DataAccessLayer.Entities.QuestionBankActivityLog", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.QuestionBank", "QuestionBank")
+                        .WithMany()
+                        .HasForeignKey("QuestionBankId");
+
+                    b.HasOne("DataAccessLayer.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuestionBank");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DataAccessLayer.Entities.Quiz", b =>
                 {
                     b.HasOne("DataAccessLayer.Entities.User", "Lecturer")
@@ -1117,6 +1271,25 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Lecturer");
 
                     b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.QuizActivityLog", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccessLayer.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.QuizAnswer", b =>
@@ -1174,6 +1347,24 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("QuestionBank");
 
                     b.Navigation("Quiz");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.Report", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.User", "HandledByAdmin")
+                        .WithMany()
+                        .HasForeignKey("HandledByAdminId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DataAccessLayer.Entities.User", "Reporter")
+                        .WithMany()
+                        .HasForeignKey("ReporterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HandledByAdmin");
+
+                    b.Navigation("Reporter");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Subject", b =>

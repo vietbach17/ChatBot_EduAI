@@ -13,6 +13,7 @@ namespace PresentationLayer.Pages.Chat
 {
     [Authorize]
     [IgnoreAntiforgeryToken]
+    /// <summary>PageModel trang Chat AI. Quản lý phiên chat, tài liệu, quota và các handler AJAX (gửi tin, tin cũ, model).</summary>
     public class IndexModel : PageModel
     {
         private readonly IDocumentService _documentService;

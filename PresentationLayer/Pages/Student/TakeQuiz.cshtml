@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <style>
-        @@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap');
+        @@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;700;800;900&display=swap');
         
         :root {
             --pink: #eb2f64; --yellow: #f4cf45; --green: #5cb85c; 
@@ -26,7 +26,7 @@
             background-color: var(--bg);
             margin: 0;
             padding: 0;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Be Vietnam Pro', sans-serif;
             background-image: radial-gradient(#d1d1d1 2px, transparent 2px);
         }
         .header {
@@ -158,6 +158,7 @@
             color: var(--black);
             border: 3px solid var(--black);
             padding: 12px 20px;
+            font-family: 'Be Vietnam Pro', sans-serif;
             font-weight: 900;
             font-size: 16px;
             cursor: pointer;
@@ -214,7 +215,7 @@
             <div class="brutal-card" style="display: inline-block; background-color: #ffcccc;">
                 <h1 style="color: red; margin: 0 0 10px 0;">Lỗi</h1>
                 <p style="font-weight: 600; font-size: 18px;">@Model.ErrorMessage</p>
-                <a href="/Student/QuizList" class="brutal-btn" style="width: auto; margin-top: 20px;">Quay lại</a>
+                <a href="/Student/QuizList" class="brutal-btn" style="width: auto; margin-top: 20px; text-decoration: none; display: inline-block;">Quay lại</a>
             </div>
         </div>
     }
@@ -254,25 +255,15 @@
                         <!-- JS will render nav squares here -->
                     </div>
                     
-                    <button class="brutal-btn primary" onclick="showConfirmPopup()">
-                        <i class="fa-solid fa-paper-plane"></i> NỘP BÀI
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Confirm Popup -->
-        <div class="modal-overlay" id="confirm-modal">
-            <div class="modal-content">
-                <h2 style="font-weight: 900; margin-top: 0;">XÁC NHẬN NỘP BÀI?</h2>
-                <p id="unanswered-warning" style="color: red; font-weight: 700; display: none;">
-                    Bạn còn <span id="unanswered-count"></span> câu hỏi chưa trả lời!
-                </p>
-                <p style="font-weight: 600;">Bạn có chắc chắn muốn nộp bài ngay bây giờ không?</p>
-                
-                <div style="display: flex; gap: 15px; margin-top: 25px;">
-                    <button class="brutal-btn" style="background-color: #ddd;" onclick="hideConfirmPopup()">Hủy</button>
-                    <button class="brutal-btn primary" onclick="submitQuiz()">Nộp Bài Bùp</button>
+                    <div style="display: flex; gap: 10px; width: 100%;">
+                        <button id="btn-save-progress" class="brutal-btn" style="background-color: var(--blue); color: var(--white); flex: 1; padding: 10px 5px; font-size: 13px;" onclick="saveProgress()">
+                            <i class="fa-solid fa-floppy-disk"></i> LƯU
+                        </button>
+                        <button class="brutal-btn primary" style="flex: 2; padding: 10px 5px;" onclick="goToSummary()">
+                            <i class="fa-solid fa-paper-plane"></i> NỘP BÀI
+                        </button>
+                    </div>
+                    <div id="save-notification" style="margin-top: 10px; font-weight: 700; font-size: 13px; text-align: center; display: none;"></div>
                 </div>
             </div>
         </div>
@@ -281,7 +272,7 @@
         <div class="modal-overlay" id="timeout-modal">
             <div class="modal-content">
                 <h2 style="font-weight: 900; margin-top: 0; color: red;">ĐÃ HẾT GIỜ!</h2>
-                <p style="font-weight: 600;">Thời gian làm bài đã kết thúc. Vui lòng nộp bài để hoàn tất!</p>
+                <p style="font-weight: 600;">Thời gian làm bài đã kết thúc. Vui lòng bấm Nộp Bài để hoàn tất!</p>
                 
                 <div style="display: flex; gap: 15px; margin-top: 25px; justify-content: center;">
                     <button class="brutal-btn primary" onclick="submitQuiz()">Nộp Bài Bùp</button>
@@ -291,6 +282,7 @@
         
         @Html.AntiForgeryToken()
 
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             // Data from server
             const attemptId = @Model.QuizAttempt.AttemptId;
@@ -314,7 +306,20 @@
             // Prepare questions (shuffle options)
             questions.forEach((q, idx) => {
                 q.originalIndex = idx + 1; // 1-based
-                // Store the selected answer before shuffling so we can re-select it
+                
+                // Map each option to an object containing text and its ORIGINAL value (A, B, C, D)
+                if (q.Type === "MultipleChoice") {
+                    q.Options = q.Options.map((opt, oIdx) => ({
+                        text: opt,
+                        value: String.fromCharCode(65 + oIdx) // A, B, C, D
+                    }));
+                } else {
+                    q.Options = q.Options.map(opt => ({
+                        text: opt,
+                        value: opt
+                    }));
+                }
+
                 let selected = q.SelectedAnswer;
                 shuffle(q.Options);
                 q.SelectedAnswer = selected; 
@@ -408,13 +413,20 @@
                     let html = `<div class="question-number">Câu ${q.originalIndex}</div>`;
                     html += `<div class="question-text">${q.QuestionText}</div>`;
                     
-                    q.Options.forEach((opt, oIdx) => {
-                        const isChecked = (q.SelectedAnswer === opt) ? 'checked' : '';
+                    q.Options.forEach((optObj, oIdx) => {
+                        let valToSubmit = optObj.value;
+                        let displayPrefix = "";
+                        if (q.Type === "MultipleChoice") {
+                            // Hiển thị A, B, C, D theo thứ tự hiện tại trên màn hình
+                            displayPrefix = String.fromCharCode(65 + oIdx) + ". ";
+                        }
+
+                        const isChecked = (q.SelectedAnswer === valToSubmit) ? 'checked' : '';
                         const selectedClass = isChecked ? 'selected' : '';
                         html += `
-                            <label class="option-label ${selectedClass}" onclick="selectOption(${i}, '${escapeHtml(opt)}')">
-                                <input type="radio" name="q-${q.QuestionBankId}" value="${escapeHtml(opt)}" ${isChecked}>
-                                <span>${escapeHtml(opt)}</span>
+                            <label class="option-label ${selectedClass}" onclick="selectOption(${i}, '${valToSubmit}')">
+                                <input type="radio" name="q-${q.QuestionBankId}" value="${valToSubmit}" ${isChecked}>
+                                <span><strong>${displayPrefix}</strong>${escapeHtml(optObj.text)}</span>
                             </label>
                         `;
                     });
@@ -450,28 +462,106 @@
                 window.scrollTo(0, 0);
             }
 
-            // Submit logic
-            window.showConfirmPopup = function() {
-                const unanswered = questions.filter(q => !q.SelectedAnswer).length;
-                if (unanswered > 0) {
-                    document.getElementById('unanswered-warning').style.display = 'block';
-                    document.getElementById('unanswered-count').innerText = unanswered;
-                } else {
-                    document.getElementById('unanswered-warning').style.display = 'none';
-                }
-                document.getElementById('confirm-modal').style.display = 'flex';
-            }
-            
-            window.hideConfirmPopup = function() {
-                document.getElementById('confirm-modal').style.display = 'none';
-            }
-            
-            window.submitQuiz = function() {
-                document.getElementById('confirm-modal').innerHTML = '<div class="modal-content"><h2>Đang nộp bài...</h2></div>';
+            window.saveProgress = function() {
+                const notif = document.getElementById('save-notification');
+                const btnSave = document.getElementById('btn-save-progress');
+                
+                notif.style.display = 'block';
+                notif.style.color = 'var(--blue)';
+                notif.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+                btnSave.disabled = true;
                 
                 const answers = questions.map(q => ({
-                    QuestionBankId: q.QuestionBankId,
-                    SelectedAnswer: q.SelectedAnswer
+                    QuestionBankId: q.QuestionBankId || q.questionBankId,
+                    SelectedAnswer: q.SelectedAnswer !== undefined ? q.SelectedAnswer : q.selectedAnswer
+                }));
+                
+                const payload = {
+                    AttemptId: attemptId,
+                    Answers: answers
+                };
+                
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                fetch('?handler=SaveProgress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    btnSave.disabled = false;
+                    if(data.success) {
+                        notif.style.color = 'var(--green)';
+                        notif.innerHTML = '<i class="fa-solid fa-check"></i> Đã lưu thành công!';
+                        setTimeout(() => { notif.style.display = 'none'; }, 3000);
+                    } else {
+                        notif.style.color = 'red';
+                        notif.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Lỗi: ' + data.message;
+                        setTimeout(() => { notif.style.display = 'none'; }, 5000);
+                    }
+                })
+                .catch(err => {
+                    btnSave.disabled = false;
+                    notif.style.color = 'red';
+                    notif.innerHTML = '<i class="fa-solid fa-wifi"></i> Lỗi mạng!';
+                });
+            }
+
+            // Đi đến trang Summary
+            window.goToSummary = function() {
+                Swal.fire({
+                    title: 'Đang chuẩn bị...',
+                    text: 'Vui lòng chờ trong giây lát',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                const answers = questions.map(q => ({
+                    QuestionBankId: q.QuestionBankId || q.questionBankId,
+                    SelectedAnswer: q.SelectedAnswer !== undefined ? q.SelectedAnswer : q.selectedAnswer
+                }));
+                
+                const payload = {
+                    AttemptId: attemptId,
+                    Answers: answers
+                };
+                
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                fetch('?handler=SaveProgress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        window.location.href = '/Student/QuizSummary/' + attemptId;
+                    } else {
+                        Swal.fire('Lỗi', "Không thể lưu tiến độ: " + data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    Swal.fire('Lỗi', "Mất kết nối mạng!", 'error');
+                });
+            }
+
+            // Nộp bài tự động khi hết giờ
+            window.submitQuiz = function() {
+                document.getElementById('timeout-modal').innerHTML = '<div class="modal-content"><h2 style="color:var(--pink);">Đang nộp bài tự động...</h2></div>';
+                
+                const answers = questions.map(q => ({
+                    QuestionBankId: q.QuestionBankId || q.questionBankId,
+                    SelectedAnswer: q.SelectedAnswer !== undefined ? q.SelectedAnswer : q.selectedAnswer
                 }));
                 
                 const payload = {
@@ -492,20 +582,19 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
-                        // Redirect to result page
                         window.location.href = '/Student/QuizResult/' + data.attemptId;
                     } else {
                         alert("Lỗi nộp bài: " + data.message);
-                        window.location.reload();
+                        window.location.href = '/Student/QuizList';
                     }
                 })
                 .catch(err => {
-                    alert("Lỗi kết nối!");
-                    hideConfirmPopup();
+                    alert("Lỗi kết nối khi nộp bài!");
+                    window.location.href = '/Student/QuizList';
                 });
             }
 
-            // Initial render
+            // Mở trang đầu tiên
             renderUI();
         </script>
     }

@@ -12,6 +12,7 @@ namespace DataAccessLayer.IRepositories
         Task<Quiz?> GetByIdAsync(int id);
         Task<IEnumerable<Quiz>> GetBySubjectOrLecturerAsync(int? subjectId, int? lecturerId);
         Task<IEnumerable<Quiz>> GetQuizzesForStudentAsync(int studentId);
+        Task<IEnumerable<Quiz>> GetQuizzesByIdsIncludeDeletedAsync(IEnumerable<int> quizIds);
         Task<IEnumerable<QuizQuestion>> GetQuizQuestionsAsync(int quizId);
         Task AddAsync(Quiz quiz);
         Task AddQuestionsAsync(IEnumerable<QuizQuestion> questions);

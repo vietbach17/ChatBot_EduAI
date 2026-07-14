@@ -19,18 +19,16 @@ namespace PresentationLayer.Pages.Subscription
     {
         private readonly ISubscriptionService _subscriptionService;
         private readonly ISubscriptionPlanService _planService;
-        private readonly DataAccessLayer.IRepositories.IAddonPackageRepository _addonRepository;
 
-        public IndexModel(ISubscriptionService subscriptionService, ISubscriptionPlanService planService, DataAccessLayer.IRepositories.IAddonPackageRepository addonRepository)
+        public IndexModel(ISubscriptionService subscriptionService, ISubscriptionPlanService planService)
         {
             _subscriptionService = subscriptionService;
             _planService = planService;
-            _addonRepository = addonRepository;
         }
 
         public SubscriptionInfoDto Info { get; set; } = new();
         public List<SubscriptionPlanDto> Plans { get; set; } = new();
-        public List<DataAccessLayer.Entities.AddonPackage> Addons { get; set; } = new();
+        public List<AddonPackageDto> Addons { get; set; } = new();
 
         public async Task OnGetAsync()
         {
@@ -43,8 +41,7 @@ namespace PresentationLayer.Pages.Subscription
             var activePlans = await _planService.GetAllAsync();
             Plans = activePlans.Where(p => p.IsActive).OrderBy(p => p.SortOrder).ToList();
 
-            var activeAddons = await _addonRepository.GetAllActiveAsync();
-            Addons = activeAddons.ToList();
+            Addons = await _planService.GetActiveAddonsAsync();
         }
 
         public IActionResult OnPostUpgrade(string plan)

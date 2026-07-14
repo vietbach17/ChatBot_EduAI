@@ -14,5 +14,9 @@ namespace BussinessLayer.IServices
         Task<(bool Success, string Error)> CreateAsync(SubscriptionPlanDto dto);
         Task<(bool Success, string Error)> UpdateAsync(SubscriptionPlanDto dto);
         Task<(bool Success, string Error)> DeleteAsync(int id);
+
+        // Gói mua thêm (Addon Package)
+        Task<List<AddonPackageDto>> GetActiveAddonsAsync();
+        Task<AddonPackageDto?> GetAddonByIdAsync(int id);
     }
 }

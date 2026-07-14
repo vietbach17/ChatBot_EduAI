@@ -4,6 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataAccessLayer.Entities
 {
+    /// <summary>
+    /// Thực thể Câu trả lời trong một lượt làm bài thi. Lưu đáp án sinh viên chọn cho từng câu hỏi
+    /// thuộc một lượt làm (QuizAttempt) và kết quả đúng/sai.
+    /// </summary>
     public class QuizAnswer
     {
         [Key]

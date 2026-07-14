@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace PresentationLayer.Pages.Student
 {
     [Authorize(Roles = "Student")]
+    /// <summary>PageModel trang Danh sách bài thi (Sinh viên). Liệt kê bài thi, trạng thái làm bài và kiểm tra mật khẩu vào thi.</summary>
     public class QuizListModel : PageModel
     {
         private readonly IQuizService _quizService;
@@ -24,17 +25,27 @@ namespace PresentationLayer.Pages.Student
 
         public async Task<IActionResult> OnGetAsync()
         {
-            int studentId = 0;
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
-            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int uid))
-            {
-                studentId = uid;
-            }
-
+            var studentId = GetStudentId();
             if (studentId == 0) return RedirectToPage("/Auth/Login");
 
             Quizzes = await _quizService.GetStudentQuizzesAsync(studentId);
             return Page();
+        }
+
+        public async Task<IActionResult> OnGetCheckPasswordAsync(int quizId, string accessCode)
+        {
+            var studentId = GetStudentId();
+            if (studentId == 0) return new JsonResult(new { success = false, message = "Phiên đăng nhập hết hạn." });
+
+            var (success, message) = await _quizService.CheckQuizAccessCodeAsync(studentId, quizId, accessCode);
+            if (!success) return new JsonResult(new { success = false, message });
+            return new JsonResult(new { success = true });
+        }
+
+        private int GetStudentId()
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+            return userIdClaim != null && int.TryParse(userIdClaim.Value, out int uid) ? uid : 0;
         }
     }
 }

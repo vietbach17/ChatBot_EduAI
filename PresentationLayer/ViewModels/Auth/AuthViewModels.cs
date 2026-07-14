@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PresentationLayer.ViewModels.Auth
 {
+    /// <summary>ViewModel đăng nhập: tên đăng nhập, mật khẩu và URL chuyển hướng sau khi đăng nhập.</summary>
     public class LoginViewModel
     {
         public string Username { get; set; } = string.Empty;
@@ -9,6 +10,7 @@ namespace PresentationLayer.ViewModels.Auth
         public string? ReturnUrl { get; set; }
     }
 
+    /// <summary>ViewModel đăng ký tài khoản: tên đăng nhập, mật khẩu, email, vai trò và xác nhận mật khẩu.</summary>
     public class RegisterViewModel
     {
         [Required(ErrorMessage = "Tên đăng nhập không được để trống")]
@@ -29,6 +31,7 @@ namespace PresentationLayer.ViewModels.Auth
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 
+    /// <summary>ViewModel đổi mật khẩu trong trang cá nhân: mật khẩu hiện tại, mật khẩu mới và xác nhận.</summary>
     public class ProfilePasswordChangeViewModel
     {
         public string CurrentPassword { get; set; } = string.Empty;

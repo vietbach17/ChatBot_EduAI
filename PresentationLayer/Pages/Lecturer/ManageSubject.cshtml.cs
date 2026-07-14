@@ -25,8 +25,9 @@ namespace PresentationLayer.Pages.Lecturer
         private readonly IHubContext<SignalRHub> _hubContext;
         private readonly IDocumentActivityLogService _activityLogService;
         private readonly IQuizService _quizService;
+        private readonly IQuizActivityLogService _quizActivityLogService;
 
-        public ManageSubjectModel(ISubjectService subjectService, IDocumentService documentService, IFileTextExtractorService textExtractor, IHubContext<SignalRHub> hubContext, IDocumentActivityLogService activityLogService, IQuizService quizService)
+        public ManageSubjectModel(ISubjectService subjectService, IDocumentService documentService, IFileTextExtractorService textExtractor, IHubContext<SignalRHub> hubContext, IDocumentActivityLogService activityLogService, IQuizService quizService, IQuizActivityLogService quizActivityLogService)
         {
             _subjectService = subjectService;
             _documentService = documentService;
@@ -34,6 +35,7 @@ namespace PresentationLayer.Pages.Lecturer
             _hubContext = hubContext;
             _activityLogService = activityLogService;
             _quizService = quizService;
+            _quizActivityLogService = quizActivityLogService;
         }
 
         public SubjectDto Subject { get; set; } = default!;
@@ -47,8 +49,8 @@ namespace PresentationLayer.Pages.Lecturer
 
         public bool IsOwner { get; set; } = false;
         public bool IsAdmin { get; set; } = false;
-        
-        public List<DocumentActivityLogDto> ActivityLogs { get; set; } = new();
+
+        public List<ActivityLogItemViewModel> ActivityLogs { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
@@ -74,7 +76,29 @@ namespace PresentationLayer.Pages.Lecturer
 
             if (IsOwner || IsAdmin)
             {
-                ActivityLogs = (await _activityLogService.GetLogsBySubjectIdAsync(id)).ToList();
+                var docLogs = await _activityLogService.GetLogsBySubjectIdAsync(id);
+                var quizLogs = await _quizActivityLogService.GetLogsBySubjectIdAsync(id);
+
+                ActivityLogs = docLogs.Select(l => new ActivityLogItemViewModel
+                {
+                    Timestamp = l.Timestamp,
+                    UserName = l.UserName,
+                    Kind = "Document",
+                    Action = l.Action,
+                    Title = l.DocumentTitle,
+                    LinkId = l.DocumentId
+                })
+                .Concat(quizLogs.Select(l => new ActivityLogItemViewModel
+                {
+                    Timestamp = l.Timestamp,
+                    UserName = l.UserName,
+                    Kind = "Quiz",
+                    Action = l.Action,
+                    Title = l.QuizTitle,
+                    LinkId = l.QuizId
+                }))
+                .OrderByDescending(l => l.Timestamp)
+                .ToList();
             }
 
             return Page();
@@ -215,7 +239,10 @@ namespace PresentationLayer.Pages.Lecturer
             {
                 try
                 {
+                    var quizInfo = await _quizService.GetQuizForUpdateAsync(uId, quizId);
                     await _quizService.DeleteQuizAsync(uId, quizId);
+                    await _quizActivityLogService.LogActivityAsync(id, quizId, quizInfo.Title, uId, "Deleted");
+                    await _hubContext.Clients.All.SendAsync("CourseChanged");
                 }
                 catch (Exception ex)
                 {
@@ -224,5 +251,18 @@ namespace PresentationLayer.Pages.Lecturer
             }
             return RedirectToPage(new { id = id });
         }
+    }
+
+    /// <summary>
+    /// ViewModel gộp hiển thị nhật ký hoạt động Tài liệu và Bài thi trên cùng 1 dòng thời gian.
+    /// </summary>
+    public class ActivityLogItemViewModel
+    {
+        public DateTime Timestamp { get; set; }
+        public string UserName { get; set; } = string.Empty;
+        public string Kind { get; set; } = string.Empty; // "Document" | "Quiz"
+        public string Action { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public int? LinkId { get; set; }
     }
 }

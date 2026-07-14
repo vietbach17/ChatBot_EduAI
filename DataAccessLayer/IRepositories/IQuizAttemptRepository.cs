@@ -4,6 +4,7 @@ using DataAccessLayer.Entities;
 
 namespace DataAccessLayer.IRepositories
 {
+    /// <summary>Giao diện Repository truy vấn Lượt làm bài thi và câu trả lời của sinh viên.</summary>
     public interface IQuizAttemptRepository
     {
         Task<QuizAttempt> CreateAttemptAsync(QuizAttempt attempt);

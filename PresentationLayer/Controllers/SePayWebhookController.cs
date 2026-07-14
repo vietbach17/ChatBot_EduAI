@@ -120,6 +120,7 @@ namespace PresentationLayer.Controllers
         }
     }
 
+    /// <summary>Cấu trúc dữ liệu Webhook do SePay gửi về khi có giao dịch chuyển khoản ngân hàng.</summary>
     public class SePayWebhookPayload
     {
         public int id { get; set; }

@@ -1,5 +1,6 @@
 namespace PresentationLayer.ViewModels.Lecturer
 {
+    /// <summary>ViewModel giảng viên cập nhật thông tin môn học của mình.</summary>
     public class SubjectUpdateViewModel
     {
         public int Id { get; set; }

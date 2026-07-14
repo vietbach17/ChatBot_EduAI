@@ -57,6 +57,15 @@ namespace DataAccessLayer.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Quiz>> GetQuizzesByIdsIncludeDeletedAsync(IEnumerable<int> quizIds)
+        {
+            return await _context.Quizzes
+                .IgnoreQueryFilters()
+                .Include(q => q.Subject)
+                .Where(q => quizIds.Contains(q.Id))
+                .ToListAsync();
+        }
+
         public async Task AddAsync(Quiz quiz)
         {
             await _context.Quizzes.AddAsync(quiz);

@@ -9,7 +9,8 @@ using System.Linq;
 
 namespace PresentationLayer.Pages.Lecturer
 {
-    [Authorize(Roles = "Lecturer")]
+    [Authorize(Roles = "Lecturer,Admin")]
+    /// <summary>PageModel trang Kết quả bài thi (Giảng viên/Admin). Hiển thị thống kê điểm và danh sách lượt làm của sinh viên.</summary>
     public class QuizResultsModel : PageModel
     {
         private readonly IQuizService _quizService;
@@ -37,9 +38,11 @@ namespace PresentationLayer.Pages.Lecturer
                 lecturerId = uid;
             }
 
+            bool isAdmin = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value == "Admin";
+
             try
             {
-                Statistics = await _quizService.GetQuizStatisticsAsync(QuizId, lecturerId);
+                Statistics = await _quizService.GetQuizStatisticsAsync(QuizId, lecturerId, isAdmin);
             }
             catch (Exception ex)
             {
