@@ -10,6 +10,83 @@
     string ToVnTime(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(utc, vnZone).ToString("dd/MM/yyyy HH:mm");
 }
 
+@section Styles {
+    <style>
+        @@media (max-width: 768px) {
+            /* Page wrapper padding */
+            .main-wrapper > div {
+                padding: 15px !important;
+            }
+            /* Header formatting */
+            .manage-header-flex {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 15px !important;
+                margin-bottom: 15px !important;
+            }
+            .manage-header-flex h1 {
+                font-size: 20px !important;
+                word-break: break-word;
+            }
+            .manage-header-flex .button-group {
+                width: 100% !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 10px !important;
+            }
+            .manage-header-flex .button-group a,
+            .manage-header-flex .button-group button {
+                flex: 1 1 calc(50% - 10px) !important;
+                text-align: center;
+                justify-content: center;
+                font-size: 11px !important;
+                padding: 8px 10px !important;
+            }
+
+            /* Quiz and document row styling */
+            .quiz-item-row, .doc-item-row, .chapter-header-row {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 12px !important;
+            }
+            .quiz-item-row .actions-group, .doc-item-row .actions-group, .chapter-header-row .actions-group {
+                width: 100% !important;
+                display: flex !important;
+                gap: 8px !important;
+            }
+            .quiz-item-row .actions-group a,
+            .quiz-item-row .actions-group button,
+            .quiz-item-row .actions-group form,
+            .doc-item-row .actions-group a,
+            .doc-item-row .actions-group button,
+            .doc-item-row .actions-group form,
+            .chapter-header-row .actions-group button {
+                flex: 1 !important;
+                text-align: center !important;
+                justify-content: center !important;
+                font-size: 11px !important;
+                padding: 6px 8px !important;
+            }
+            
+            .doc-meta-row {
+                flex-direction: column !important;
+                gap: 5px !important;
+            }
+
+            /* Make modals responsive on mobile */
+            div[style*="position: fixed"][style*="z-index: 1000"] > div,
+            div[style*="position: fixed"][style*="z-index: 99999"] > div {
+                width: 95% !important;
+                max-width: 95% !important;
+                padding: 15px !important;
+                margin: 10px !important;
+                max-height: 90vh !important;
+                overflow-y: auto !important;
+            }
+        }
+    </style>
+}
+
 <div class="main-wrapper">
     <div style="padding: 30px;">
         <div style="margin-bottom: 20px;">
@@ -27,14 +104,14 @@
             }
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+        <div class="manage-header-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
             <h1 style="color: var(--blue); font-weight: 900; font-size: 28px; text-transform: uppercase;">
                 [@Model.Subject.Code] @Model.Subject.Name
             </h1>
 
             @if(Model.IsOwner || Model.IsAdmin)
             {
-                <div style="display: flex; gap: 10px;">
+                <div class="button-group" style="display: flex; gap: 10px;">
                     <button type="button" onclick="document.getElementById('activityLogModal').style.display='flex'" class="brutal-btn" style="background-color: #fff; color: var(--black); border: 2px solid var(--black); padding: 8px 15px; font-weight: 900; box-shadow: 2px 2px 0px var(--black);">
                         <i class="fa-solid fa-clock-rotate-left"></i> LỊCH SỬ HOẠT ĐỘNG
                     </button>
@@ -64,14 +141,14 @@
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         @foreach (var quiz in Model.Quizzes)
                         {
-                            <div style="background-color: var(--bg); border: 2px solid var(--black); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <div class="quiz-item-row" style="background-color: var(--bg); border: 2px solid var(--black); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;">
                                 <div>
                                     <div style="font-weight: 800; font-size: 15px; margin-bottom: 5px;">@quiz.Title</div>
                                     <div style="font-size: 12px; color: #555;">
                                         Thời gian: <strong>@quiz.TimeLimitMinutes phút</strong> | Số lượng mã đề: <strong>@quiz.NumVariants</strong> | Tạo ngày: <strong>@quiz.CreatedAt.ToString("dd/MM/yyyy")</strong>
                                     </div>
                                 </div>
-                                <div style="display: flex; gap: 10px; align-items: center;">
+                                <div class="actions-group" style="display: flex; gap: 10px; align-items: center;">
                                     <a href="/Lecturer/QuizResults?QuizId=@quiz.Id" class="brutal-btn" style="background-color: var(--yellow); color: var(--black); border: 2px solid var(--black); padding: 5px 10px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); text-decoration: none; font-size: 12px;">
                                         <i class="fa-solid fa-chart-simple"></i> THỐNG KÊ
                                     </a>
@@ -103,7 +180,7 @@
                     @foreach (var doc in subjectDocs)
                     {
                         <div style="background-color: var(--bg); border: 2px solid var(--black); padding: 10px 15px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="doc-item-row" style="display: flex; justify-content: space-between; align-items: center;">
                                 <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px;">
                                     @{
                                         var ftColorG = doc.FileType?.ToLower() switch {
@@ -116,7 +193,7 @@
                                     <span style="color: @ftColorG; font-weight:900; font-size: 12px;">[@doc.FileType?.ToUpper()]</span>
                                     @doc.Title
                                 </div>
-                                <div style="display: flex; gap: 8px; align-items: center;">
+                                <div class="actions-group" style="display: flex; gap: 8px; align-items: center;">
                                     <a href="/ViewDocument?id=@doc.Id" style="font-weight: 800; font-size: 12px; color: var(--blue); white-space: nowrap;">
                                         <i class="fa-solid fa-eye"></i> Xem
                                     </a>
@@ -137,7 +214,7 @@
                                     }
                                 </div>
                             </div>
-                            <div style="margin-top: 6px; font-size: 11px; color: #888; font-weight: 600; display: flex; gap: 15px;">
+                            <div class="doc-meta-row" style="margin-top: 6px; font-size: 11px; color: #888; font-weight: 600; display: flex; gap: 15px;">
                                 <span><i class="fa-solid fa-user-clock"></i> Upload bởi: <strong>@(doc.UploaderName ?? "Không rõ")</strong></span>
                                 <span><i class="fa-solid fa-clock"></i> @ToVnTime(doc.UploadedAt) (GMT+7)</span>
                             </div>
@@ -151,12 +228,12 @@
             @foreach (var chapter in Model.Subject.Chapters.OrderBy(c => c.OrderIndex))
             {
                 <div style="background-color: var(--white); border: var(--border); box-shadow: 4px 4px 0px var(--black); padding: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 15px;">
+                    <div class="chapter-header-row" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 15px;">
                         <h2 style="font-weight: 900; font-size: 18px; color: var(--pink);">@chapter.Title</h2>
 
                         @if(Model.IsOwner)
                         {
-                            <div style="display: flex; gap: 5px;">
+                            <div class="actions-group" style="display: flex; gap: 5px;">
                                 <button type="button" onclick="openChapterModal(@chapter.Id, '@chapter.Title')" class="brutal-btn" style="background-color: var(--white); color: var(--black); border: 2px solid var(--black); padding: 4px 10px; font-weight: 800; font-size: 12px; box-shadow: 2px 2px 0px var(--black);">
                                     <i class="fa-solid fa-pen"></i> SỬA
                                 </button>
@@ -185,7 +262,7 @@
                         @foreach (var doc in chapter.Documents)
                         {
                             <div style="background-color: var(--bg); border: 2px solid var(--black); padding: 10px 15px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="doc-item-row" style="display: flex; justify-content: space-between; align-items: center;">
                                     <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px;">
                                         @{
                                             var ftColor = doc.FileType?.ToLower() switch {
@@ -198,7 +275,7 @@
                                         <span style="color: @ftColor; font-weight:900; font-size: 12px;">[@doc.FileType?.ToUpper()]</span>
                                         @doc.Title
                                     </div>
-                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                    <div class="actions-group" style="display: flex; gap: 8px; align-items: center;">
                                         <a href="/ViewDocument?id=@doc.Id" style="font-weight: 800; font-size: 12px; color: var(--blue); white-space: nowrap;">
                                             <i class="fa-solid fa-eye"></i> Xem
                                         </a>
@@ -220,7 +297,7 @@
                                     </div>
                                 </div>
                                 <!-- Lịch sử upload -->
-                                <div style="margin-top: 6px; font-size: 11px; color: #888; font-weight: 600; display: flex; gap: 15px;">
+                                <div class="doc-meta-row" style="margin-top: 6px; font-size: 11px; color: #888; font-weight: 600; display: flex; gap: 15px;">
                                     <span><i class="fa-solid fa-user-clock"></i> Upload bởi: <strong>@(doc.UploaderName ?? "Không rõ")</strong></span>
                                     <span><i class="fa-solid fa-clock"></i> @ToVnTime(doc.UploadedAt) (GMT+7)</span>
                                 </div>

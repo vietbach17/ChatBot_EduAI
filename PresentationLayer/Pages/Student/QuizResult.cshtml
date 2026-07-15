@@ -92,6 +92,36 @@
     }
     .badge.correct { background-color: var(--green); color: var(--black); }
     .badge.wrong { background-color: #ffcccc; color: var(--black); }
+
+    @@media (max-width: 768px) {
+        .main-wrapper {
+            padding: 15px !important;
+        }
+        .main-wrapper h1 {
+            font-size: 22px !important;
+        }
+        .brutal-card {
+            padding: 15px !important;
+        }
+        /* Stack stats cards */
+        .brutal-card div[style*="display: flex; gap: 15px"] {
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+        .stat-box {
+            width: 100% !important;
+        }
+        /* Stack header actions */
+        div[style*="display: flex; justify-content: space-between"] {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 15px !important;
+        }
+        div[style*="display: flex; justify-content: space-between"] a {
+            width: 100% !important;
+            text-align: center;
+        }
+    }
 </style>
 
 <div class="main-wrapper" style="padding: 30px;">
