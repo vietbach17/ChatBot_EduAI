@@ -88,9 +88,51 @@
             <label style="font-weight: 700;">Mô tả</label>
             <textarea asp-for="QuizInput.Description" class="brutal-input" rows="3" placeholder="Ghi chú thêm cho sinh viên..." disabled="@(Model.IsAdmin ? "disabled" : null)"></textarea>
 
+            <label style="font-weight: 700;">Cách thiết lập thời gian</label>
+            <div style="margin-bottom: 15px;">
+                <label style="margin-right: 15px; cursor: pointer;">
+                    <input type="radio" name="TimeMode" value="custom" checked onchange="toggleTimeMode()" disabled="@(Model.IsAdmin ? "disabled" : null)" /> Tự chọn
+                </label>
+                <label style="cursor: pointer;">
+                    <input type="radio" name="TimeMode" value="fptu" onchange="toggleTimeMode()" disabled="@(Model.IsAdmin ? "disabled" : null)" /> Theo lịch học trường FPTU
+                </label>
+            </div>
+
+            <div id="fptuTimeContainer" style="display: none; padding: 15px; border: 2px solid var(--black); background: #f9f9f9; margin-bottom: 15px;">
+                <label style="font-weight: 700;">Chọn ngày kiểm tra</label>
+                <input type="date" id="fptuDate" class="brutal-input" onchange="applyFptuTime()" disabled="@(Model.IsAdmin ? "disabled" : null)" />
+                
+                <label style="font-weight: 700; margin-top: 10px; display: block;">Chọn Slot</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
+                    <label style="padding: 10px; border: 1px solid var(--black); background: #fff; cursor: pointer; font-size: 14px;">
+                        <input type="radio" name="FptuSlot" value="1" onchange="applyFptuTime()" disabled="@(Model.IsAdmin ? "disabled" : null)" /> Slot 1 (07:00 - 09:15)
+                    </label>
+                    <label style="padding: 10px; border: 1px solid var(--black); background: #fff; cursor: pointer; font-size: 14px;">
+                        <input type="radio" name="FptuSlot" value="2" onchange="applyFptuTime()" disabled="@(Model.IsAdmin ? "disabled" : null)" /> Slot 2 (09:30 - 11:45)
+                    </label>
+                    <label style="padding: 10px; border: 1px solid var(--black); background: #fff; cursor: pointer; font-size: 14px;">
+                        <input type="radio" name="FptuSlot" value="3" onchange="applyFptuTime()" disabled="@(Model.IsAdmin ? "disabled" : null)" /> Slot 3 (12:30 - 14:45)
+                    </label>
+                    <label style="padding: 10px; border: 1px solid var(--black); background: #fff; cursor: pointer; font-size: 14px;">
+                        <input type="radio" name="FptuSlot" value="4" onchange="applyFptuTime()" disabled="@(Model.IsAdmin ? "disabled" : null)" /> Slot 4 (15:00 - 17:15)
+                    </label>
+                </div>
+            </div>
+
             <div style="display: flex; gap: 15px;">
                 <div style="flex: 1;">
-                    <label style="font-weight: 700;">Thời gian (phút)</label>
+                    <label style="font-weight: 700;">Thời gian bắt đầu (Tùy chọn)</label>
+                    <input type="datetime-local" asp-for="QuizInput.StartTime" class="brutal-input" id="QuizInput_StartTime" disabled="@(Model.IsAdmin ? "disabled" : null)" />
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-weight: 700;">Thời gian kết thúc (Tùy chọn)</label>
+                    <input type="datetime-local" asp-for="QuizInput.EndTime" class="brutal-input" id="QuizInput_EndTime" disabled="@(Model.IsAdmin ? "disabled" : null)" />
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label style="font-weight: 700;">Thời lượng (phút)</label>
                     <input type="number" asp-for="QuizInput.TimeLimitMinutes" class="brutal-input" min="1" required disabled="@(Model.IsAdmin ? "disabled" : null)" />
                 </div>
                 <div style="flex: 1;">
@@ -102,18 +144,28 @@
             <label style="font-weight: 700;">Mật khẩu truy cập (Tùy chọn)</label>
             <input type="text" asp-for="QuizInput.AccessCode" class="brutal-input" placeholder="Để trống nếu không cần mật khẩu" disabled="@(Model.IsAdmin ? "disabled" : null)" />
 
-            <div style="display: flex; gap: 15px;">
-                <div style="flex: 1;">
-                    <label style="font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
-                        <input type="checkbox" asp-for="QuizInput.ShowScoreAfterSubmit" style="width: 20px; height: 20px;" disabled="@(Model.IsAdmin ? "disabled" : null)" />
-                        Hiển thị điểm sau khi nộp
-                    </label>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                <div style="display: flex; gap: 15px;">
+                    <div style="flex: 1;">
+                        <label style="font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
+                            <input type="checkbox" asp-for="QuizInput.ShowScoreAfterSubmit" id="cbShowScoreUpdate" style="width: 20px; height: 20px;" onchange="toggleScoreTimingUpdate()" disabled="@(Model.IsAdmin ? "disabled" : null)" />
+                            Hiển thị điểm sau khi nộp
+                        </label>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
+                            <input type="checkbox" asp-for="QuizInput.IsShuffled" style="width: 20px; height: 20px;" disabled="@(Model.IsAdmin ? "disabled" : null)" />
+                            Đảo vị trí đáp án (A,B,C,D)
+                        </label>
+                    </div>
                 </div>
-                <div style="flex: 1;">
-                    <label style="font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
-                        <input type="checkbox" asp-for="QuizInput.IsShuffled" style="width: 20px; height: 20px;" disabled="@(Model.IsAdmin ? "disabled" : null)" />
-                        Đảo vị trí đáp án (A,B,C,D)
-                    </label>
+                
+                <div id="scoreTimingContainerUpdate" style="padding-left: 25px;">
+                    <label style="font-weight: 700; font-size: 14px; color: #555;">Thời điểm được xem:</label>
+                    <select asp-for="QuizInput.ScoreDisplayTiming" class="brutal-input" style="margin-top: 5px; margin-bottom: 0;" disabled="@(Model.IsAdmin ? "disabled" : null)">
+                        <option value="Immediately">Ngay sau khi làm xong</option>
+                        <option value="AfterEndTime">Ngay sau khi đã qua thời gian triển khai (EndTime)</option>
+                    </select>
                 </div>
             </div>
 
@@ -129,7 +181,7 @@
                 {
                     <button type="submit" class="brutal-btn" style="width: 100%;">LƯU THAY ĐỔI</button>
                 }
-                <a href="/Lecturer/ManageSubject?SubjectId=@Model.SubjectId" class="brutal-btn" style="background-color: var(--white); color: var(--black); text-align: center; width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+                <a href="/Lecturer/ManageSubject/@Model.SubjectId" class="brutal-btn" style="background-color: var(--white); color: var(--black); text-align: center; width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
                     QUAY LẠI
                 </a>
             </div>
@@ -187,3 +239,52 @@
         </div>
     }
 </div>
+
+<script>
+    function toggleScoreTimingUpdate() {
+        const cb = document.getElementById('cbShowScoreUpdate');
+        const container = document.getElementById('scoreTimingContainerUpdate');
+        if (cb && container) {
+            container.style.display = cb.checked ? 'block' : 'none';
+        }
+    }
+
+    function toggleTimeMode() {
+        const modeInput = document.querySelector('input[name="TimeMode"]:checked');
+        if (!modeInput) return;
+        const mode = modeInput.value;
+        const fptuContainer = document.getElementById('fptuTimeContainer');
+        if (mode === 'fptu') {
+            fptuContainer.style.display = 'block';
+        } else {
+            fptuContainer.style.display = 'none';
+        }
+    }
+
+    function applyFptuTime() {
+        const dateInput = document.getElementById('fptuDate').value;
+        const slotInput = document.querySelector('input[name="FptuSlot"]:checked');
+
+        if (!dateInput || !slotInput) return;
+
+        const slot = slotInput.value;
+        let startTimeStr = "";
+        let endTimeStr = "";
+
+        switch (slot) {
+            case "1": startTimeStr = "07:00"; endTimeStr = "09:15"; break;
+            case "2": startTimeStr = "09:30"; endTimeStr = "11:45"; break;
+            case "3": startTimeStr = "12:30"; endTimeStr = "14:45"; break;
+            case "4": startTimeStr = "15:00"; endTimeStr = "17:15"; break;
+        }
+
+        // Format is YYYY-MM-DDTHH:mm
+        document.getElementById('QuizInput_StartTime').value = dateInput + "T" + startTimeStr;
+        document.getElementById('QuizInput_EndTime').value = dateInput + "T" + endTimeStr;
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        toggleScoreTimingUpdate();
+        toggleTimeMode();
+    });
+</script>

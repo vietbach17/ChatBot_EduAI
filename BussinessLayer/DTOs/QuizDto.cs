@@ -32,11 +32,15 @@ namespace BussinessLayer.DTOs
         public int TimeLimitMinutes { get; set; } = 15;
         public int MaxAttempts { get; set; } = 1;
 
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
+
         public bool IsShuffled { get; set; } = false; // Đảo vị trí đáp án (A,B,C,D) trong câu hỏi
         
         public int NumVariants { get; set; } = 1; // Số lượng mã đề
 
         public bool ShowScoreAfterSubmit { get; set; } = true;
+        public string ScoreDisplayTiming { get; set; } = "Immediately";
         public string GradingMethod { get; set; } = "Highest"; // "Highest", "Average", "Latest"
         public string? AccessCode { get; set; }
 
@@ -52,8 +56,11 @@ namespace BussinessLayer.DTOs
         public string? Description { get; set; }
         public int TimeLimitMinutes { get; set; } = 15;
         public int MaxAttempts { get; set; } = 1;
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public bool IsShuffled { get; set; } = false;
         public bool ShowScoreAfterSubmit { get; set; } = true;
+        public string ScoreDisplayTiming { get; set; } = "Immediately";
         public string GradingMethod { get; set; } = "Highest";
         public string? AccessCode { get; set; }
     }
@@ -67,15 +74,20 @@ namespace BussinessLayer.DTOs
         
         public int TimeLimitMinutes { get; set; }
         public int MaxAttempts { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         
         public int QuestionsPerAttempt { get; set; } // Số lượng câu hỏi của mã đề
         public int NumVariants { get; set; }
 
         public string GradingMethod { get; set; } = string.Empty;
         public bool ShowScoreAfterSubmit { get; set; }
+        public string ScoreDisplayTiming { get; set; } = string.Empty;
         
         public bool HasPassword { get; set; }
         
+        public decimal? FinalScore { get; set; }
+
         public int AttemptsDoneByCurrentUser { get; set; }
         public List<QuizAttemptSummaryDto> Attempts { get; set; } = new List<QuizAttemptSummaryDto>();
     }
@@ -91,6 +103,8 @@ namespace BussinessLayer.DTOs
         public int TimeLimitMinutes { get; set; }
         public int MaxAttempts { get; set; }
         public int AttemptsCount { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public string Status { get; set; } = string.Empty; // "Chưa làm", "Đang làm", "Hoàn thành", "Hết hạn"
         public bool HasPassword { get; set; }
         public int? LatestAttemptId { get; set; }

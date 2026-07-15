@@ -38,9 +38,12 @@ namespace BussinessLayer.Services
                 LecturerId = lecturerId,
                 TimeLimitMinutes = dto.TimeLimitMinutes,
                 MaxAttempts = dto.MaxAttempts,
+                StartTime = dto.StartTime?.ToUniversalTime(),
+                EndTime = dto.EndTime?.ToUniversalTime(),
                 IsShuffled = dto.IsShuffled,
                 NumVariants = dto.NumVariants, // Lưu số lượng mã đề
                 ShowScoreAfterSubmit = dto.ShowScoreAfterSubmit,
+                ScoreDisplayTiming = dto.ScoreDisplayTiming,
                 GradingMethod = dto.GradingMethod,
                 AccessCode = dto.AccessCode,
                 Status = "Open",
@@ -136,8 +139,11 @@ namespace BussinessLayer.Services
                 Description = quiz.Description,
                 TimeLimitMinutes = quiz.TimeLimitMinutes,
                 MaxAttempts = quiz.MaxAttempts,
+                StartTime = quiz.StartTime?.ToLocalTime(),
+                EndTime = quiz.EndTime?.ToLocalTime(),
                 IsShuffled = quiz.IsShuffled,
                 ShowScoreAfterSubmit = quiz.ShowScoreAfterSubmit,
+                ScoreDisplayTiming = quiz.ScoreDisplayTiming,
                 GradingMethod = quiz.GradingMethod,
                 AccessCode = quiz.AccessCode
             };
@@ -190,8 +196,11 @@ namespace BussinessLayer.Services
             quiz.Description = dto.Description;
             quiz.TimeLimitMinutes = dto.TimeLimitMinutes;
             quiz.MaxAttempts = dto.MaxAttempts;
+            quiz.StartTime = dto.StartTime?.ToUniversalTime();
+            quiz.EndTime = dto.EndTime?.ToUniversalTime();
             quiz.IsShuffled = dto.IsShuffled;
             quiz.ShowScoreAfterSubmit = dto.ShowScoreAfterSubmit;
+            quiz.ScoreDisplayTiming = dto.ScoreDisplayTiming;
             quiz.GradingMethod = dto.GradingMethod;
             quiz.AccessCode = dto.AccessCode;
 
@@ -232,18 +241,21 @@ namespace BussinessLayer.Services
 
             foreach (var q in allQuizzesList)
             {
+                
                 var studentAttemptsCount = attempts.Count(a => a.QuizId == q.Id);
                 var isCompleted = attempts.Any(a => a.QuizId == q.Id && a.Status == "Graded");
                 var inProgress = attempts.Any(a => a.QuizId == q.Id && a.Status == "InProgress");
-
+                
                 string status = "Chưa làm";
                 if (inProgress)
                     status = "Đang làm";
-                else if (studentAttemptsCount >= q.MaxAttempts)
+                else if (q.EndTime.HasValue && DateTime.UtcNow > q.EndTime.Value)
+                    status = "Hết hạn";
+                else if (studentAttemptsCount >= q.MaxAttempts && q.MaxAttempts > 0)
                     status = "Hết lượt";
                 else if (isCompleted)
-                    status = "Hoàn thành";
-
+                    status = "Còn Lượt";
+               
                 result.Add(new StudentQuizDto
                 {
                     QuizId = q.Id,
@@ -254,6 +266,8 @@ namespace BussinessLayer.Services
                     TimeLimitMinutes = q.TimeLimitMinutes,
                     MaxAttempts = q.MaxAttempts,
                     AttemptsCount = studentAttemptsCount,
+                    StartTime = q.StartTime,
+                    EndTime = q.EndTime,
                     Status = status,
                     HasPassword = !string.IsNullOrEmpty(q.AccessCode),
                     LatestAttemptId = attempts.Where(a => a.QuizId == q.Id).OrderByDescending(a => a.StartTime).FirstOrDefault()?.Id
@@ -305,7 +319,38 @@ namespace BussinessLayer.Services
             if (quiz == null)
                 throw new Exception("Bài thi không tồn tại.");
 
-            var previousAttempts = await _attemptRepo.GetAttemptsByStudentAsync(studentId, quizId);
+            var previousAttempts = (await _attemptRepo.GetAttemptsByStudentAsync(studentId, quizId)).ToList();
+            
+            bool showAnswers = quiz.ShowScoreAfterSubmit;
+            if (showAnswers && quiz.ScoreDisplayTiming == "AfterEndTime")
+            {
+                if (quiz.EndTime.HasValue && DateTime.UtcNow < quiz.EndTime.Value)
+                {
+                    showAnswers = false;
+                }
+            }
+
+            decimal? finalScore = null;
+            if (showAnswers)
+            {
+                var gradedAttempts = previousAttempts.Where(a => a.Status == "Graded").ToList();
+                if (gradedAttempts.Any())
+                {
+                    if (quiz.GradingMethod == "Highest")
+                    {
+                        finalScore = gradedAttempts.Max(a => a.Score);
+                    }
+                    else if (quiz.GradingMethod == "Average")
+                    {
+                        finalScore = gradedAttempts.Average(a => a.Score);
+                    }
+                    else // Latest
+                    {
+                        var latest = gradedAttempts.OrderByDescending(a => a.EndTime ?? a.StartTime).First();
+                        finalScore = latest.Score;
+                    }
+                }
+            }
 
             return new QuizDetailDto
             {
@@ -314,11 +359,15 @@ namespace BussinessLayer.Services
                 Description = quiz.Description,
                 TimeLimitMinutes = quiz.TimeLimitMinutes,
                 MaxAttempts = quiz.MaxAttempts,
+                StartTime = quiz.StartTime,
+                EndTime = quiz.EndTime,
                 NumVariants = quiz.NumVariants,
                 GradingMethod = quiz.GradingMethod,
-                ShowScoreAfterSubmit = quiz.ShowScoreAfterSubmit,
+                ShowScoreAfterSubmit = showAnswers,
+                ScoreDisplayTiming = quiz.ScoreDisplayTiming,
                 HasPassword = !string.IsNullOrEmpty(quiz.AccessCode),
-                AttemptsDoneByCurrentUser = previousAttempts.Count(),
+                FinalScore = finalScore,
+                AttemptsDoneByCurrentUser = previousAttempts.Count,
                 Attempts = previousAttempts.Select(a => new QuizAttemptSummaryDto
                 {
                     AttemptId = a.Id,
@@ -589,6 +638,14 @@ namespace BussinessLayer.Services
             // Cần lấy thêm config của Quiz để biết có được phép xem đáp án không
             var quiz = await _quizRepo.GetByIdIncludeDeletedAsync(attempt.QuizId);
             bool showAnswers = quiz?.ShowScoreAfterSubmit ?? true;
+            
+            if (showAnswers && quiz?.ScoreDisplayTiming == "AfterEndTime")
+            {
+                if (quiz.EndTime.HasValue && DateTime.UtcNow < quiz.EndTime.Value)
+                {
+                    showAnswers = false;
+                }
+            }
 
             var resultDto = new QuizResultDto
             {

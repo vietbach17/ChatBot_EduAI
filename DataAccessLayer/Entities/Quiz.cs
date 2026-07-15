@@ -43,6 +43,9 @@ namespace DataAccessLayer.Entities
 
         public bool ShowScoreAfterSubmit { get; set; } = true;
 
+        [MaxLength(20)]
+        public string ScoreDisplayTiming { get; set; } = "Immediately"; // "Immediately", "AfterEndTime"
+
         public int TimeLimitMinutes { get; set; } = 15; // Thời gian làm bài (phút)
 
         [Required]
@@ -63,7 +66,7 @@ namespace DataAccessLayer.Entities
         [MaxLength(20)]
         public string GradingMethod { get; set; } = "Highest"; // "Highest", "Average", "Latest"
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } =DateTime.UtcNow;
 
         public bool IsDeleted { get; set; } = false;
     }
