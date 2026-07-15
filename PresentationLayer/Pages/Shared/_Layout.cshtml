@@ -73,13 +73,82 @@
             overflow-y: auto;
             overflow-x: hidden;
         }
+
+        /* Mobile Hamburger & Sidebar styles */
+        .mobile-topbar {
+            display: none;
+        }
+        .sidebar-header-mobile {
+            display: none;
+        }
+        #sidebarOverlay {
+            display: none;
+        }
+
+        @@media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 280px;
+                z-index: 9999;
+                transform: translateX(-100%);
+                transition: transform 0.2s ease-in-out;
+                border-right: 4px solid var(--black);
+                box-shadow: 5px 0px 0px var(--black);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .mobile-topbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: var(--white);
+                border-bottom: var(--border);
+                padding: 15px 20px;
+                height: 60px;
+                width: 100%;
+                z-index: 9990;
+                flex-shrink: 0;
+            }
+            .sidebar-header-mobile {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                border-bottom: 2px dashed #ccc;
+                padding-bottom: 15px;
+            }
+            .sidebar > .logo {
+                display: none; /* Hide original logo inside sidebar on mobile */
+            }
+        }
     </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     
+    <!-- MOBILE TOPBAR -->
+    <div class="mobile-topbar">
+        <div class="logo" style="margin: 0; font-size: 18px;"><i class="fa-solid fa-graduation-cap"></i> EduManager</div>
+        <button id="menuToggleButton" onclick="toggleSidebarMenu()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--black);"><i class="fa-solid fa-bars"></i></button>
+    </div>
+
+    <!-- SIDEBAR OVERLAY -->
+    <div id="sidebarOverlay" onclick="toggleSidebarMenu()"></div>
+
     <!-- LEFT SIDEBAR -->
     <div class="sidebar">
+        <div class="sidebar-header-mobile">
+            <div class="logo" style="margin: 0; font-size: 18px;"><i class="fa-solid fa-graduation-cap"></i> EduManager</div>
+            <button onclick="toggleSidebarMenu()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--black);"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
         @{
             var userRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
             var activePage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
@@ -202,6 +271,39 @@
             document.getElementById('brutalAlertMessage').innerText = message;
             document.getElementById('brutalAlertModal').style.display = 'flex';
         }
+
+        // Mobile Sidebar Toggle Logic
+        function toggleSidebarMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const toggleBtnIcon = document.querySelector('#menuToggleButton i');
+            
+            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                overlay.style.display = 'block';
+                if (toggleBtnIcon) {
+                    toggleBtnIcon.className = 'fa-solid fa-xmark';
+                }
+            } else {
+                overlay.style.display = 'none';
+                if (toggleBtnIcon) {
+                    toggleBtnIcon.className = 'fa-solid fa-bars';
+                }
+            }
+        }
+        
+        // Auto-close sidebar on menu click on mobile
+        document.addEventListener("DOMContentLoaded", function() {
+            const navLinks = document.querySelectorAll('.sidebar .nav-item');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar.classList.contains('active')) {
+                        toggleSidebarMenu();
+                    }
+                });
+            });
+        });
 
         // Intercept all forms with data-confirm
         document.addEventListener('submit', function(e) {

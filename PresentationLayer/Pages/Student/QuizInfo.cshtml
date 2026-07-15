@@ -194,6 +194,42 @@
         color: red;
         margin-bottom: 20px;
     }
+
+    @@media (max-width: 768px) {
+        .quiz-info-wrapper {
+            margin: 15px auto !important;
+            padding: 0 10px !important;
+        }
+        .quiz-header-banner {
+            padding: 20px !important;
+            margin-bottom: 20px !important;
+        }
+        .quiz-title-tag {
+            font-size: 22px !important;
+        }
+        .quiz-meta-flex {
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+        .meta-item {
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 10px 15px !important;
+        }
+        .quiz-action-area {
+            padding: 15px !important;
+        }
+        .btn-start-quiz {
+            padding: 10px 20px !important;
+            font-size: 16px !important;
+            width: 100% !important;
+            justify-content: center !important;
+        }
+        .btn-back {
+            width: 100% !important;
+            text-align: center !important;
+        }
+    }
 </style>
 }
 
@@ -298,10 +334,12 @@
 
         <div class="attempts-header">Các lượt làm bài của bạn</div>
 
+
         @if (Model.QuizInfo.Attempts != null && Model.QuizInfo.Attempts.Any())
         {
             <div class="table-container">
                 <table class="attempts-table">
+
                 <thead>
                     <tr>
                         <th>Lượt</th>
@@ -373,7 +411,9 @@
                         }
                     }
                 </tbody>
+
             </table>
+
             </div>
         }
         else

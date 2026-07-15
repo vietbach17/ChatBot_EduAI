@@ -205,6 +205,45 @@
             max-width: 400px;
             text-align: center;
         }
+
+        @@media (max-width: 768px) {
+            .header {
+                padding: 10px 15px;
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            .header h1 {
+                font-size: 18px;
+            }
+            .container {
+                flex-direction: column-reverse;
+                padding: 0 10px;
+                margin: 10px auto;
+                gap: 10px;
+            }
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+            .main-content {
+                width: 100%;
+            }
+            .question-box {
+                padding: 15px;
+            }
+            /* Make timer box float sticky at the bottom right of the screen so it's always visible */
+            .timer-box {
+                position: fixed;
+                bottom: 15px;
+                right: 15px;
+                z-index: 9999;
+                font-size: 20px;
+                padding: 8px 12px;
+                box-shadow: 2px 2px 0px var(--black);
+                margin: 0;
+            }
+        }
     </style>
 </head>
 <body>

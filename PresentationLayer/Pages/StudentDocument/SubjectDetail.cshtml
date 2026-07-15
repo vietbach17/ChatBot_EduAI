@@ -120,6 +120,47 @@
             font-weight: 700;
             color: #666;
         }
+
+        @@media (max-width: 768px) {
+            .subject-hero {
+                margin: 15px !important;
+                padding: 15px !important;
+            }
+            .subject-hero h1 {
+                font-size: 20px !important;
+            }
+            .section-card {
+                margin: 0 15px 15px !important;
+                padding: 15px !important;
+            }
+            .chapter-accordion {
+                padding: 0 15px 30px !important;
+                margin: 0 !important;
+            }
+            /* Make document rows stack on mobile */
+            .section-card div[style*="display: flex; justify-content: space-between"],
+            .chapter-doc {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 12px !important;
+            }
+            /* Make buttons row full-width on mobile */
+            .section-card div[style*="display: flex; justify-content: space-between"] div[style*="display: flex; gap: 10px"],
+            .chapter-doc div[style*="display: flex; gap: 10px"] {
+                width: 100% !important;
+                display: flex !important;
+                gap: 8px !important;
+            }
+            .section-card div[style*="display: flex; justify-content: space-between"] div[style*="display: flex; gap: 10px"] a,
+            .chapter-doc div[style*="display: flex; gap: 10px"] a,
+            .chapter-doc div[style*="display: flex; gap: 10px"] button {
+                flex: 1 !important;
+                text-align: center !important;
+                justify-content: center !important;
+                font-size: 11px !important;
+                padding: 8px 10px !important;
+            }
+        }
     </style>
 
     <div class="subject-hero">

@@ -58,6 +58,21 @@
         height: 85vh;
         overflow-y: auto;
     }
+
+    @@media (max-width: 900px) {
+        .dual-pane {
+            flex-direction: column;
+        }
+        .left-pane, .right-pane {
+            width: 100%;
+            flex: none;
+            position: static;
+            height: auto;
+        }
+        .right-pane {
+            margin-top: 20px;
+        }
+    }
     
     .variant-card {
         border: 2px dashed #888;
