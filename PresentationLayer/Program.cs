@@ -67,6 +67,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IPaymentHistoryService, PaymentHistoryService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IAdminAnalyticsService, AdminAnalyticsService>();
 // builder.Services.AddScoped<IQuizAttemptService, QuizAttemptService>(); // (uncomment when implemented)
 builder.Services.AddHostedService<QuotaResetBackgroundService>();
 
