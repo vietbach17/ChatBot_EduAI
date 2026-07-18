@@ -1,0 +1,217 @@
+@page
+@model PresentationLayer.Pages.Admin.StatisticsModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Thống kê hệ thống";
+    ViewBag.ActiveMenu = "AdminStatistics";
+
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    var tokenMonthJson = JsonSerializer.Serialize(Model.Stats.TokenByMonth, jsonOpts);
+    var tokenYearJson  = JsonSerializer.Serialize(Model.Stats.TokenByYear, jsonOpts);
+    var payMonthJson   = JsonSerializer.Serialize(Model.Stats.PaymentByMonth, jsonOpts);
+    var payYearJson    = JsonSerializer.Serialize(Model.Stats.PaymentByYear, jsonOpts);
+
+    long totalTokensYear = 0; decimal totalRevenueYear = 0;
+    foreach (var p in Model.Stats.TokenByMonth) { totalTokensYear += p.TotalTokens; }
+    foreach (var p in Model.Stats.PaymentByMonth) { totalRevenueYear += p.TotalAmount; }
+}
+
+@section Styles {
+<style>
+    .stat-card { background: var(--white); border: 3px solid var(--black); box-shadow: 5px 5px 0 var(--black); padding: 18px 22px; }
+    .stat-title { font-weight: 900; font-size: 15px; text-transform: uppercase; border-bottom: 2px dashed #ccc; padding-bottom: 8px; margin-bottom: 14px; }
+    .chart-wrap { position: relative; height: 300px; }
+    .stats-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .stats-table th { padding: 10px 8px; font-weight: 900; border-bottom: 3px solid var(--black); text-align: right; white-space: nowrap; }
+    .stats-table th:first-child, .stats-table td:first-child,
+    .stats-table th:nth-child(2), .stats-table td:nth-child(2) { text-align: left; }
+    .stats-table td { padding: 9px 8px; border-bottom: 1px dashed #ccc; font-weight: 700; text-align: right; }
+</style>
+}
+
+<div class="main-wrapper">
+<div style="padding: 30px;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+        <h1 style="color: var(--pink); font-weight: 900; font-size: 28px; text-transform: uppercase; margin:0;">
+            <i class="fa-solid fa-chart-column"></i> THỐNG KÊ HỆ THỐNG
+        </h1>
+        <form method="get" style="display:flex; align-items:center; gap:8px;">
+            <label style="font-weight:900; font-size:13px;">NĂM:</label>
+            <select name="Year" onchange="this.form.submit()" style="border:3px solid var(--black); padding:6px 12px; font-weight:900; background:var(--white); box-shadow:2px 2px 0 var(--black);">
+                @foreach (var y in Model.Stats.AvailableYears)
+                {
+                    <option value="@y" selected="@(y == Model.Stats.SelectedYear)">@y</option>
+                }
+            </select>
+        </form>
+    </div>
+
+    <!-- Tổng quan nhanh -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:20px; margin-bottom:28px;">
+        <div class="stat-card" style="text-align:center;">
+            <i class="fa-solid fa-microchip" style="font-size:30px; color:var(--blue);"></i>
+            <div style="font-size:26px; font-weight:900;">@totalTokensYear.ToString("N0")</div>
+            <div style="font-weight:800; color:#555; font-size:12px; text-transform:uppercase;">Token tiêu thụ năm @Model.Stats.SelectedYear</div>
+        </div>
+        <div class="stat-card" style="text-align:center;">
+            <i class="fa-solid fa-money-bill-trend-up" style="font-size:30px; color:var(--green);"></i>
+            <div style="font-size:26px; font-weight:900;">@totalRevenueYear.ToString("N0")đ</div>
+            <div style="font-weight:800; color:#555; font-size:12px; text-transform:uppercase;">Doanh thu năm @Model.Stats.SelectedYear</div>
+        </div>
+        <div class="stat-card" style="text-align:center;">
+            <i class="fa-solid fa-users" style="font-size:30px; color:var(--pink);"></i>
+            <div style="font-size:26px; font-weight:900;">@Model.Stats.Users.Count</div>
+            <div style="font-weight:800; color:#555; font-size:12px; text-transform:uppercase;">Người dùng</div>
+        </div>
+    </div>
+
+    <!-- ── BIỂU ĐỒ TOKEN ── -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(420px, 1fr)); gap:24px; margin-bottom:28px;">
+        <div class="stat-card">
+            <div class="stat-title"><i class="fa-solid fa-microchip" style="color:var(--blue);"></i> TOKEN THEO THÁNG (@Model.Stats.SelectedYear)</div>
+            <div class="chart-wrap"><canvas id="chartTokenMonth"></canvas></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title"><i class="fa-solid fa-microchip" style="color:var(--blue);"></i> TOKEN THEO NĂM</div>
+            <div class="chart-wrap"><canvas id="chartTokenYear"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ── BIỂU ĐỒ DOANH THU ── -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(420px, 1fr)); gap:24px; margin-bottom:28px;">
+        <div class="stat-card">
+            <div class="stat-title"><i class="fa-solid fa-money-bill-wave" style="color:var(--green);"></i> DOANH THU THEO THÁNG (@Model.Stats.SelectedYear)</div>
+            <div class="chart-wrap"><canvas id="chartPayMonth"></canvas></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title"><i class="fa-solid fa-money-bill-wave" style="color:var(--green);"></i> DOANH THU THEO NĂM</div>
+            <div class="chart-wrap"><canvas id="chartPayYear"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ── CHI TIẾT TỪNG NGƯỜI DÙNG ── -->
+    <div class="stat-card">
+        <div class="stat-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <span><i class="fa-solid fa-user-tag" style="color:var(--pink);"></i> CHI TIẾT THEO NGƯỜI DÙNG (token đã dùng &amp; tiền đã mua gói)</span>
+            <input id="userSearch" type="text" placeholder="Tìm theo tên / email..." oninput="filterUsers()"
+                   style="border:2px solid var(--black); padding:6px 10px; font-weight:700; font-size:12px; width:220px;">
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="stats-table" id="userStatsTable">
+                <thead>
+                    <tr>
+                        <th>NGƯỜI DÙNG</th>
+                        <th>EMAIL</th>
+                        <th>GÓI</th>
+                        <th>LƯỢT CHAT</th>
+                        <th>TOKEN INPUT</th>
+                        <th>TOKEN OUTPUT</th>
+                        <th>TỔNG TOKEN</th>
+                        <th>SỐ GD</th>
+                        <th>TỔNG CHI (đ)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var u in Model.Stats.Users)
+                {
+                    <tr>
+                        <td style="font-weight:800;">@u.Username <span style="color:#999; font-size:11px;">(@u.Role)</span></td>
+                        <td style="color:#555;">@(u.Email ?? "-")</td>
+                        <td>@u.SubscriptionPlan</td>
+                        <td>@u.ChatCallCount.ToString("N0")</td>
+                        <td>@u.PromptTokens.ToString("N0")</td>
+                        <td>@u.OutputTokens.ToString("N0")</td>
+                        <td style="font-weight:900; color:var(--blue);">@u.TotalTokens.ToString("N0")</td>
+                        <td>@u.PaymentCount.ToString("N0")</td>
+                        <td style="font-weight:900; color:var(--green);">@u.TotalSpent.ToString("N0")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        @if (!Model.Stats.Users.Any())
+        {
+            <div style="text-align:center; padding:24px; color:#777; font-weight:700;">Chưa có dữ liệu người dùng.</div>
+        }
+    </div>
+
+</div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    const tokenMonth = @Html.Raw(tokenMonthJson);
+    const tokenYear  = @Html.Raw(tokenYearJson);
+    const payMonth   = @Html.Raw(payMonthJson);
+    const payYear    = @Html.Raw(payYearJson);
+
+    const fmtNum = v => Number(v).toLocaleString("vi-VN");
+
+    // Biểu đồ kết hợp CỘT (bar) + ĐƯỜNG (line) theo yêu cầu thống kê
+    function comboChart(canvasId, points, barLabel, lineLabel, barColor, lineColor, isMoney) {
+        const labels = points.map(p => p.label);
+        const totals = points.map(p => isMoney ? p.totalAmount : p.totalTokens);
+        const counts = points.map(p => isMoney ? p.transactionCount : p.callCount);
+
+        new Chart(document.getElementById(canvasId), {
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        type: "bar",
+                        label: barLabel,
+                        data: totals,
+                        backgroundColor: barColor + "cc",
+                        borderColor: "#000",
+                        borderWidth: 2,
+                        yAxisID: "y"
+                    },
+                    {
+                        type: "line",
+                        label: lineLabel,
+                        data: counts,
+                        borderColor: lineColor,
+                        backgroundColor: lineColor,
+                        borderWidth: 3,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        yAxisID: "y1"
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
+                plugins: {
+                    legend: { labels: { font: { weight: "800" } } },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ctx.dataset.label + ": " + fmtNum(ctx.parsed.y) + (ctx.dataset.yAxisID === "y" && isMoney ? " đ" : "")
+                        }
+                    }
+                },
+                scales: {
+                    y:  { position: "left",  ticks: { callback: v => fmtNum(v) }, title: { display: true, text: barLabel, font: { weight: "800" } } },
+                    y1: { position: "right", grid: { drawOnChartArea: false }, ticks: { precision: 0 }, title: { display: true, text: lineLabel, font: { weight: "800" } } }
+                }
+            }
+        });
+    }
+
+    comboChart("chartTokenMonth", tokenMonth, "Tổng token", "Số lượt gọi AI", "#3b82f6", "#d93856", false);
+    comboChart("chartTokenYear",  tokenYear,  "Tổng token", "Số lượt gọi AI", "#3b82f6", "#d93856", false);
+    comboChart("chartPayMonth",   payMonth,   "Doanh thu (đ)", "Số giao dịch", "#16a34a", "#f59e0b", true);
+    comboChart("chartPayYear",    payYear,    "Doanh thu (đ)", "Số giao dịch", "#16a34a", "#f59e0b", true);
+
+    // Lọc bảng chi tiết user
+    function filterUsers() {
+        const q = document.getElementById("userSearch").value.toLowerCase();
+        document.querySelectorAll("#userStatsTable tbody tr").forEach(tr => {
+            tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+        });
+    }
+</script>
+}

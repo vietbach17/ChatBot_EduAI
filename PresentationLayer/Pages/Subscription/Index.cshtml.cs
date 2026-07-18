@@ -19,11 +19,13 @@ namespace PresentationLayer.Pages.Subscription
     {
         private readonly ISubscriptionService _subscriptionService;
         private readonly ISubscriptionPlanService _planService;
+        private readonly IUserService _userService;
 
-        public IndexModel(ISubscriptionService subscriptionService, ISubscriptionPlanService planService)
+        public IndexModel(ISubscriptionService subscriptionService, ISubscriptionPlanService planService, IUserService userService)
         {
             _subscriptionService = subscriptionService;
             _planService = planService;
+            _userService = userService;
         }
 
         public SubscriptionInfoDto Info { get; set; } = new();
@@ -61,6 +63,17 @@ namespace PresentationLayer.Pages.Subscription
                 return RedirectToPage("/Auth/Login");
 
             return RedirectToPage("/Payment/Create", new { addonId = addonId });
+        }
+
+        /// <summary>Bat/tat viec su dung luot hoi du phong cua nguoi dung hien tai (goi bang AJAX).</summary>
+        public async Task<IActionResult> OnPostToggleExtraQuotaAsync(bool useExtraQuota)
+        {
+            var userId = GetUserId();
+            if (userId <= 0)
+                return new JsonResult(new { success = false, message = "Chua dang nhap." });
+
+            var success = await _userService.UpdateUseExtraQuotaAsync(userId, useExtraQuota);
+            return new JsonResult(new { success });
         }
 
         private int GetUserId()

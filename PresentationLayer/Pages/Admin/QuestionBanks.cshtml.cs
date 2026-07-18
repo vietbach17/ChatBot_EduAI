@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using BussinessLayer.DTOs;
 using BussinessLayer.IServices;
-using DataAccessLayer;
-using DataAccessLayer.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace PresentationLayer.Pages.Admin
 {
@@ -17,16 +14,16 @@ namespace PresentationLayer.Pages.Admin
     public class QuestionBanksModel : PageModel
     {
         private readonly IQuestionBankActivityLogService _logService;
-        private readonly ApplicationDbContext _context;
+        private readonly IAIQuizGeneratorService _aiGeneratorService;
 
-        public QuestionBanksModel(IQuestionBankActivityLogService logService, ApplicationDbContext context)
+        public QuestionBanksModel(IQuestionBankActivityLogService logService, IAIQuizGeneratorService aiGeneratorService)
         {
             _logService = logService;
-            _context = context;
+            _aiGeneratorService = aiGeneratorService;
         }
 
-        public IEnumerable<QuestionBankActivityLog> ManualLogs { get; set; } = new List<QuestionBankActivityLog>();
-        public IEnumerable<AIGenerationLog> AILogs { get; set; } = new List<AIGenerationLog>();
+        public IEnumerable<QuestionBankActivityLogDto> ManualLogs { get; set; } = new List<QuestionBankActivityLogDto>();
+        public IEnumerable<AIGenerationLogDto> AILogs { get; set; } = new List<AIGenerationLogDto>();
 
         [BindProperty(SupportsGet = true)]
         public int CurrentPage { get; set; } = 1;
@@ -44,13 +41,8 @@ namespace PresentationLayer.Pages.Admin
             TotalPages = (int)Math.Ceiling((double)totalCount / PageSize);
             if (TotalPages == 0) TotalPages = 1;
 
-            // Lấy log AI (Lấy toàn bộ hoặc 50 log gần nhất cho Admin)
-            AILogs = await _context.AIGenerationLogs
-                .Include(a => a.Lecturer)
-                .Include(a => a.Subject)
-                .OrderByDescending(a => a.CreatedAt)
-                .Take(50)
-                .ToListAsync();
+            // Lấy log AI (50 log gần nhất cho Admin)
+            AILogs = await _aiGeneratorService.GetRecentGenerationLogsAsync(50);
 
             return Page();
         }

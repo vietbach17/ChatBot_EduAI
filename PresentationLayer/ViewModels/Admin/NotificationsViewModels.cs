@@ -7,6 +7,8 @@ namespace PresentationLayer.ViewModels.Admin
     {
         public string TargetAudience { get; set; } = "All";
 
+        public string SpecificEmail { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Vui lòng nhập tiêu đề email")]
         public string Subject { get; set; } = string.Empty;
 

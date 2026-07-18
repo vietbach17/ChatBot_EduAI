@@ -51,11 +51,17 @@
             <form method="post" asp-page-handler="Send" data-confirm="Bạn có chắc chắn muốn gửi email thông báo này? Hành động này không thể hoàn tác.">
                 <div class="form-group">
                     <label>Đối tượng nhận</label>
-                    <select asp-for="SendModel.TargetAudience">
+                    <select asp-for="SendModel.TargetAudience" id="targetAudience" onchange="toggleSpecificEmail()">
                         <option value="All">Tất cả người dùng</option>
                         <option value="Students">Chỉ Sinh viên</option>
                         <option value="Lecturers">Chỉ Giảng viên</option>
+                        <option value="Specific">Một tài khoản cụ thể</option>
                     </select>
+                </div>
+
+                <div class="form-group" id="specificEmailGroup" style="display: none;">
+                    <label>Email tài khoản cụ thể</label>
+                    <input type="email" asp-for="SendModel.SpecificEmail" id="specificEmailInput" placeholder="Nhập địa chỉ email..." />
                 </div>
 
                 <div class="form-group">
@@ -115,6 +121,25 @@
                     contentInput.value = '';
                 }
             }
+
+            function toggleSpecificEmail() {
+                const val = document.getElementById('targetAudience').value;
+                const emailGroup = document.getElementById('specificEmailGroup');
+                const emailInput = document.getElementById('specificEmailInput');
+                if (val === 'Specific') {
+                    emailGroup.style.display = 'flex';
+                    emailInput.required = true;
+                } else {
+                    emailGroup.style.display = 'none';
+                    emailInput.required = false;
+                    emailInput.value = '';
+                }
+            }
+
+            // Chạy lần đầu khi load trang
+            document.addEventListener('DOMContentLoaded', function() {
+                toggleSpecificEmail();
+            });
         </script>
     </div>
 </div>

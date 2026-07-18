@@ -29,17 +29,18 @@
 .sources-box { flex:1 1 0; min-height:0; overflow-y:auto; background:var(--white); border:var(--border); box-shadow:3px 3px 0 var(--black); padding:8px; }
 .sources-box::-webkit-scrollbar { width:5px; }
 .sources-box::-webkit-scrollbar-thumb { background:#aaa; }
-.doc-folder { border:2px solid #000; box-shadow:2px 2px 0 #000; background:var(--white); margin-bottom:8px; overflow:hidden; }
-.doc-folder summary { list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; font-size:11px; font-weight:900; background:#fff; }
-.doc-folder summary::-webkit-details-marker { display:none; }
-.doc-folder-name { display:flex; align-items:center; gap:6px; min-width:0; flex:1; }
-.doc-folder-count { display:inline-flex; align-items:center; gap:4px; font-size:10px; color:var(--black); white-space:nowrap; }
-.doc-folder-content { border-top:1px solid #ddd; padding:6px 8px 8px; display:flex; flex-direction:column; gap:6px; background:#fff; max-height:150px; overflow-y:auto; }
-.doc-folder-item { display:flex; align-items:center; gap:6px; padding-bottom:6px; border-bottom:1px dashed #eee; }
-.doc-folder-item:last-child { padding-bottom:0; border-bottom:none; }
-.doc-folder-chevron { transition:transform 0.15s ease; }
-.doc-folder[open] .doc-folder-chevron { transform:rotate(180deg); }
-.sessions-box { max-height:200px; overflow-y:auto; background:var(--white); border:var(--border); box-shadow:3px 3px 0 var(--black); padding:6px; display:flex; flex-direction:column; gap:4px; }
+.subject-item { display:flex; align-items:center; gap:8px; padding:8px 10px; border:2px solid #000; box-shadow:2px 2px 0 #000; background:var(--white); margin-bottom:8px; font-size:11px; font-weight:900; cursor:pointer; transition:all 0.1s ease; }
+.subject-item:last-child { margin-bottom:0; }
+.subject-item:hover { transform:translate(-1px,-1px); box-shadow:3px 3px 0 #000; }
+.subject-item.active { background:var(--yellow); }
+.subject-item-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.subject-item-count { font-size:10px; color:#555; white-space:nowrap; }
+.subject-item-check { display:none; color:#16a34a; font-size:12px; }
+.subject-item.active .subject-item-check { display:inline-block; }
+.all-subjects-btn { width:100%; display:flex; align-items:center; gap:8px; padding:9px 12px; border:2px solid #000; box-shadow:2px 2px 0 #000; background:var(--white); font-size:12px; font-weight:900; cursor:pointer; margin-bottom:8px; text-transform:uppercase; transition:all 0.1s ease; }
+.all-subjects-btn:hover { transform:translate(-1px,-1px); box-shadow:3px 3px 0 #000; }
+.all-subjects-btn.active { background:var(--pink); color:#fff; }
+.sessions-box { flex:1 1 0; min-height:0; overflow-y:auto; background:var(--white); border:var(--border); box-shadow:3px 3px 0 var(--black); padding:6px; display:flex; flex-direction:column; gap:4px; }
 .sessions-box::-webkit-scrollbar { width:4px; }
 .sessions-box::-webkit-scrollbar-thumb { background:#d93856; }
 .session-item { display:flex; align-items:center; justify-content:space-between; padding:7px 9px; border:2px solid #000; font-size:11px; font-weight:800; cursor:pointer; background:var(--white); transition:all 0.1s ease; }
@@ -126,61 +127,55 @@
       <div class="quota-bar-wrap">
         @{
           var sl = Model.Info.ShortTermLimit > 0 ? Model.Info.ShortTermLimit : 1;
-          var pct = sl >= 999999 ? 0 : Math.Min(100,(int)((double)Model.Info.ShortTermUsedCount/sl*100));
+          var pct = sl >= 999999999 ? 0 : Math.Min(100,(int)((double)Model.Info.ShortTermUsedCount/sl*100));
           var bc = pct>=90?"red":pct>=70?"orange":"green";
         }
         <div class="quota-bar-fill @bc" id="quotaBarFill" style="width:@(pct)%;"></div>
       </div>
       <div id="quotaCountLabel" style="font-size:11px;color:#333;font-weight:700;">
-        @Model.Info.ShortTermUsedCount / @(Model.Info.ShortTermLimit>=999999?"∞":Model.Info.ShortTermLimit.ToString()) câu hỏi (chu kỳ 5h)
+        Đã dùng @(pct)% (chu kỳ 5h)
       </div>
       @if(pct>=90){<div class="quota-warn">Sắp hết hạn mức 5h!</div>}
     </div>
 
-    <!-- Nguon tai lieu -->
+    <!-- Mon hoc -->
     <div style="display:flex;flex-direction:column;flex:1 1 0;min-height:120px;">
-      <div class="section-title">Nguồn tài liệu</div>
+      <div class="section-title">Môn học</div>
+      @{
+        var idxDocs = Model.Documents
+          .Where(d=>d.Status==BussinessLayer.DTOs.DocumentStatus.Indexed)
+          .ToList();
+        var subjectGroups = idxDocs
+          .Where(d=>d.SubjectId.HasValue)
+          .GroupBy(d=>new { Id = d.SubjectId!.Value, Name = string.IsNullOrWhiteSpace(d.SubjectName) ? ("Môn #"+d.SubjectId) : d.SubjectName!.Trim() })
+          .OrderBy(g=>g.Key.Name).ToList();
+      }
+
+      <button type="button" id="btnAllSubjects" class="all-subjects-btn active" onclick="selectSubject(null)" title="Hỏi trên tài liệu của tất cả các môn học">
+        <i class="fa-solid fa-layer-group"></i>
+        <span style="flex:1;text-align:left;">Tất cả môn học</span>
+        <span style="font-size:10px;font-weight:800;opacity:0.85;">@idxDocs.Count tài liệu</span>
+      </button>
+
       <div class="sources-box" id="sourcesBox">
-        @{
-          var idxDocs = Model.Documents
-            .Where(d=>d.Status==BussinessLayer.DTOs.DocumentStatus.Indexed)
-            .OrderBy(d=>d.SubjectName??"z").ThenBy(d=>d.Title).ToList();
-          var grp = idxDocs
-            .GroupBy(d=>string.IsNullOrWhiteSpace(d.SubjectName)?"Khong phan loai":d.SubjectName!.Trim())
-            .OrderBy(g=>g.Key).ToList();
-        }
-        @if(grp.Any()){
-          @foreach(var sg in grp){
-            var v=GetSubjectVisual(sg.Key);
-            <details class="doc-folder">
-              <summary>
-                <span class="doc-folder-name">
-                  <i class="@v.Icon" style="color:@v.Accent;font-size:12px;"></i>
-                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@sg.Key</span>
-                </span>
-                <span class="doc-folder-count">@sg.Count() <i class="fa-solid fa-chevron-down doc-folder-chevron"></i></span>
-              </summary>
-              <div class="doc-folder-content">
-                @foreach(var doc in sg){
-                  <div class="doc-folder-item">
-                    <input type="checkbox" name="selectedDocs" value="@doc.Id" class="doc-checkbox" id="doc-@doc.Id" style="cursor:pointer;width:14px;height:14px;accent-color:var(--pink);flex-shrink:0;"/>
-                    <label for="doc-@doc.Id" style="cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;" title="@doc.Title">
-                      <span style="color:@(doc.FileType.ToLower()=="pdf"?"#d93856":doc.FileType.ToLower()=="docx"?"#2b579a":"#d04423");font-weight:900;font-size:9px;">[@doc.FileType.ToUpper()]</span> @doc.Title
-                    </label>
-                    <i class="fa-solid fa-eye" style="cursor:pointer;color:#777;font-size:10px;" onclick="previewDocumentText(@doc.Id)"></i>
-                  </div>
-                }
-              </div>
-            </details>
+        @if(subjectGroups.Any()){
+          @foreach(var sg in subjectGroups){
+            var v=GetSubjectVisual(sg.Key.Name);
+            <div class="subject-item" id="subject-item-@sg.Key.Id" onclick="selectSubject(@sg.Key.Id)" title="@sg.Key.Name">
+              <i class="@v.Icon" style="color:@v.Accent;font-size:12px;"></i>
+              <span class="subject-item-name">@sg.Key.Name</span>
+              <span class="subject-item-count">@sg.Count() tài liệu</span>
+              <i class="fa-solid fa-circle-check subject-item-check"></i>
+            </div>
           }
         } else {
-          <div style="font-size:11px;color:#777;text-align:center;padding:12px;">Chưa có tài liệu.</div>
+          <div style="font-size:11px;color:#777;text-align:center;padding:12px;">Chưa có tài liệu thuộc môn học nào.</div>
         }
       </div>
     </div>
 
     <!-- Lich su Chat -->
-    <div style="display:flex;flex-direction:column;min-height:100px;max-height:210px;">
+    <div style="display:flex;flex-direction:column;flex:1 1 0;min-height:120px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div class="section-title" style="margin:0;">Lịch sử Chat</div>
         <button onclick="createNewSession()" style="padding:3px 8px;font-size:10px;font-weight:800;background:var(--green);cursor:pointer;border:2px solid #000;box-shadow:1px 1px 0 #000;display:inline-flex;align-items:center;gap:4px;">+ MỚI</button>
@@ -194,7 +189,7 @@
     <div style="display:flex;flex-direction:column;gap:10px;background:#fefefe;padding:10px;border:var(--border);box-shadow:2px 2px 0 var(--black);">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:12px;font-weight:700;">Dự phòng: <span style="color:var(--blue);font-weight:900;font-size:14px;" id="extraQuotaCount">@Model.Info.ExtraQuota</span></div>
+          <div style="font-size:12px;font-weight:700;">Token dự phòng: <span style="color:var(--blue);font-weight:900;font-size:14px;" id="extraQuotaCount">@Model.Info.ExtraQuota.ToString("N0")</span></div>
           <div style="font-size:10px;color:#777;">Dùng khi hết hạn mức</div>
         </div>
         <label style="position:relative;display:inline-block;width:44px;height:20px;">
@@ -207,11 +202,10 @@
       <div style="height:1px;background:#e5e5e5;"></div>
       <div>
         <div class="section-title" style="font-size:12px;margin:0 0 4px 0;">Phạm vi kiến thức</div>
-        <div class="toggle-group">
-          <button class="toggle-btn" id="btnAll" style="font-size:10px;">Tất cả</button>
-          <button class="toggle-btn active" id="btnDocs" style="font-size:10px;">Trong tài liệu</button>
+        <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border:var(--border);background:var(--yellow);font-size:11px;font-weight:900;">
+          <i class="fa-solid fa-book"></i> Chỉ trả lời trong tài liệu
         </div>
-        <div class="restriction-hint" id="restrictHint">Hạn chế: Chỉ trả lời ĐÚNG phạm vi tài liệu.</div>
+        <div class="restriction-hint" id="restrictHint"> </div>
       </div>
     </div>
   </div>
@@ -236,7 +230,7 @@
           <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
           <div class="message-content">
             <div class="message-sender">Trợ lý AI</div>
-            <p class="message-text">Chào bạn! Tôi là trợ lý học tập AI. Hãy chọn tài liệu ở sidebar và gửi câu hỏi để bắt đầu nhé!</p>
+            <p class="message-text">Chào bạn! Tôi là trợ lý học tập AI. Hãy chọn môn học ở sidebar và gửi câu hỏi — tôi sẽ trả lời dựa trên các tài liệu của môn đó nhé!</p>
           </div>
         </div>
       </div>
@@ -251,8 +245,8 @@
 <!-- QUOTA OVERLAY -->
 <div id="quotaOverlay" class="quota-modal-wrap">
   <div class="quota-modal">
-    <h2>Hết lượt hỏi!</h2>
-    <p id="quotaOverlayMsg">Bạn đã dùng hết lượt hỏi trong chu kỳ này.</p>
+    <h2>Hết token!</h2>
+    <p id="quotaOverlayMsg">Bạn đã dùng hết hạn mức token trong chu kỳ này.</p>
     <a href="/Subscription" class="brutal-btn-upgrade">Nâng cấp gói ngay</a>
     <button onclick="document.getElementById('quotaOverlay').style.display='none'" style="display:block;margin:12px auto 0;background:none;border:none;font-size:13px;cursor:pointer;color:#555;text-decoration:underline;">Đóng</button>
   </div>
@@ -266,8 +260,11 @@
       <button onclick="closePreviewModal()" style="background:none;border:none;font-size:22px;cursor:pointer;">&times;</button>
     </div>
     <div id="modalContent" style="flex:1;overflow-y:auto;font-family:monospace;font-size:12px;white-space:pre-wrap;background:#f8f9fa;padding:12px;border:2px solid #000;max-height:55vh;">Đang tải...</div>
-    <div style="margin-top:14px;text-align:right;">
-      <button onclick="closePreviewModal()" style="background:#000;color:#fff;border:2px solid #000;padding:7px 18px;font-weight:900;cursor:pointer;">Đóng</button>
+    <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <a id="modalGotoDoc" href="#" style="display:none;background:var(--blue);color:#fff;border:2px solid #000;box-shadow:2px 2px 0 #000;padding:7px 14px;font-weight:900;font-size:12px;text-decoration:none;">
+        <i class="fa-solid fa-up-right-from-square"></i> MỞ TÀI LIỆU TẠI VỊ TRÍ NÀY
+      </a>
+      <button onclick="closePreviewModal()" style="background:#000;color:#fff;border:2px solid #000;padding:7px 18px;font-weight:900;cursor:pointer;margin-left:auto;">Đóng</button>
     </div>
   </div>
 </div>
@@ -306,8 +303,23 @@
 <script>
 const chatMessages = document.getElementById("chatMessages");
 let sessions = [], currentSessionId = null, restrictToDocs = true;
+let selectedSubjectId = null;
 let connection = null, isStreaming = false;
 let streamingMessageEl = null, streamingRawText = "";
+
+function selectSubject(id) {
+  // Click lại môn đang chọn (hoặc bấm nút "Tất cả môn học") → quay về chế độ tìm trên tất cả các môn
+  selectedSubjectId = (id === null || selectedSubjectId === id) ? null : id;
+  document.querySelectorAll(".subject-item").forEach(function(el){ el.classList.remove("active"); });
+  var allBtn = document.getElementById("btnAllSubjects");
+  if (selectedSubjectId) {
+    if (allBtn) allBtn.classList.remove("active");
+    var item = document.getElementById("subject-item-" + selectedSubjectId);
+    if (item) item.classList.add("active");
+  } else {
+    if (allBtn) allBtn.classList.add("active");
+  }
+}
 
 // ===== SIGNALR =====
 async function initSignalR() {
@@ -352,7 +364,7 @@ async function initSignalR() {
       removeTypingIndicator();
       if (streamingMessageEl) { streamingMessageEl.remove(); streamingMessageEl = null; streamingRawText = ""; }
       if (outOfQuota) {
-        document.getElementById("quotaOverlayMsg").textContent = message || "Ban da het luot hoi.";
+        document.getElementById("quotaOverlayMsg").textContent = message || "Ban da het token.";
         document.getElementById("quotaOverlay").style.display = "flex";
       } else { appendErrMsg(message || "Loi khong xac dinh."); }
     });
@@ -368,14 +380,24 @@ function fmtMd(text) {
   if (typeof marked !== "undefined") return marked.parse(text);
   return esc(text).replace(/\n/g,"<br>");
 }
+function citMeta(c) {
+  var parts = [];
+  if (c.subjectName) parts.push(c.subjectName);
+  if (c.chapterTitle) parts.push(c.chapterTitle);
+  if (c.sectionTitle) parts.push(c.sectionTitle);
+  if (c.chunkOrderIndex) parts.push("Đoạn " + c.chunkOrderIndex);
+  return parts.join(" • ");
+}
 function renderMdCit(text, cits) {
   var html = fmtMd(text);
   if (!Array.isArray(cits)||cits.length===0) return html;
   html = html.replace(/\[(\d+)\]/g, function(match, p1) {
     var idx = parseInt(p1)-1;
     if (idx>=0&&idx<cits.length) {
-      var c=cits[idx], snippet=esc(c.snippet||""), fc=esc(c.fullContent||c.snippet||""), title=esc(c.documentTitle||"Tài liệu");
-      return "<span class=\"citation-badge\" data-title=\""+title+"\" data-fc=\""+fc+"\" onclick=\"openCit(this)\">"+p1+"<span class=\"citation-tooltip-content\"><strong style=\"color:var(--blue);display:block;margin-bottom:3px;\">"+title+"</strong><span style=\"font-style:italic;\">\""+snippet+"\"</span></span></span>";
+      var c=cits[idx], snippet=esc(c.snippet||""), fc=esc(c.fullContent||c.snippet||""), title=esc(c.documentTitle||"Tài liệu"), meta=esc(citMeta(c));
+      var docId=c.documentId||0, chunkIdx=c.chunkOrderIndex||0;
+      var metaHtml = meta ? "<span style=\"display:block;color:#666;font-size:10px;margin-bottom:3px;\"><i class=\"fa-solid fa-location-dot\"></i> "+meta+"</span>" : "";
+      return "<span class=\"citation-badge\" data-title=\""+title+"\" data-meta=\""+meta+"\" data-fc=\""+fc+"\" data-doc=\""+docId+"\" data-chunk=\""+chunkIdx+"\" onclick=\"openCit(this)\">"+p1+"<span class=\"citation-tooltip-content\"><strong style=\"color:var(--blue);display:block;margin-bottom:3px;\">"+title+"</strong>"+metaHtml+"<span style=\"font-style:italic;\">\""+snippet+"\"</span><span style=\"display:block;color:var(--blue);font-size:10px;margin-top:4px;font-weight:800;\"><i class=\"fa-solid fa-up-right-from-square\"></i> Click để xem trong tài liệu gốc</span></span></span>";
     }
     return match;
   });
@@ -383,7 +405,19 @@ function renderMdCit(text, cits) {
 }
 function openCit(el) {
   document.getElementById("modalTitle").textContent = "Trích dẫn: "+el.getAttribute("data-title");
-  document.getElementById("modalContent").textContent = el.getAttribute("data-fc");
+  var meta = el.getAttribute("data-meta");
+  document.getElementById("modalContent").textContent = (meta ? "Vị trí: "+meta+"\n\n" : "") + el.getAttribute("data-fc");
+  // Deep-link mở tài liệu gốc tại đúng vị trí chunk được trích dẫn
+  var link = document.getElementById("modalGotoDoc");
+  if (link) {
+    var docId = parseInt(el.getAttribute("data-doc")||"0"), chunkIdx = parseInt(el.getAttribute("data-chunk")||"0");
+    if (docId > 0) {
+      link.href = "/ViewDocument?id=" + docId + (chunkIdx > 0 ? "&chunk=" + chunkIdx : "");
+      link.style.display = "inline-block";
+    } else {
+      link.style.display = "none";
+    }
+  }
   document.getElementById("previewModal").style.display = "flex";
 }
 function appendBotActions(contentEl, rawText) {
@@ -404,7 +438,7 @@ function appendRemBadge(contentEl, remaining) {
   if (remaining===undefined||remaining===null) return;
   var q = document.createElement("span");
   q.style.cssText = "font-size:10px;color:#777;font-weight:bold;display:block;margin-top:6px;border-top:1px dashed #ddd;padding-top:5px;";
-  q.textContent = "(Còn "+(remaining>=9999?"∞":remaining)+" lượt hỏi)";
+  q.textContent = "(Còn "+(remaining>=999999999?"∞":Number(remaining).toLocaleString("vi-VN"))+" token)";
   contentEl.appendChild(q);
 }
 function appendErrMsg(msg) {
@@ -495,7 +529,7 @@ function renderMessages() {
   var s = sessions.find(function(x){return x.id===currentSessionId;});
   chatMessages.innerHTML = "";
   if (s&&s.messages&&s.messages.length>0) { s.messages.forEach(function(m){renderMessageUI(m.role,m.text,m.citations||[]);}); }
-  else { chatMessages.innerHTML = "<div class=\"message message-bot\"><div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Trợ lý AI</div><p class=\"message-text\">Hãy chọn tài liệu và gửi câu hỏi để bắt đầu!</p></div></div>"; }
+  else { chatMessages.innerHTML = "<div class=\"message message-bot\"><div class=\"chat-avatar\"><i class=\"fa-solid fa-robot\"></i></div><div class=\"message-content\"><div class=\"message-sender\">Trợ lý AI</div><p class=\"message-text\">Hãy chọn môn học và gửi câu hỏi để bắt đầu!</p></div></div>"; }
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 function switchSession(id) { currentSessionId=id; renderSessionsList(); renderMessages(); }
@@ -565,10 +599,8 @@ async function sendMessage() {
   var history = s.messages.map(function(m){return {role:m.role,text:m.text};});
   s.messages.push({role:"user",text:text,citations:[]});
   input.value=""; autoResize(input);
-  var docIds = [];
-  document.querySelectorAll(".doc-checkbox:checked").forEach(function(cb){docIds.push(parseInt(cb.value));});
   var modelName = document.getElementById("modelSelector")?.value || "";
-  var req = {message:text,sessionId:currentSessionId,history:history,selectedDocIds:docIds,restrictToDocs:restrictToDocs,modelName:modelName};
+  var req = {message:text,sessionId:currentSessionId,history:history,subjectId:selectedSubjectId,restrictToDocs:restrictToDocs,modelName:modelName};
   isStreaming=true; setStreamingUI(true);
 
   var signalrReady = connection && connection.state === signalR.HubConnectionState.Connected;
@@ -589,7 +621,7 @@ async function sendMessage() {
       removeTypingIndicator(); isStreaming=false; setStreamingUI(false);
       if (!data.success) {
         if (data.outOfQuota) {
-          document.getElementById("quotaOverlayMsg").textContent = data.message||"Ban da het luot hoi.";
+          document.getElementById("quotaOverlayMsg").textContent = data.message||"Ban da het token.";
           document.getElementById("quotaOverlay").style.display="flex";
         } else { appendErrMsg(data.message||"Loi khong xac dinh."); }
         input.value=text; autoResize(input); return;
@@ -620,15 +652,16 @@ async function refreshQuota() {
     var extraCount=document.getElementById("extraQuotaCount");
     if (planLabel) planLabel.textContent=data.plan||"";
     if (countLabel) {
-      var lim=data.shortTermLimit>=999999?"∞":(data.shortTermLimit||0);
-      countLabel.textContent=(data.shortTermUsed||0)+" / "+lim+" câu hỏi (chu kỳ 5h)";
+      var sl2 = data.shortTermLimit > 0 ? data.shortTermLimit : 1;
+      var pct2 = sl2 >= 999999999 ? 0 : Math.min(100, Math.round((data.shortTermUsed||0)/sl2*100));
+      countLabel.textContent="Đã dùng " + pct2 + "% (chu kỳ 5h)";
     }
-    if (barFill&&data.shortTermLimit>0&&data.shortTermLimit<999999) {
+    if (barFill&&data.shortTermLimit>0&&data.shortTermLimit<999999999) {
       var pct=Math.min(100,Math.round((data.shortTermUsed||0)/data.shortTermLimit*100));
       barFill.style.width=pct+"%";
       barFill.className="quota-bar-fill "+(pct>=90?"red":pct>=70?"orange":"green");
     }
-    if (extraCount) extraCount.textContent=data.extraQuota||0;
+    if (extraCount) extraCount.textContent=Number(data.extraQuota||0).toLocaleString("vi-VN");
   } catch(e) {}
 }
 
@@ -638,30 +671,8 @@ function handleKeyDown(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();se
 function toggleSidebar(){var s=document.getElementById("sidebarColumn"),o=document.getElementById("sidebarOverlay"),open=s.classList.toggle("open");o.style.display=open?"block":"none";}
 function closeSidebar(){document.getElementById("sidebarColumn").classList.remove("open");document.getElementById("sidebarOverlay").style.display="none";}
 function closePreviewModal(){document.getElementById("previewModal").style.display="none";}
-function previewDocumentText(docId){
-  var modal=document.getElementById("previewModal");
-  document.getElementById("modalTitle").textContent="Dang tai...";
-  document.getElementById("modalContent").textContent="Dang trich xuat...";
-  modal.style.display="flex";
-  fetch("?handler=DocumentText&docId="+docId).then(function(r){return r.json();}).then(function(d){
-    document.getElementById("modalTitle").textContent=d.success?"["+d.fileType?.toUpperCase()+"] "+d.title:"Loi";
-    document.getElementById("modalContent").textContent=d.success?(d.text||"(Rong)"):d.message;
-  }).catch(function(e){document.getElementById("modalContent").textContent="Loi: "+e.message;});
-}
 
-// ===== TOGGLE RESTRICT =====
-document.getElementById("btnAll")?.addEventListener("click",function(){
-  restrictToDocs=false;
-  document.getElementById("btnAll").classList.add("active");
-  document.getElementById("btnDocs").classList.remove("active");
-  document.getElementById("restrictHint").textContent="Tất cả: Trả lời tự do bằng kiến thức của AI.";
-});
-document.getElementById("btnDocs")?.addEventListener("click",function(){
-  restrictToDocs=true;
-  document.getElementById("btnDocs").classList.add("active");
-  document.getElementById("btnAll").classList.remove("active");
-  document.getElementById("restrictHint").textContent="Hạn chế: Chỉ trả lời ĐÚNG phạm vi tài liệu.";
-});
+// Phạm vi kiến thức luôn giới hạn trong tài liệu (bỏ chế độ "Tất cả" trả lời tự do).
 
 // ===== EXTRA QUOTA TOGGLE =====
 var toggleExtraQ = document.getElementById("toggleExtraQuotaChat");
@@ -673,7 +684,7 @@ if (toggleExtraQ) {
     sliderBtn.style.transform=isChecked?"translateX(24px)":"";
     sliderTrack.style.backgroundColor=isChecked?"var(--pink)":"#ccc";
     try {
-      var r=await fetch("/api/user/toggle-extra-quota",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({UseExtraQuota:isChecked})});
+      var r=await fetch("?handler=ToggleExtraQuota&useExtraQuota="+isChecked,{method:"POST"});
       if (!r.ok) throw new Error();
     } catch {
       e.target.checked=!isChecked;

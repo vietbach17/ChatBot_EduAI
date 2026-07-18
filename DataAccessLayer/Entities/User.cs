@@ -7,7 +7,7 @@ namespace DataAccessLayer.Entities
     /// <summary>
     /// Thực thể Người dùng trong hệ thống.
     /// Lưu trữ thông tin tài khoản, vai trò (Admin/Lecturer/Student), 
-    /// gói đăng ký (Subscription), hạn mức câu hỏi (Quota), và mã OTP đặt lại mật khẩu.
+    /// gói đăng ký (Subscription), hạn mức token AI (Quota), và mã OTP đặt lại mật khẩu.
     /// </summary>
     public class User
     {
@@ -35,17 +35,17 @@ namespace DataAccessLayer.Entities
 
         public DateTime? SubscriptionExpiry { get; set; } // null = chưa mua / hết hạn
 
-        public int MonthlyQuestionCount { get; set; } = 0; // số câu đã hỏi trong tháng
+        public long MonthlyTokensUsed { get; set; } = 0; // số token đã dùng trong tháng
 
         public DateTime? QuotaResetDate { get; set; } // ngày reset quota (đầu tháng tiếp theo)
 
-        public int ShortTermQuestionCount { get; set; } = 0; // số câu đã hỏi trong chu kỳ 5 giờ
+        public long ShortTermTokensUsed { get; set; } = 0; // số token đã dùng trong chu kỳ 5 giờ
 
         public DateTime? ShortTermResetDate { get; set; } // thời điểm reset chu kỳ 5 giờ
-        
-        public int ExtraQuestionQuota { get; set; } = 0; // số lượt hỏi dự phòng mua thêm
-        
-        public bool UseExtraQuota { get; set; } = false; // bật tắt việc tiêu thụ lượt dự phòng
+
+        public long ExtraTokenQuota { get; set; } = 0; // số token dự phòng mua thêm
+
+        public bool UseExtraQuota { get; set; } = false; // bật tắt việc tiêu thụ token dự phòng
         // ========================
         
         // ===== FORGOT PASSWORD =====

@@ -72,6 +72,15 @@ namespace DataAccessLayer.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Document>> GetDocumentsBySubjectIdAsync(int subjectId)
+        {
+            return await _context.Documents
+                .Include(d => d.Subject)
+                .Include(d => d.Chapter)
+                .Where(d => d.SubjectId == subjectId && d.Status == "Indexed")
+                .ToListAsync();
+        }
+
         public async Task AddDocumentAsync(Document document)
         {
             _context.Documents.Add(document);
@@ -98,7 +107,7 @@ namespace DataAccessLayer.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<DocumentChunk>> SearchSimilarChunksAsync(Vector embedding, IEnumerable<int>? documentIds = null, int topK = 5)
+        public async Task<List<DocumentChunk>> SearchSimilarChunksAsync(Vector embedding, int? subjectId = null, int topK = 5)
         {
             var chunkQuery = _context.DocumentChunks
                 .Include(c => c.Document)
@@ -107,13 +116,9 @@ namespace DataAccessLayer.Repositories
                     .ThenInclude(d => d.Chapter)
                 .Where(c => c.Embedding != null);
 
-            if (documentIds != null)
+            if (subjectId.HasValue && subjectId.Value > 0)
             {
-                var selectedIds = documentIds.Distinct().ToList();
-                if (selectedIds.Count > 0)
-                {
-                    chunkQuery = chunkQuery.Where(c => selectedIds.Contains(c.DocumentId));
-                }
+                chunkQuery = chunkQuery.Where(c => c.Document.SubjectId == subjectId.Value);
             }
 
             return await chunkQuery

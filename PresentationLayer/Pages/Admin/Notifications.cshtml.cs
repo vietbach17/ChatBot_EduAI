@@ -40,18 +40,40 @@ namespace PresentationLayer.Pages.Admin
             }
 
             var allUsers = await _userService.GetAllUsersAsync();
-            var targetUsers = SendModel.TargetAudience switch
-            {
-                "Students" => allUsers.Where(u => u.Role == "Student"),
-                "Lecturers" => allUsers.Where(u => u.Role == "Lecturer"),
-                _ => allUsers
-            };
+            var validEmails = new System.Collections.Generic.List<string>();
 
-            var validEmails = targetUsers
-                .Where(u => !string.IsNullOrWhiteSpace(u.Email))
-                .Select(u => u.Email!)
-                .Distinct()
-                .ToList();
+            if (SendModel.TargetAudience == "Specific")
+            {
+                if (string.IsNullOrWhiteSpace(SendModel.SpecificEmail))
+                {
+                    ModelState.AddModelError("SendModel.SpecificEmail", "Vui lòng nhập email của tài khoản cụ thể.");
+                    return Page();
+                }
+
+                var targetUser = allUsers.FirstOrDefault(u => u.Email != null && u.Email.Equals(SendModel.SpecificEmail, System.StringComparison.OrdinalIgnoreCase));
+                if (targetUser == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy người dùng nào có địa chỉ email này trong hệ thống.";
+                    return RedirectToPage();
+                }
+
+                validEmails.Add(targetUser.Email!);
+            }
+            else
+            {
+                var targetUsers = SendModel.TargetAudience switch
+                {
+                    "Students" => allUsers.Where(u => u.Role == "Student"),
+                    "Lecturers" => allUsers.Where(u => u.Role == "Lecturer"),
+                    _ => allUsers
+                };
+
+                validEmails = targetUsers
+                    .Where(u => !string.IsNullOrWhiteSpace(u.Email))
+                    .Select(u => u.Email!)
+                    .Distinct()
+                    .ToList();
+            }
 
             if (!validEmails.Any())
             {

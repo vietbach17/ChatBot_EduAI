@@ -20,11 +20,13 @@ namespace BussinessLayer.Services
     {
          private readonly IDocumentRepository _documentRepository;
         private readonly IGeminiService _geminiService;
+        private readonly IChunkSettingsService _chunkSettingsService;
 
-        public DocumentService(IDocumentRepository documentRepository, IGeminiService geminiService)
+        public DocumentService(IDocumentRepository documentRepository, IGeminiService geminiService, IChunkSettingsService chunkSettingsService)
         {
             _documentRepository = documentRepository;
             _geminiService = geminiService;
+            _chunkSettingsService = chunkSettingsService;
         }
 
         public async Task<IEnumerable<DocumentDto>> GetAllDocumentsAsync()
@@ -184,7 +186,9 @@ namespace BussinessLayer.Services
             if (doc == null || string.IsNullOrWhiteSpace(doc.Content)) return false;
 
             // Context-Aware Chunking Strategy: split by semantics and maintain overlap
-            var textChunks = SplitTextByContext(doc.Content, maxWords: 300, overlapWords: 50);
+            // Thông số chunk lấy từ cấu hình admin (Admin → Cấu hình Chunk)
+            var chunkSettings = _chunkSettingsService.GetSettings();
+            var textChunks = SplitTextByContext(doc.Content, maxWords: chunkSettings.MaxWords, overlapWords: chunkSettings.OverlapWords);
             
             var chunks = new List<DataAccessLayer.Entities.DocumentChunk>();
             int orderIndex = 1;
@@ -308,6 +312,12 @@ namespace BussinessLayer.Services
         {
             var chunks = await _documentRepository.GetDocumentChunksAsync(id);
             return chunks?.OrderBy(c => c.OrderIndex).Select(c => c.Content) ?? new List<string>();
+        }
+
+        public async Task<string?> GetChunkByOrderIndexAsync(int documentId, int orderIndex)
+        {
+            var chunks = await _documentRepository.GetDocumentChunksAsync(documentId);
+            return chunks?.FirstOrDefault(c => c.OrderIndex == orderIndex)?.Content;
         }
     }
 }

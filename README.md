@@ -1,35 +1,17 @@
 # 🤖 ChatEdu AI - Hệ Thống Trợ Lý Học Tập Thông Minh
 
-ChatEdu AI là một nền tảng hỗ trợ học tập tích hợp Trợ lý Trí tuệ Nhân tạo (Generative AI), giúp sinh viên tra cứu, ôn tập và hỏi đáp kiến thức dựa trên nguồn tài liệu chuẩn do Giảng viên cung cấp.
+![Architecture](PresentationLayer/wwwroot/images/PRN222_ASM2.drawio.png)
 
----
+## 📖 Giới Thiệu Dự Án
 
-## 🛠 Công Nghệ Sử Dụng
+ChatEdu AI là một nền tảng web ứng dụng Trí tuệ nhân tạo (Generative AI), hỗ trợ học tập thông minh. Hệ thống giúp sinh viên dễ dàng tra cứu, ôn tập và hỏi đáp kiến thức một cách chính xác dựa trên nguồn tài liệu chuẩn (.pdf, .docx, .pptx) do Giảng viên cung cấp. Dự án được xây dựng theo kiến trúc 3 lớp (3-Tier) với .NET 8, kết hợp sức mạnh của Google Gemini API và cơ sở dữ liệu vector PostgreSQL (pgvector).
 
-- **Backend:** C# / .NET 8, ASP.NET Core Razor Pages
-- **Database:** PostgreSQL với tiện ích mở rộng **pgvector** (lưu trữ và tìm kiếm vector embedding)
-- **AI Engine:** Google Gemini API (`gemini-2.0-flash-lite` & `gemini-embedding-001`)
-- **Real-time Sync:** ASP.NET Core SignalR (Đồng bộ dữ liệu thời gian thực không cần tải lại trang)
-- **Tương tác Frontend:** HTML, CSS (Custom Design), JavaScript, Bootstrap
-- **Xử lý tài liệu:** Trích xuất nội dung từ định dạng `.pdf`, `.docx`, `.pptx` (Sử dụng PdfPig và OpenXML).
+## ⚙️ Hướng Dẫn Cài Đặt và Chạy Dự Án
 
----
-
-## 🏛 Kiến Trúc Hệ Thống
-
-Dự án được xây dựng theo mô hình **3-Tier Architecture** (3 lớp) kết hợp với các dịch vụ AI và Cơ sở dữ liệu:
-- **PresentationLayer:** Giao diện Razor Pages tương tác người dùng, Controllers xử lý Webhook và SignalR Hub.
-- **BussinessLayer:** Xử lý các logic nghiệp vụ (Auth, Chat AI, Document Processing, Quota, Payment Gateways).
-- **DataAccessLayer:** Tương tác với PostgreSQL DB thông qua Entity Framework Core.
-
----
-
-## ⚙️ Hướng Dẫn Cài Đặt Chi Tiết (Dành cho Developer)
-
-Thực hiện theo các bước dưới đây để thiết lập dự án từ đầu:
+Thực hiện theo các bước dưới đây để thiết lập và chạy dự án từ đầu:
 
 ### Bước 1: Yêu cầu Hệ Thống
-Trước khi bắt đầu, hãy cài đặt các công cụ sau:
+Trước khi bắt đầu, hãy đảm bảo đã cài đặt các công cụ sau:
 1. **.NET 8 SDK:** [Tải và cài đặt .NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 2. **PostgreSQL:** [Tải và cài đặt PostgreSQL](https://www.postgresql.org/download/).
 3. **pgvector (Bắt buộc):**
@@ -85,44 +67,8 @@ dotnet ef database update --project DataAccessLayer --startup-project Presentati
 Di chuyển vào thư mục `PresentationLayer` và chạy lệnh khởi động dự án:
 ```bash
 cd PresentationLayer
-dotnet run
-```
-Hoặc để tự động phát hiện thay đổi code và tự động tải lại (Hot Reload):
-```bash
 dotnet watch run
 ```
 
-Sau khi chạy thành công, mở trình duyệt và truy cập vào đường dẫn:
+Sau khi chạy thành công, hệ thống sẽ tự động phát hiện thay đổi code (Hot Reload). Mở trình duyệt và truy cập vào đường dẫn:
 👉 **`http://localhost:54647`** (hoặc cổng được hiển thị trên màn hình console).
-
----
-
-## 📖 Hướng Dẫn Sử Dụng Nhanh
-
-### 1. Tài Khoản Thử Nghiệm
-Hệ thống mặc định có các tài khoản phân vai trò để kiểm tra:
-- **Admin:** Quản lý toàn bộ môn học, xem lịch sử giao dịch toàn hệ thống và duyệt thủ công các giao dịch.
-- **Giảng viên (Lecturer):** Soạn chương học, tải lên tài liệu học tập (`.pdf`, `.docx`, `.pptx`), quản lý ngân hàng câu hỏi và tạo bài kiểm tra.
-- **Sinh viên (Student):** Chat AI hỗ trợ giải bài tập, đọc tài liệu, làm bài kiểm tra do giảng viên giao, nâng cấp gói dịch vụ.
-
-### 2. Sử Dụng Cổng Thanh Toán Thử Nghiệm (Sandbox)
-Khi nâng cấp gói cước hoặc mua thêm lượt hỏi trong môi trường thử nghiệm:
-- **Ngân hàng:** NCB
-- **Số thẻ:** `9704198526191432198`
-- **Tên chủ thẻ:** `NGUYEN VAN A`
-- **Ngày phát hành:** `07/15`
-- **Mật khẩu OTP:** `123456`
-
----
-
-## 🐞 Gỡ Lỗi Thường Gặp (Troubleshooting)
-
-- **Lỗi 404 (Model Not Found) khi chat:** 
-  Do API Key mới từ Google AI Studio của bạn không hỗ trợ các model đời cũ (như `gemini-1.5-flash`). Hãy đảm bảo biến môi trường `GEMINI_MODEL` trong file `.env` đã được cấu hình thành `gemini-2.5-flash` hoặc `gemini-2.0-flash`.
-- **Lỗi pgvector không hoạt động:** 
-  Đảm bảo bạn đã cài đặt extension `pgvector` vào PostgreSQL. Bạn có thể kết nối vào Database bằng pgAdmin và chạy lệnh `CREATE EXTENSION IF NOT EXISTS vector;` để kiểm tra.
-- **Email không gửi được:** 
-  Đảm bảo `SMTP_PASS` trong `.env` là **Mật khẩu ứng dụng (App Password)** gồm 16 ký tự được tạo từ trang quản lý tài khoản Google, chứ không phải mật khẩu đăng nhập Gmail thông thường.
-
----
-*Phát triển và bảo trì bởi nhóm dự án ChatEdu AI - 2026*

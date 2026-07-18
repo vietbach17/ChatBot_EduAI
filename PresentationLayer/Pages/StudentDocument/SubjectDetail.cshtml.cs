@@ -33,5 +33,19 @@ namespace PresentationLayer.Pages.StudentDocument
 
             return Page();
         }
+
+        public async Task<IActionResult> OnGetDownloadAllAsync(int id)
+        {
+            var subject = await _subjectService.GetSubjectByIdAsync(id);
+            if (subject == null) return NotFound();
+
+            var zipStream = Export.SubjectZipBuilder.Build(subject, System.IO.Directory.GetCurrentDirectory());
+            if (zipStream == null)
+            {
+                return RedirectToPage(new { id });
+            }
+
+            return File(zipStream, "application/zip", $"{subject.Code}_TaiLieu.zip");
+        }
     }
 }

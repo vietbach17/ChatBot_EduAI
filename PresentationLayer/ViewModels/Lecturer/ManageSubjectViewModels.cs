@@ -27,6 +27,7 @@ namespace PresentationLayer.ViewModels.Lecturer
         public int? ChapterId { get; set; }
         public string Title { get; set; } = string.Empty;
         public IFormFile? File { get; set; }
+        public List<IFormFile> Files { get; set; } = new();
         public string? ConnectionId { get; set; }
     }
 
@@ -35,5 +36,18 @@ namespace PresentationLayer.ViewModels.Lecturer
     {
         public int DocumentId { get; set; }
         public int? ToChapterId { get; set; }
+    }
+
+    /// <summary>
+    /// ViewModel gộp hiển thị nhật ký hoạt động Tài liệu và Bài thi trên cùng 1 dòng thời gian.
+    /// </summary>
+    public class ActivityLogItemViewModel
+    {
+        public DateTime Timestamp { get; set; }
+        public string UserName { get; set; } = string.Empty;
+        public string Kind { get; set; } = string.Empty; // "Document" | "Quiz"
+        public string Action { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public int? LinkId { get; set; }
     }
 }

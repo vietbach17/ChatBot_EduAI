@@ -28,7 +28,13 @@
             width: 280px; background: var(--white); border-right: var(--border);
             padding: 30px 20px; display: flex; flex-direction: column; gap: 15px;
             height: 100vh; flex-shrink: 0;
+            overflow-y: auto;
         }
+        /* Menu dài hơn màn hình → cuộn trong sidebar, không cho item bị bóp méo */
+        .sidebar > * { flex-shrink: 0; }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--black); }
         .logo { color: var(--pink); font-size: 22px; font-weight: 900; margin-bottom: 20px; }
         .nav-item {
             padding: 12px 15px; font-weight: 800; color: var(--black); font-size: 14px;
@@ -160,6 +166,7 @@
         {
             <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">QUẢN TRỊ VIÊN</div>
             <a asp-page="/Admin/Dashboard" class="nav-item @(ViewBag.ActiveMenu == "AdminDashboard" ? "active" : "")"><i class="fa-solid fa-chart-pie"></i> DASHBOARD</a>
+            <a asp-page="/Admin/Statistics" class="nav-item @(ViewBag.ActiveMenu == "AdminStatistics" ? "active" : "")"><i class="fa-solid fa-chart-column"></i> THỐNG KÊ</a>
             <a asp-page="/Admin/Users" class="nav-item @(ViewBag.ActiveMenu == "AdminUsers" ? "active" : "")"><i class="fa-solid fa-users-gear"></i> QL NGƯỜI DÙNG</a>
             <a asp-page="/Admin/Subjects" class="nav-item @(ViewBag.ActiveMenu == "AdminSubjects" ? "active" : "")"><i class="fa-solid fa-book-open-reader"></i> QL MÔN HỌC</a>
             <a asp-page="/Admin/Subscriptions" class="nav-item @(ViewBag.ActiveMenu == "AdminSubscriptions" ? "active" : "")"><i class="fa-solid fa-users"></i> QL NGƯỜI ĐĂNG KÝ</a>
@@ -167,6 +174,7 @@
             <a asp-page="/Admin/PaymentHistory" class="nav-item @(ViewBag.ActiveMenu == "PaymentHistory" ? "active" : "")"><i class="fa-solid fa-file-invoice-dollar"></i> LỊCH SỬ TT</a>
             <a asp-page="/Admin/QuestionBanks" class="nav-item @(ViewBag.ActiveMenu == "QuestionBanks" ? "active" : "")"><i class="fa-solid fa-clock-rotate-left"></i> LỊCH SỬ CÂU HỎI</a>
             <a asp-page="/Admin/Reports" class="nav-item @(ViewBag.ActiveMenu == "AdminReports" ? "active" : "")"><i class="fa-solid fa-flag"></i> QL BÁO CÁO</a>
+            <a asp-page="/Admin/ChunkSettings" class="nav-item @(ViewBag.ActiveMenu == "AdminChunkSettings" ? "active" : "")"><i class="fa-solid fa-scissors"></i> CẤU HÌNH CHUNK</a>
         }
         else if (userRole == "Lecturer")
         {
@@ -174,7 +182,7 @@
             <a asp-page="/Lecturer/MySubjects" class="nav-item @(ViewBag.ActiveMenu == "LecturerSubjects" ? "active" : "")"><i class="fa-solid fa-chalkboard-user"></i> MÔN PHỤ TRÁCH</a>
             <a asp-page="/Lecturer/AllSubjects" class="nav-item @(ViewBag.ActiveMenu == "LecturerAllSubjects" ? "active" : "")"><i class="fa-solid fa-book-open"></i> TẤT CẢ MÔN HỌC</a>
             <a asp-page="/Lecturer/MyDocuments" class="nav-item @(ViewBag.ActiveMenu == "LecturerDocuments" ? "active" : "")"><i class="fa-regular fa-file-lines"></i> TÀI LIỆU CỦA TÔI</a>
-            <a asp-page="/Lecturer/QuestionBank" class="nav-item @(ViewBag.ActiveMenu == "QuestionBank" ? "active" : "")"><i class="fa-solid fa-database"></i> NGÂN HÀNG CÂU HỎI</a>
+            <a asp-page="/Lecturer/QuestionBankSubjects" class="nav-item @(ViewBag.ActiveMenu == "QuestionBank" ? "active" : "")"><i class="fa-solid fa-database"></i> NGÂN HÀNG CÂU HỎI</a>
             <a asp-page="/Lecturer/AIGenerateQuestions" class="nav-item @(ViewBag.ActiveMenu == "AIGenerateQuestions" ? "active" : "")"><i class="fa-solid fa-robot"></i> AI TẠO CÂU HỎI</a>
             <a asp-page="/Report/MyReports" class="nav-item @(ViewBag.ActiveMenu == "Reports" ? "active" : "")"><i class="fa-solid fa-headset"></i> BÁO CÁO & HỖ TRỢ</a>
 
@@ -184,7 +192,6 @@
             <div style="margin-top: 5px; margin-bottom: 5px; font-size: 11px; font-weight: 900; color: #999; letter-spacing: 1px;">SINH VIÊN</div>
             <a asp-page="/Index" class="nav-item @(ViewBag.ActiveMenu == "Overview" ? "active" : "")"><i class="fa-solid fa-border-all"></i> TỔNG QUAN</a>
             <a asp-page="/StudentDocument/Subjects" class="nav-item @(ViewBag.ActiveMenu == "Subjects" ? "active" : "")"><i class="fa-solid fa-book-open"></i> MÔN HỌC</a>
-            <a asp-page="/StudentDocument/Documents"  class="nav-item @(ViewBag.ActiveMenu == "Docs" ? "active" : "")"><i class="fa-regular fa-file-lines"></i> TÀI LIỆU</a>
             <a asp-page="/Student/QuizList" class="nav-item @(ViewBag.ActiveMenu == "StudentQuizzes" ? "active" : "")"><i class="fa-solid fa-file-signature"></i> BÀI THI</a>
             <a asp-page="/Chat/Index"  class="nav-item @(ViewBag.ActiveMenu == "AI" ? "active" : "")"><i class="fa-solid fa-robot"></i> CHAT AI</a>
             <a asp-page="/Subscription/Index" class="nav-item @(ViewBag.ActiveMenu == "Subscription" ? "active" : "")"><i class="fa-solid fa-crown"></i> GÓI HỘI VIÊN</a>

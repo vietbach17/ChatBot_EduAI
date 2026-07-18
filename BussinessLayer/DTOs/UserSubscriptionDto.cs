@@ -13,12 +13,12 @@ namespace BussinessLayer.DTOs
         public string Role { get; set; } = string.Empty;
         public string SubscriptionPlan { get; set; } = "Free";
         public DateTime? SubscriptionExpiry { get; set; }
-        public int MonthlyQuestionCount { get; set; }
-        public int MonthlyLimit { get; set; }
+        public long MonthlyTokensUsed { get; set; }
+        public long MonthlyLimit { get; set; }
         public DateTime? QuotaResetDate { get; set; }
 
-        public int ShortTermQuestionCount { get; set; }
-        public int ShortTermLimit { get; set; }
+        public long ShortTermTokensUsed { get; set; }
+        public long ShortTermLimit { get; set; }
         public DateTime? ShortTermResetDate { get; set; }
 
         public bool IsActive { get; set; }

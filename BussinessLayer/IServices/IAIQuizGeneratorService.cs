@@ -11,5 +11,6 @@ namespace BussinessLayer.IServices
     {
         Task<IEnumerable<AIGenerateResultDto>> GenerateQuestionsAsync(AIGenerateRequestDto request, int lecturerId);
         Task<IEnumerable<AIGenerationLogDto>> GetGenerationLogsAsync(int lecturerId);
+        Task<IEnumerable<AIGenerationLogDto>> GetRecentGenerationLogsAsync(int take);
     }
 }

@@ -49,18 +49,16 @@
             
             @if (Model.SubscriptionInfo != null && Model.SubscriptionInfo.MonthlyLimit > 0)
             {
+                double percentage = 0;
+                if (Model.SubscriptionInfo.MonthlyLimit >= 999999999) { percentage = 100; }
+                else if (Model.SubscriptionInfo.MonthlyLimit > 0) {
+                    percentage = ((double)Model.SubscriptionInfo.Remaining / Model.SubscriptionInfo.MonthlyLimit) * 100;
+                }
                 <div style="font-weight: 700; font-size: 12px; color: #666; margin-bottom: 10px; flex: 1;">
-                    Bạn còn <strong style="color: var(--black); font-size: 14px;">@(Model.SubscriptionInfo.Remaining >= 9999 ? "∞" : Model.SubscriptionInfo.Remaining)</strong> / @(Model.SubscriptionInfo.MonthlyLimit >= 9999 ? "∞" : Model.SubscriptionInfo.MonthlyLimit) lượt hỏi hôm nay.
+                    Bạn còn <strong style="color: var(--black); font-size: 14px;">@(Model.SubscriptionInfo.MonthlyLimit >= 999999999 ? "∞" : Math.Round(percentage) + "%")</strong> token trong tháng.
                 </div>
                 <!-- Progress bar -->
                 <div style="width: 100%; height: 12px; border: 2px solid var(--black); background: #eee; margin-bottom: 20px; overflow: hidden;">
-                    @{
-                        double percentage = 0;
-                        if (Model.SubscriptionInfo.MonthlyLimit >= 9999) { percentage = 100; }
-                        else if (Model.SubscriptionInfo.MonthlyLimit > 0) { 
-                            percentage = ((double)Model.SubscriptionInfo.Remaining / Model.SubscriptionInfo.MonthlyLimit) * 100; 
-                        }
-                    }
                     <div style="height: 100%; background: var(--pink); width: @percentage%; border-right: 2px solid var(--black);"></div>
                 </div>
             }

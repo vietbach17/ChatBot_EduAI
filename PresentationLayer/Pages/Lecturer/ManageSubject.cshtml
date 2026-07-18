@@ -12,6 +12,31 @@
 
 @section Styles {
     <style>
+        .doc-item-row {
+            gap: 16px;
+        }
+
+        .doc-title-cell {
+            min-width: 0;
+            flex: 1 1 auto;
+            overflow-wrap: anywhere;
+        }
+
+        .doc-item-row .actions-group {
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .doc-action-link {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            white-space: nowrap;
+            line-height: 1.1;
+        }
+
         @@media (max-width: 768px) {
             /* Page wrapper padding */
             .main-wrapper > div {
@@ -109,12 +134,19 @@
                 [@Model.Subject.Code] @Model.Subject.Name
             </h1>
 
-            @if(Model.IsOwner || Model.IsAdmin)
-            {
                 <div class="button-group" style="display: flex; gap: 10px;">
+                    @if (Model.Subject.Documents.Any(d => !d.IsDeleted) || Model.Subject.Chapters.Any(c => c.Documents.Any(d => !d.IsDeleted)))
+                    {
+                        <a asp-page-handler="DownloadAll" asp-route-id="@Model.Subject.Id" class="brutal-btn" style="background-color: var(--blue); color: var(--white); border: 2px solid var(--black); padding: 8px 15px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                            <i class="fa-solid fa-file-zipper"></i> TẢI TẤT CẢ
+                        </a>
+                    }
+                    @if(Model.IsOwner || Model.IsAdmin)
+                    {
                     <button type="button" onclick="document.getElementById('activityLogModal').style.display='flex'" class="brutal-btn" style="background-color: #fff; color: var(--black); border: 2px solid var(--black); padding: 8px 15px; font-weight: 900; box-shadow: 2px 2px 0px var(--black);">
                         <i class="fa-solid fa-clock-rotate-left"></i> LỊCH SỬ HOẠT ĐỘNG
                     </button>
+                    }
                     @if (Model.IsOwner)
                     {
                         <a asp-page="/Lecturer/CreateQuiz" asp-route-subjectId="@Model.Subject.Id" class="brutal-btn" style="background-color: var(--pink); color: var(--white); border: 2px solid var(--black); padding: 8px 15px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
@@ -128,7 +160,6 @@
                         </button>
                     }
                 </div>
-            }
         </div>
         <p style="font-weight: 700; color: #555; margin-bottom: 30px;">Quản lý cấu trúc chương học và tài liệu</p>
 
@@ -181,7 +212,7 @@
                     {
                         <div style="background-color: var(--bg); border: 2px solid var(--black); padding: 10px 15px;">
                             <div class="doc-item-row" style="display: flex; justify-content: space-between; align-items: center;">
-                                <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px;">
+                                <div class="doc-title-cell" style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px;">
                                     @{
                                         var ftColorG = doc.FileType?.ToLower() switch {
                                             "pdf"  => "#d93856",
@@ -194,20 +225,20 @@
                                     @doc.Title
                                 </div>
                                 <div class="actions-group" style="display: flex; gap: 8px; align-items: center;">
-                                    <a href="/ViewDocument?id=@doc.Id" style="font-weight: 800; font-size: 12px; color: var(--blue); white-space: nowrap;">
+                                    <a href="/ViewDocument?id=@doc.Id" class="doc-action-link" style="font-weight: 800; font-size: 12px; color: var(--blue); white-space: nowrap;">
                                         <i class="fa-solid fa-eye"></i> Xem
                                     </a>
-                                    <a href="@doc.FileUrl" target="_blank" style="font-weight: 800; font-size: 12px; color: var(--pink); white-space: nowrap;">
+                                    <a href="@doc.FileUrl" target="_blank" class="doc-action-link" style="font-weight: 800; font-size: 12px; color: var(--pink); white-space: nowrap;">
                                         <i class="fa-solid fa-download"></i> Tải
                                     </a>
                                     @if(Model.IsOwner)
                                     {
-                                        <button type="button" onclick="openMoveDocModal(@doc.Id, '@doc.Title')" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: var(--green); padding: 0;">
+                                        <button type="button" onclick="openMoveDocModal(@doc.Id, '@doc.Title')" class="doc-action-link" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: var(--green); padding: 0;">
                                             <i class="fa-solid fa-arrows-up-down-left-right"></i> Chuyển
                                         </button>
                                         <form method="post" asp-page-handler="DeleteDocument" asp-route-id="@Model.Subject.Id" asp-route-docId="@doc.Id"
                                               data-confirm="Bạn có chắc chắn muốn xóa tài liệu này?" style="display:inline;">
-                                            <button type="submit" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: #dc2626; padding: 0;">
+                                            <button type="submit" class="doc-action-link" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: #dc2626; padding: 0;">
                                                 <i class="fa-solid fa-trash"></i> Xóa
                                             </button>
                                         </form>
@@ -263,7 +294,7 @@
                         {
                             <div style="background-color: var(--bg); border: 2px solid var(--black); padding: 10px 15px;">
                                 <div class="doc-item-row" style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px;">
+                                    <div class="doc-title-cell" style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px;">
                                         @{
                                             var ftColor = doc.FileType?.ToLower() switch {
                                                 "pdf"  => "#d93856",
@@ -276,20 +307,20 @@
                                         @doc.Title
                                     </div>
                                     <div class="actions-group" style="display: flex; gap: 8px; align-items: center;">
-                                        <a href="/ViewDocument?id=@doc.Id" style="font-weight: 800; font-size: 12px; color: var(--blue); white-space: nowrap;">
+                                        <a href="/ViewDocument?id=@doc.Id" class="doc-action-link" style="font-weight: 800; font-size: 12px; color: var(--blue); white-space: nowrap;">
                                             <i class="fa-solid fa-eye"></i> Xem
                                         </a>
-                                        <a href="@doc.FileUrl" target="_blank" style="font-weight: 800; font-size: 12px; color: var(--pink); white-space: nowrap;">
+                                        <a href="@doc.FileUrl" target="_blank" class="doc-action-link" style="font-weight: 800; font-size: 12px; color: var(--pink); white-space: nowrap;">
                                             <i class="fa-solid fa-download"></i> Tải
                                         </a>
                                         @if(Model.IsOwner)
                                         {
-                                            <button type="button" onclick="openMoveDocModal(@doc.Id, '@doc.Title')" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: var(--green); padding: 0;">
+                                            <button type="button" onclick="openMoveDocModal(@doc.Id, '@doc.Title')" class="doc-action-link" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: var(--green); padding: 0;">
                                                 <i class="fa-solid fa-arrows-up-down-left-right"></i> Chuyển
                                             </button>
                                             <form method="post" asp-page-handler="DeleteDocument" asp-route-id="@Model.Subject.Id" asp-route-docId="@doc.Id"
                                                   data-confirm="Xóa tài liệu '@doc.Title'? Hành động này không thể hoàn tác!" style="display:inline;">
-                                                <button type="submit" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: #dc2626; padding: 0;">
+                                                <button type="submit" class="doc-action-link" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: #dc2626; padding: 0;">
                                                     <i class="fa-solid fa-trash"></i> Xóa
                                                 </button>
                                             </form>
@@ -365,13 +396,13 @@
                                     @log.Title
                                     @if (log.LinkId.HasValue && log.Kind == "Document")
                                     {
-                                        <a href="/ViewDocument?id=@log.LinkId" target="_blank" style="margin-left: 10px; font-size: 12px; color: var(--blue); font-weight: 900; text-decoration: none; border: 1px solid var(--black); padding: 2px 6px; background-color: var(--white); box-shadow: 1px 1px 0px var(--black);">
+                                        <a href="/ViewDocument?id=@log.LinkId" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; vertical-align: middle; margin-left: 10px; font-size: 12px; color: var(--blue); font-weight: 900; text-decoration: none; border: 1px solid var(--black); padding: 2px 6px; background-color: var(--white); box-shadow: 1px 1px 0px var(--black);">
                                             <i class="fa-solid fa-eye"></i> Xem
                                         </a>
                                     }
                                     else if (log.LinkId.HasValue && log.Kind == "Quiz")
                                     {
-                                        <a asp-page="/Lecturer/UpdateQuiz" asp-route-QuizId="@log.LinkId" target="_blank" style="margin-left: 10px; font-size: 12px; color: var(--blue); font-weight: 900; text-decoration: none; border: 1px solid var(--black); padding: 2px 6px; background-color: var(--white); box-shadow: 1px 1px 0px var(--black);">
+                                        <a asp-page="/Lecturer/UpdateQuiz" asp-route-QuizId="@log.LinkId" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; vertical-align: middle; margin-left: 10px; font-size: 12px; color: var(--blue); font-weight: 900; text-decoration: none; border: 1px solid var(--black); padding: 2px 6px; background-color: var(--white); box-shadow: 1px 1px 0px var(--black);">
                                             <i class="fa-solid fa-eye"></i> Xem
                                         </a>
                                     }
@@ -423,11 +454,6 @@
                 <!-- Fake inputs mapped to ASP names for FormData to pick up automatically -->
                 @Html.AntiForgeryToken()
                 <div style="margin-bottom: 15px;">
-                    <label style="font-weight: 800; font-size: 14px; display: block; margin-bottom: 5px;">Tên tài liệu</label>
-                    <input type="text" name="UploadDocumentModel.Title" required style="width: 100%; border: 3px solid var(--black); padding: 10px; font-weight: 700; outline: none; font-size: 14px;" placeholder="Tên tài liệu hiển thị" />
-                </div>
-
-                <div style="margin-bottom: 15px;">
                     <label style="font-weight: 800; font-size: 14px; display: block; margin-bottom: 5px;">Chương (Tùy chọn)</label>
                     <select name="UploadDocumentModel.ChapterId" style="width: 100%; border: 3px solid var(--black); padding: 10px; font-weight: 700; outline: none; font-size: 14px; background: white;">
                         <option value="">-- Tài liệu chung (Không thuộc chương nào) --</option>
@@ -440,8 +466,9 @@
 
                 <div style="margin-bottom: 20px;">
                     <label style="font-weight: 800; font-size: 14px; display: block; margin-bottom: 5px;">Chọn File</label>
-                    <input type="file" name="UploadDocumentModel.File" required accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.csv" style="width: 100%; border: 3px solid var(--black); padding: 10px; font-weight: 700; background: white; font-size: 14px;" />
+                    <input type="file" id="uploadFilesInput" name="UploadDocumentModel.Files" multiple required accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.csv" onchange="renderSelectedUploadFiles()" style="width: 100%; border: 3px solid var(--black); padding: 10px; font-weight: 700; background: white; font-size: 14px;" />
                     <p style="font-size: 11px; color: #888; margin-top: 5px; font-weight: 600;">Hỗ trợ: PDF, DOCX, PPTX, TXT, MD, CSV</p>
+                    <div id="selectedUploadFiles" style="display: none; margin-top: 10px; border: 2px solid var(--black); background: var(--bg); padding: 10px; max-height: 140px; overflow-y: auto;"></div>
                 </div>
                 
                 <div id="uploadProgressContainer" style="display: none; margin-bottom: 20px;">
@@ -450,7 +477,7 @@
                         <div id="uploadProgressBar" style="width: 0%; height: 100%; background-color: var(--green); transition: width 0.3s ease;"></div>
                         <div id="uploadProgressText" style="position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-weight: 900; font-size: 12px; line-height: 19px; mix-blend-mode: difference; color: white;">0%</div>
                     </div>
-                    <p style="font-size: 11px; color: #888; margin-top: 5px; font-weight: 600; text-align: center;">Đang trích xuất và băm dữ liệu ... Vui lòng đợi.</p>
+                    <p id="uploadProgressStatus" style="font-size: 11px; color: #888; margin-top: 5px; font-weight: 600; text-align: center;">Đang chuẩn bị tải lên...</p>
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
@@ -538,6 +565,47 @@
             } else {
                 chapterSelect.value = "";
             }
+            renderSelectedUploadFiles();
+        }
+
+        function renderSelectedUploadFiles() {
+            const input = document.getElementById('uploadFilesInput');
+            const list = document.getElementById('selectedUploadFiles');
+            if (!input || !list || input.files.length === 0) {
+                if (list) {
+                    list.style.display = 'none';
+                    list.innerHTML = '';
+                }
+                return;
+            }
+
+            const rows = Array.from(input.files).map((file, index) => {
+                const sizeKb = Math.max(1, Math.round(file.size / 1024));
+                const fileName = escapeHtml(file.name);
+                return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:6px 0; border-bottom:${index === input.files.length - 1 ? '0' : '1px dashed #bbb'};">
+                        <span style="font-size:12px; font-weight:800; color:var(--black); word-break:break-word;">
+                            <i class="fa-solid fa-file-arrow-up" style="color:var(--blue);"></i> ${fileName}
+                        </span>
+                        <span style="font-size:11px; font-weight:800; color:#666; white-space:nowrap;">${sizeKb} KB</span>
+                    </div>`;
+            }).join('');
+
+            list.innerHTML = `
+                <div style="font-size:12px; font-weight:900; color:var(--pink); margin-bottom:6px;">
+                    ${input.files.length} file đã chọn
+                </div>
+                ${rows}`;
+            list.style.display = 'block';
+        }
+
+        function escapeHtml(value) {
+            return value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         function openDeleteChapterModal(id, title, docCount) {
@@ -577,17 +645,94 @@
         }
 
         function closeModals() {
+            if (uploadInProgress) {
+                return;
+            }
+
             document.getElementById('chapterModal').style.display = 'none';
             document.getElementById('uploadModal').style.display = 'none';
             document.getElementById('deleteChapterModal').style.display = 'none';
             document.getElementById('moveDocModal').style.display = 'none';
+            const uploadForm = document.getElementById('uploadForm');
+            if (uploadForm) {
+                uploadForm.reset();
+                renderSelectedUploadFiles();
+            }
         }
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/courseHub")
+            .withAutomaticReconnect()
             .build();
 
+        let uploadInProgress = false;
+        let connectionStartPromise = null;
+        let processingSimTimer = null;
+
+        // Tự chạy thanh tiến trình trong lúc server xử lý, phòng khi SignalR không gửi kịp tiến độ thật
+        function startProcessingSimulation() {
+            stopProcessingSimulation();
+            processingSimTimer = setInterval(function () {
+                const progressText = document.getElementById('uploadProgressText');
+                const current = progressText ? (parseInt(progressText.innerText, 10) || 0) : 0;
+                if (current < 90) {
+                    setUploadProgress(current + 1, null, false);
+                }
+            }, 500);
+        }
+
+        function stopProcessingSimulation() {
+            if (processingSimTimer) {
+                clearInterval(processingSimTimer);
+                processingSimTimer = null;
+            }
+        }
+
+        function setUploadProgress(percent, message, force) {
+            const progressBar = document.getElementById('uploadProgressBar');
+            const progressText = document.getElementById('uploadProgressText');
+            const progressStatus = document.getElementById('uploadProgressStatus');
+
+            if (progressBar && progressText) {
+                const currentPercent = parseInt(progressText.innerText, 10) || 0;
+                const normalizedPercent = Math.max(0, Math.min(100, Number(percent) || 0));
+                const nextPercent = force ? normalizedPercent : Math.max(currentPercent, normalizedPercent);
+                progressBar.style.width = nextPercent + '%';
+                progressText.innerText = nextPercent + '%';
+            }
+
+            if (progressStatus && message) {
+                progressStatus.innerText = message;
+            }
+        }
+
+        async function ensureSignalRConnected() {
+            if (connection.state === signalR.HubConnectionState.Connected && connection.connectionId) {
+                return true;
+            }
+
+            try {
+                if (connection.state === signalR.HubConnectionState.Disconnected) {
+                    connectionStartPromise = connection.start().finally(() => {
+                        connectionStartPromise = null;
+                    });
+                }
+
+                if (connectionStartPromise) {
+                    await connectionStartPromise;
+                }
+            } catch (err) {
+                console.error(err.toString());
+            }
+
+            return connection.state === signalR.HubConnectionState.Connected && connection.connectionId;
+        }
+
         connection.on("CourseChanged", function () {
+            if (uploadInProgress) {
+                return;
+            }
+
             fetch(window.location.href)
                 .then(response => response.text())
                 .then(html => {
@@ -598,13 +743,10 @@
                 });
         });
 
-        connection.on("UploadProgress", function (percent) {
-            const progressBar = document.getElementById('uploadProgressBar');
-            const progressText = document.getElementById('uploadProgressText');
-            if (progressBar && progressText) {
-                progressBar.style.width = percent + '%';
-                progressText.innerText = percent + '%';
-            }
+        connection.on("UploadProgress", function (percent, message) {
+            // Server báo tiến độ xử lý 0-100%, quy về dải 15-100% (0-15% dành cho giai đoạn gửi file)
+            const mapped = 15 + Math.max(0, Math.min(100, Number(percent) || 0)) * 0.85;
+            setUploadProgress(Math.round(mapped), message, false);
         });
 
         async function handleUpload(event, subjectId) {
@@ -614,42 +756,99 @@
             const progressContainer = document.getElementById('uploadProgressContainer');
             const progressBar = document.getElementById('uploadProgressBar');
             const progressText = document.getElementById('uploadProgressText');
+            const progressStatus = document.getElementById('uploadProgressStatus');
             
+            uploadInProgress = true;
             submitBtn.disabled = true;
             submitBtn.innerText = 'ĐANG XỬ LÝ...';
             progressContainer.style.display = 'block';
-            progressBar.style.width = '0%';
-            progressText.innerText = '0%';
+            setUploadProgress(0, null, true);
+            if (progressStatus) {
+                const fileCount = document.getElementById('uploadFilesInput')?.files.length || 0;
+                progressStatus.innerText = fileCount > 1
+                    ? `Dang gui ${fileCount} file len may chu...`
+                    : 'Dang gui file len may chu...';
+            }
 
             // Đảm bảo connection đã được init trước khi gửi form (tránh crash)
+            await ensureSignalRConnected();
             const formData = new FormData(form);
             if (typeof connection !== 'undefined' && connection.connectionId) {
                 formData.append("UploadDocumentModel.ConnectionId", connection.connectionId);
             }
 
             try {
-                const response = await fetch(`?handler=UploadFile&id=${subjectId}`, {
-                    method: 'POST',
-                    body: formData
+                let simulationStarted = false;
+                const response = await uploadWithProgress(`?handler=UploadFile&id=${subjectId}`, formData, (percent) => {
+                    const uploadPercent = Math.min(15, Math.round(percent * 0.15));
+                    setUploadProgress(uploadPercent, `Dang gui file len may chu... ${percent}%`, false);
+                    if (percent >= 100 && !simulationStarted) {
+                        simulationStarted = true;
+                        setUploadProgress(15, 'Da gui file xong. May chu dang xu ly tai lieu...', false);
+                        startProcessingSimulation();
+                    }
                 });
+                stopProcessingSimulation();
                 if (response.ok) {
-                    window.location.reload();
+                    setUploadProgress(100, null, true);
+                    if (progressStatus) {
+                        progressStatus.innerText = '✅ Tải lên thành công!';
+                        progressStatus.style.color = 'var(--green)';
+                        progressStatus.style.fontWeight = '900';
+                        progressStatus.style.fontSize = '14px';
+                    }
+                    submitBtn.innerText = 'THÀNH CÔNG!';
+                    setTimeout(() => {
+                        uploadInProgress = false;
+                        window.location.reload();
+                    }, 2000);
                 } else {
-                    alert('Đã xảy ra lỗi trong quá trình tải lên hoặc xử lý.');
+                    alert(`Da xay ra loi trong qua trinh tai len hoac xu ly. Ma loi: ${response.status}`);
+                    uploadInProgress = false;
                     submitBtn.disabled = false;
                     submitBtn.innerText = 'TẢI LÊN';
                     progressContainer.style.display = 'none';
                 }
             } catch (err) {
                 console.error(err);
+                stopProcessingSimulation();
                 alert('Lỗi mạng hoặc server không phản hồi.');
+                uploadInProgress = false;
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'TẢI LÊN';
                 progressContainer.style.display = 'none';
             }
         }
 
-        connection.start().catch(function (err) {
+        function uploadWithProgress(url, formData, onUploadProgress) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', url, true);
+
+                xhr.upload.onprogress = function (event) {
+                    if (event.lengthComputable && typeof onUploadProgress === 'function') {
+                        const percent = Math.round((event.loaded / event.total) * 100);
+                        onUploadProgress(percent);
+                    }
+                };
+
+                xhr.onload = function () {
+                    resolve({
+                        ok: xhr.status >= 200 && xhr.status < 300,
+                        status: xhr.status,
+                        text: xhr.responseText
+                    });
+                };
+
+                xhr.onerror = function () {
+                    reject(new Error('Network error while uploading files.'));
+                };
+
+                xhr.send(formData);
+            });
+        }
+
+        ensureSignalRConnected().catch(function (err) {
             return console.error(err.toString());
         });
     </script>

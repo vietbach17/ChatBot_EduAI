@@ -3,13 +3,13 @@ using System;
 
 namespace BussinessLayer.DTOs
 {
-    /// <summary>DTO yêu cầu gửi tin nhắn chat: câu hỏi, phiên chat, tài liệu được chọn và model AI.</summary>
+    /// <summary>DTO yêu cầu gửi tin nhắn chat: câu hỏi, phiên chat, môn học được chọn và model AI.</summary>
     public class ChatRequestDto
     {
         public string Message { get; set; } = string.Empty;
         public int? SessionId { get; set; }
         public List<ChatMessageDto> History { get; set; } = new List<ChatMessageDto>();
-        public List<int> SelectedDocIds { get; set; } = new List<int>();
+        public int? SubjectId { get; set; }
         public bool RestrictToDocs { get; set; } = true;
         public string? ModelName { get; set; }
     }
@@ -38,26 +38,27 @@ namespace BussinessLayer.DTOs
         public int SessionId { get; set; }
     }
 
-    /// <summary>DTO phản hồi chat: câu trả lời AI, trạng thái, số lượt hỏi còn lại và nguồn trích dẫn.</summary>
+    /// <summary>DTO phản hồi chat: câu trả lời AI, trạng thái, số token còn lại và nguồn trích dẫn.</summary>
     public class ChatResponseDto
     {
         public bool Success { get; set; }
         public string Reply { get; set; } = string.Empty;
         public string? Message { get; set; }
-        public int Remaining { get; set; } = 9999;
+        public long Remaining { get; set; } = long.MaxValue; // số token còn lại (long.MaxValue = không giới hạn)
         public bool OutOfQuota { get; set; } = false;
         public int? SessionId { get; set; }
         public string? SessionTitle { get; set; }
         public List<CitationDto> Citations { get; set; } = new List<CitationDto>();
     }
 
-    /// <summary>DTO nguồn trích dẫn: tài liệu, môn, chương và đoạn nội dung mà AI dùng để trả lời.</summary>
+    /// <summary>DTO nguồn trích dẫn: tài liệu, môn, chương, phần và đoạn nội dung mà AI dùng để trả lời.</summary>
     public class CitationDto
     {
         public int DocumentId { get; set; }
         public string DocumentTitle { get; set; } = string.Empty;
         public string? SubjectName { get; set; }
         public string? ChapterTitle { get; set; }
+        public string? SectionTitle { get; set; }
         public int ChunkOrderIndex { get; set; }
         public string Snippet { get; set; } = string.Empty;
         public string FullContent { get; set; } = string.Empty;

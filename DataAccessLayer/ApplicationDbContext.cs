@@ -32,6 +32,7 @@ namespace DataAccessLayer
         public DbSet<QuizAttempt> QuizAttempts { get; set; }
         public DbSet<QuizAnswer> QuizAnswers { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<TokenUsageLog> TokenUsageLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -57,13 +58,14 @@ namespace DataAccessLayer
                 new User { Id = 3, Username = "admin", PasswordHash = "admin123", Role = "Admin" }
             );
 
+            // QuotaAmount = số token dự phòng (quy đổi ~5.000 token / câu hỏi cũ)
             modelBuilder.Entity<AddonPackage>().HasData(
                 new AddonPackage
                 {
                     Id = 1,
                     Name = "Gói Mini (Cấp tốc)",
                     Price = 10000,
-                    QuotaAmount = 15,
+                    QuotaAmount = 75_000,
                     IsActive = true
                 },
                 new AddonPackage
@@ -71,7 +73,7 @@ namespace DataAccessLayer
                     Id = 2,
                     Name = "Gói Standard (Cứu cánh)",
                     Price = 20000,
-                    QuotaAmount = 40,
+                    QuotaAmount = 200_000,
                     IsActive = true
                 },
                 new AddonPackage
@@ -79,10 +81,19 @@ namespace DataAccessLayer
                     Id = 3,
                     Name = "Gói Ultra (Chạy nước rút)",
                     Price = 50000,
-                    QuotaAmount = 120,
+                    QuotaAmount = 600_000,
                     IsActive = true
                 }
             );
+
+            modelBuilder.Entity<TokenUsageLog>(b =>
+            {
+                b.HasIndex(t => new { t.UserId, t.CreatedAt });
+                b.HasOne(t => t.User)
+                 .WithMany()
+                 .HasForeignKey(t => t.UserId)
+                 .OnDelete(DeleteBehavior.Cascade);
+            });
 
             modelBuilder.Entity<Subject>()
                 .HasOne(s => s.Lecturer)
@@ -92,13 +103,44 @@ namespace DataAccessLayer
 
             modelBuilder.Entity<Subject>().HasData(
                 new Subject { Id = 1, Code = "PRN222", Name = "C# Nâng cao", LecturerId = 2 },
-                new Subject { Id = 2, Code = "AI101", Name = "Nhập môn AI", LecturerId = 2 }
+                new Subject { Id = 2, Code = "AI101", Name = "Nhập môn AI", LecturerId = 2 },
+                new Subject { Id = 3, Code = "SWD392", Name = "Software Architecture and Design", LecturerId = 2 }
             );
 
             modelBuilder.Entity<Chapter>().HasData(
-                new Chapter { Id = 1, SubjectId = 1, Title = "Chương 1: .NET Core và C# Nâng cao", OrderIndex = 1 },
-                new Chapter { Id = 2, SubjectId = 1, Title = "Chương 2: Entity Framework Core", OrderIndex = 2 },
-                new Chapter { Id = 3, SubjectId = 2, Title = "Chương 1: Tổng quan AI", OrderIndex = 1 }
+                new Chapter { Id = 1, SubjectId = 1, Title = "Chapter 01 - Networking Programming", OrderIndex = 1 },
+                new Chapter { Id = 2, SubjectId = 1, Title = "Chapter 02 - Asynchronous and Parallel Programming in .NET", OrderIndex = 2 },
+                new Chapter { Id = 3, SubjectId = 2, Title = "Chương 1: Tổng quan AI", OrderIndex = 1 },
+                new Chapter { Id = 4, SubjectId = 1, Title = "Chapter 03 - Dependency Injection in .NET", OrderIndex = 3 },
+                new Chapter { Id = 5, SubjectId = 1, Title = "Chapter 04 - Building Web Application using ASP.NET Core MVC", OrderIndex = 4 },
+                new Chapter { Id = 6, SubjectId = 1, Title = "Chapter 05 - Building Websites Using ASP.NET Core Razor Pages", OrderIndex = 5 },
+                new Chapter { Id = 7, SubjectId = 1, Title = "Chapter 06 - Building a Web App with Blazor and ASP.NET Core", OrderIndex = 6 },
+                new Chapter { Id = 8, SubjectId = 1, Title = "Chapter 07 - Real-Time Communication", OrderIndex = 7 },
+                new Chapter { Id = 9, SubjectId = 1, Title = "Chapter 08 - Background Tasks with Worker Service", OrderIndex = 8 },
+                new Chapter { Id = 10, SubjectId = 3, Title = "Ch01 - Introduction", OrderIndex = 1 },
+                new Chapter { Id = 11, SubjectId = 3, Title = "Ch02 - Overview of UML Notation", OrderIndex = 2 },
+                new Chapter { Id = 12, SubjectId = 3, Title = "Ch03 - Software Life Cycle Models and Processes", OrderIndex = 3 },
+                new Chapter { Id = 13, SubjectId = 3, Title = "Ch04 - Software Design and Architecture Concepts", OrderIndex = 4 },
+                new Chapter { Id = 14, SubjectId = 3, Title = "Ch05 - Overview of Software Modeling and Design", OrderIndex = 5 },
+                new Chapter { Id = 15, SubjectId = 3, Title = "Ch06 - Use Case Modeling", OrderIndex = 6 },
+                new Chapter { Id = 16, SubjectId = 3, Title = "Ch07 - Static Modeling", OrderIndex = 7 },
+                new Chapter { Id = 17, SubjectId = 3, Title = "Ch08 - Object and Class Structuring", OrderIndex = 8 },
+                new Chapter { Id = 18, SubjectId = 3, Title = "Ch09-11 - Dynamic Modeling", OrderIndex = 9 },
+                new Chapter { Id = 19, SubjectId = 3, Title = "Ch12 - Overview of Software Architecture", OrderIndex = 10 },
+                new Chapter { Id = 20, SubjectId = 3, Title = "Ch13 - Software Subsystem Architectural Design", OrderIndex = 11 },
+                new Chapter { Id = 21, SubjectId = 3, Title = "Ch14 - Designing Object-Oriented Software Architecture", OrderIndex = 12 },
+                new Chapter { Id = 22, SubjectId = 3, Title = "Ch15 - Designing Client Server Software Architecture", OrderIndex = 13 },
+                new Chapter { Id = 23, SubjectId = 3, Title = "Ch16 - Designing Service-Oriented Architecture", OrderIndex = 14 },
+                new Chapter { Id = 24, SubjectId = 3, Title = "Ch17 - Designing Component-Based Software Architecture", OrderIndex = 15 },
+                new Chapter { Id = 25, SubjectId = 3, Title = "Ch18 - Designing Concurrent and Real-Time Software Architecture", OrderIndex = 16 },
+                new Chapter { Id = 26, SubjectId = 3, Title = "Ch20 - Software Quality Attributes", OrderIndex = 17 },
+                new Chapter { Id = 27, SubjectId = 3, Title = "Ch21 - Client Server Software Architecture Case Study", OrderIndex = 18 },
+                new Chapter { Id = 28, SubjectId = 3, Title = "Ch22 - SOA Case Study - Online Shopping System", OrderIndex = 19 },
+                new Chapter { Id = 29, SubjectId = 3, Title = "Ch23 - Component-Based Software Architecture Case Study", OrderIndex = 20 },
+                new Chapter { Id = 30, SubjectId = 3, Title = "Ch24 - Real-Time Software Architecture Case Study", OrderIndex = 21 },
+                new Chapter { Id = 31, SubjectId = 3, Title = "SWD392 - Design Pattern", OrderIndex = 22 },
+                new Chapter { Id = 32, SubjectId = 3, Title = "SWD392 - GenAI", OrderIndex = 23 },
+                new Chapter { Id = 33, SubjectId = 3, Title = "SWD392 - RDS Document Case Study", OrderIndex = 24 }
             );
 
             // Cấu hình liên kết của PaymentTransaction
@@ -116,9 +158,9 @@ namespace DataAccessLayer
 
             // Seed Data 3 gói cước mới thay thế gói cũ
             modelBuilder.Entity<SubscriptionPlan>().HasData(
-                new SubscriptionPlan { Id = 1, Name = "Basic", Description = "Gói cơ bản miễn phí", Price = 0, MonthlyQuestionLimit = 5, IsActive = true, SortOrder = 1, DurationDays = 30, Features = "[\"Hỏi đáp AI cơ bản\", \"Độ trễ phản hồi bình thường\", \"Giới hạn 5 câu hỏi / 5 giờ\"]" },
-                new SubscriptionPlan { Id = 2, Name = "Pro", Description = "Gói nâng cao nhiều tính năng", Price = 25000, MonthlyQuestionLimit = 20, IsActive = true, SortOrder = 2, DurationDays = 30, Features = "[\"Ưu tiên xử lý câu hỏi\", \"Tốc độ phản hồi AI nhanh hơn\", \"Giới hạn 20 câu hỏi / 5 giờ\", \"Hỗ trợ tài liệu đính kèm\"]" },
-                new SubscriptionPlan { Id = 3, Name = "Ultra", Description = "Gói cao cấp không giới hạn", Price = 100000, MonthlyQuestionLimit = -1, IsActive = true, SortOrder = 3, DurationDays = 30, Features = "[\"Không giới hạn số câu hỏi\", \"AI phản hồi tức thì\", \"Mô hình AI cao cấp nhất\", \"Hỗ trợ ưu tiên 24/7\"]" }
+                new SubscriptionPlan { Id = 1, Name = "Basic", Description = "Gói cơ bản miễn phí", Price = 0, MonthlyQuestionLimit = 5, IsActive = true, SortOrder = 1, DurationDays = 30, Features = "[\"Hỏi đáp AI cơ bản\", \"Độ trễ phản hồi bình thường\", \"Giới hạn 50.000 token / 5 giờ\"]" },
+                new SubscriptionPlan { Id = 2, Name = "Pro", Description = "Gói nâng cao nhiều tính năng", Price = 25000, MonthlyQuestionLimit = 20, IsActive = true, SortOrder = 2, DurationDays = 30, Features = "[\"Ưu tiên xử lý câu hỏi\", \"Tốc độ phản hồi AI nhanh hơn\", \"Giới hạn 100.000 token / 5 giờ\", \"Hỗ trợ tài liệu đính kèm\"]" },
+                new SubscriptionPlan { Id = 3, Name = "Ultra", Description = "Gói cao cấp không giới hạn", Price = 100000, MonthlyQuestionLimit = -1, IsActive = true, SortOrder = 3, DurationDays = 30, Features = "[\"Không giới hạn token\", \"AI phản hồi tức thì\", \"Mô hình AI cao cấp nhất\", \"Hỗ trợ ưu tiên 24/7\"]" }
             );
 
             // Cấu hình các quan hệ khóa ngoại để tránh vòng lặp Cascade cho QuestionBank, Quiz, QuizQuestion

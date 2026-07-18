@@ -155,5 +155,29 @@ Yêu cầu chi tiết:
                 })
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<AIGenerationLogDto>> GetRecentGenerationLogsAsync(int take)
+        {
+            return await _context.AIGenerationLogs
+                .Include(l => l.Lecturer)
+                .Include(l => l.Subject)
+                .OrderByDescending(l => l.CreatedAt)
+                .Take(take)
+                .Select(l => new AIGenerationLogDto
+                {
+                    Id = l.Id,
+                    LecturerUsername = l.Lecturer.Username,
+                    SubjectId = l.SubjectId,
+                    SubjectCode = l.Subject.Code,
+                    SubjectName = l.Subject.Name,
+                    Topic = l.Topic,
+                    Difficulty = l.Difficulty,
+                    QuestionType = l.QuestionType,
+                    Quantity = l.Quantity,
+                    CreatedAt = l.CreatedAt,
+                    GeneratedQuestionsJson = l.GeneratedQuestionsJson
+                })
+                .ToListAsync();
+        }
     }
 }

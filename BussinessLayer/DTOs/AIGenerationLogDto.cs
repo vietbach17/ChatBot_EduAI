@@ -8,6 +8,7 @@ namespace BussinessLayer.DTOs
     public class AIGenerationLogDto
     {
         public int Id { get; set; }
+        public string LecturerUsername { get; set; } = string.Empty;
         public int SubjectId { get; set; }
         public string SubjectCode { get; set; } = string.Empty;
         public string SubjectName { get; set; } = string.Empty;

@@ -24,6 +24,8 @@ namespace BussinessLayer.IServices
         Task<bool> ProcessDocumentEmbeddingAsync(int documentId, System.Func<int, int, Task>? progressCallback = null);
         Task<bool> UpdateDocumentChapterAsync(int documentId, int? chapterId);
         Task<IEnumerable<string>> GetDocumentChunksAsync(int id);
+        /// <summary>Lấy nội dung một chunk theo OrderIndex (dùng cho deep-link trích dẫn từ Chat).</summary>
+        Task<string?> GetChunkByOrderIndexAsync(int documentId, int orderIndex);
         Task<bool> DeleteDocumentAsync(int id);
     }
 }

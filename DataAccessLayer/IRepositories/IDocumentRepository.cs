@@ -12,11 +12,12 @@ namespace DataAccessLayer.IRepositories
         Task<List<Document>> GetAllDocumentsAsync();
         Task<Document?> GetDocumentByIdAsync(int id);
         Task<List<Document>> GetDocumentsByIdsAsync(IEnumerable<int> ids);
+        Task<List<Document>> GetDocumentsBySubjectIdAsync(int subjectId);
         Task AddDocumentAsync(Document document);
         Task UpdateDocumentAsync(Document document);
         Task AddDocumentChunksAsync(IEnumerable<DocumentChunk> chunks);
         Task<List<DocumentChunk>> GetDocumentChunksAsync(int documentId);
-        Task<List<DocumentChunk>> SearchSimilarChunksAsync(Vector embedding, IEnumerable<int>? documentIds = null, int topK = 5);
+        Task<List<DocumentChunk>> SearchSimilarChunksAsync(Vector embedding, int? subjectId = null, int topK = 5);
         Task<bool> DeleteDocumentAsync(int id);
         Task<Document?> GetDocumentByIdWithUploaderAsync(int id);
     }

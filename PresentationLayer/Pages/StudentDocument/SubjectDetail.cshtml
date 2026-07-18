@@ -93,11 +93,39 @@
             box-shadow: 2px 2px 0px var(--black);
         }
 
+        .subject-doc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            background-color: var(--bg);
+            border: 2px solid var(--black);
+            padding: 10px 15px;
+        }
+
+        .subject-doc-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1 1 auto;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .subject-doc-title span:last-child {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .chapter-doc-meta {
             display: flex;
             flex-direction: column;
             gap: 4px;
             min-width: 0;
+            flex: 1 1 auto;
         }
 
         .chapter-doc-title {
@@ -121,6 +149,22 @@
             color: #666;
         }
 
+        .doc-actions {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+            align-items: center;
+        }
+
+        .doc-action-btn {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+            line-height: 1.1;
+        }
+
         @@media (max-width: 768px) {
             .subject-hero {
                 margin: 15px !important;
@@ -138,22 +182,20 @@
                 margin: 0 !important;
             }
             /* Make document rows stack on mobile */
-            .section-card div[style*="display: flex; justify-content: space-between"],
+            .subject-doc-row,
             .chapter-doc {
                 flex-direction: column !important;
                 align-items: flex-start !important;
                 gap: 12px !important;
             }
             /* Make buttons row full-width on mobile */
-            .section-card div[style*="display: flex; justify-content: space-between"] div[style*="display: flex; gap: 10px"],
-            .chapter-doc div[style*="display: flex; gap: 10px"] {
+            .doc-actions {
                 width: 100% !important;
                 display: flex !important;
                 gap: 8px !important;
             }
-            .section-card div[style*="display: flex; justify-content: space-between"] div[style*="display: flex; gap: 10px"] a,
-            .chapter-doc div[style*="display: flex; gap: 10px"] a,
-            .chapter-doc div[style*="display: flex; gap: 10px"] button {
+            .doc-actions a,
+            .doc-actions button {
                 flex: 1 !important;
                 text-align: center !important;
                 justify-content: center !important;
@@ -170,9 +212,17 @@
             </a>
         </div>
 
-        <h1 style="color: var(--blue); font-weight: 900; margin-bottom: 5px; font-size: 28px; text-transform: uppercase;">
-            [@Model.Subject.Code] @Model.Subject.Name
-        </h1>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; flex-wrap: wrap;">
+            <h1 style="color: var(--blue); font-weight: 900; margin-bottom: 5px; font-size: 28px; text-transform: uppercase; min-width: 0;">
+                [@Model.Subject.Code] @Model.Subject.Name
+            </h1>
+            @if (subjectDocs.Any(d => !d.IsDeleted) || chapters.Any(c => c.Documents.Any(d => !d.IsDeleted)))
+            {
+                <a asp-page-handler="DownloadAll" asp-route-id="@Model.Subject.Id" class="brutal-btn" style="background-color: var(--blue); color: var(--white); border: 2px solid var(--black); padding: 8px 15px; font-weight: 900; box-shadow: 2px 2px 0px var(--black); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0;">
+                    <i class="fa-solid fa-file-zipper"></i> TẢI TẤT CẢ
+                </a>
+            }
+        </div>
         <p style="font-weight: 700; color: #555; margin: 0;">
             Danh sách các chương và tài liệu đính kèm. Các chương được thu gọn, bấm để mở rộng khi cần xem.
         </p>
@@ -189,18 +239,18 @@
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     @foreach (var doc in subjectDocs)
                     {
-                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; background-color: var(--bg); border: 2px solid var(--black); padding: 10px 15px;">
-                            <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; min-width: 0;">
+                        <div class="subject-doc-row">
+                            <div class="subject-doc-title">
                                 <span style="color: @(doc.FileType.ToLower() == "pdf" ? "#d93856" : (doc.FileType.ToLower() == "docx" ? "#2b579a" : (doc.FileType.ToLower() == "pptx" ? "#d04423" : "#6b7280"))); font-weight:900; font-size: 12px;">
                                     [@doc.FileType.ToUpper()]
                                 </span>
                                 <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@doc.Title</span>
                             </div>
-                            <div style="display: flex; gap: 10px; flex-shrink: 0;">
-                                <a href="/ViewDocument?id=@doc.Id" class="brutal-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                            <div class="doc-actions">
+                                <a href="/ViewDocument?id=@doc.Id" class="brutal-btn doc-action-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
                                     <i class="fa-solid fa-eye"></i> XEM CHI TIẾT
                                 </a>
-                                <a href="@doc.FileUrl" target="_blank" class="brutal-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                <a href="@doc.FileUrl" target="_blank" class="brutal-btn doc-action-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
                                     <i class="fa-solid fa-download"></i> TẢI VỀ
                                 </a>
                             </div>
@@ -244,11 +294,11 @@
                                             </div>
                                         </div>
 
-                                        <div style="display: flex; gap: 10px; flex-shrink: 0;">
-                                            <a href="/ViewDocument?id=@doc.Id" class="brutal-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                        <div class="doc-actions">
+                                            <a href="/ViewDocument?id=@doc.Id" class="brutal-btn doc-action-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
                                                 <i class="fa-solid fa-eye"></i> XEM CHI TIẾT
                                             </a>
-                                            <a href="@doc.FileUrl" target="_blank" class="brutal-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                            <a href="@doc.FileUrl" target="_blank" class="brutal-btn doc-action-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
                                                 <i class="fa-solid fa-download"></i> TẢI VỀ
                                             </a>
                                         </div>
@@ -291,11 +341,11 @@
                                             </div>
                                         </div>
 
-                                        <div style="display: flex; gap: 10px; flex-shrink: 0;">
-                                            <a href="/ViewDocument?id=@doc.Id" class="brutal-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                        <div class="doc-actions">
+                                            <a href="/ViewDocument?id=@doc.Id" class="brutal-btn doc-action-btn" style="background-color: var(--white); color: var(--blue); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
                                                 <i class="fa-solid fa-eye"></i> XEM CHI TIẾT
                                             </a>
-                                            <a href="@doc.FileUrl" target="_blank" class="brutal-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
+                                            <a href="@doc.FileUrl" target="_blank" class="brutal-btn doc-action-btn" style="background-color: var(--white); color: var(--pink); border: 2px solid var(--black); padding: 5px 10px; font-weight: 800; font-size: 11px; text-decoration: none; box-shadow: 2px 2px 0px var(--black);">
                                                 <i class="fa-solid fa-download"></i> TẢI VỀ
                                             </a>
                                         </div>

@@ -2,7 +2,8 @@
 @model PresentationLayer.Pages.Lecturer.QuestionBankModel
 @using System.Web
 @{
-    ViewData["Title"] = "Ngân Hàng Câu Hỏi";
+    ViewData["Title"] = "Ngân Hàng Câu Hỏi - " + Model.CurrentSubject?.Code;
+    ViewBag.ActiveMenu = "QuestionBank";
 }
 
 @section Styles {
@@ -25,6 +26,32 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px 15px;
+        }
+
+        .header-title .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+            margin-left: auto;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .header-title .header-actions .btn-brutal {
+            padding: 7px 12px;
+            min-height: 38px;
+            font-size: 13px;
+            border-width: 2px;
+            box-shadow: 2px 2px 0px 0px var(--black);
+            gap: 6px;
+            letter-spacing: 0;
+        }
+
+        .header-title .header-actions .btn-brutal i {
+            font-size: 13px;
         }
 
         .brutal-card {
@@ -87,11 +114,17 @@
             gap: 8px;
             text-decoration: none;
             color: var(--black);
+            white-space: nowrap;
         }
 
         .btn-brutal:hover {
             transform: translate(-2px, -2px);
             box-shadow: 5px 5px 0px 0px var(--black);
+        }
+
+        .header-title .header-actions .btn-brutal:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px 0px var(--black);
         }
 
         .btn-brutal:active {
@@ -198,6 +231,23 @@
         }
 
         @@media (max-width: 768px) {
+            .header-title {
+                font-size: 22px;
+                align-items: flex-start;
+            }
+
+            .header-title .header-actions {
+                width: 100%;
+                margin-left: 0;
+                justify-content: flex-start;
+            }
+
+            .header-title .header-actions .btn-brutal {
+                padding: 6px 10px;
+                min-height: 34px;
+                font-size: 12px;
+            }
+
             .options-list {
                 grid-template-columns: 1fr;
             }
@@ -312,17 +362,9 @@
         .page-num {
             font-weight: 800;
             font-size: 16px;
-            border: 3px solid var(--black);
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--white);
-        }
-        .page-num.active {
-            background: var(--black);
-            color: var(--white);
+            color: var(--black);
+            white-space: nowrap;
+            padding: 0 5px;
         }
     </style>
 }
@@ -332,8 +374,9 @@
     
     <!-- Title -->
     <div class="header-title">
-        <span><i class="fa-solid fa-database"></i> Ngân hàng câu hỏi</span>
-        <div style="display: flex; gap: 10px;">
+        <span style="min-width: 0;"><i class="fa-solid fa-database"></i> Ngân hàng câu hỏi — [@Model.CurrentSubject?.Code] @Model.CurrentSubject?.Name</span>
+        <div class="header-actions">
+            <a asp-page="/Lecturer/QuestionBankSubjects" class="btn-brutal"><i class="fa-solid fa-arrow-left"></i> Đổi môn học</a>
             <button class="btn-brutal btn-pink" onclick="openTrashModal()"><i class="fa-solid fa-trash-can"></i> Lịch sử xóa</button>
             <button class="btn-brutal btn-yellow" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Thêm câu hỏi</button>
         </div>
@@ -353,16 +396,7 @@
     <!-- Filters Brutal Card -->
     <div class="brutal-card">
         <form method="get" class="filter-grid">
-            <div class="form-group">
-                <label>Môn học</label>
-                <select asp-for="SubjectId" class="brutal-select">
-                    <option value="0">--- Tất cả môn học ---</option>
-                    @foreach (var sub in Model.Subjects)
-                    {
-                        <option value="@sub.Id">[@sub.Code] @sub.Name</option>
-                    }
-                </select>
-            </div>
+            <input type="hidden" asp-for="SubjectId" />
 
             <div class="form-group">
                 <label>Độ khó</label>
@@ -390,7 +424,7 @@
 
             <div style="display: flex; gap: 10px;">
                 <button type="submit" class="btn-brutal btn-pink" style="flex: 1;"><i class="fa-solid fa-filter"></i> Lọc</button>
-                <a href="/Lecturer/QuestionBank" class="btn-brutal" title="Xóa bộ lọc"><i class="fa-solid fa-arrow-rotate-left"></i></a>
+                <a href="/Lecturer/QuestionBank?SubjectId=@Model.SubjectId" class="btn-brutal" title="Xóa bộ lọc"><i class="fa-solid fa-arrow-rotate-left"></i></a>
             </div>
         </form>
     </div>
@@ -508,7 +542,7 @@
                 <a href="?SubjectId=@Model.SubjectId&Difficulty=@Model.Difficulty&Type=@Model.Type&Search=@Model.Search&CurrentPage=@(Model.CurrentPage - 1)" class="btn-brutal">&laquo; Trước</a>
             }
             
-            <span class="page-num active">@Model.CurrentPage / @Model.TotalPages</span>
+            <span class="page-num">@Model.CurrentPage / @Model.TotalPages</span>
             
             @if (Model.CurrentPage < Model.TotalPages)
             {

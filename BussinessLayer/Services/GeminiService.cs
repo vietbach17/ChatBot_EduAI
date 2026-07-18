@@ -163,8 +163,23 @@ namespace BussinessLayer.Services
             return results;
         }
 
+        /// <summary>
+        /// Đọc usageMetadata (số token thực tế) từ một phần tử JSON response của Gemini.
+        /// Trả về null nếu response không có usageMetadata.
+        /// </summary>
+        private static GeminiTokenUsage? ParseUsageMetadata(JsonElement root, string model)
+        {
+            if (!root.TryGetProperty("usageMetadata", out var usage)) return null;
+            int promptTokens = usage.TryGetProperty("promptTokenCount", out var pt) ? pt.GetInt32() : 0;
+            int outputTokens = usage.TryGetProperty("candidatesTokenCount", out var ct) ? ct.GetInt32() : 0;
+            // Cộng cả token "suy nghĩ" (model dòng thinking) nếu có — người dùng vẫn tiêu thụ chúng
+            if (usage.TryGetProperty("thoughtsTokenCount", out var tt)) outputTokens += tt.GetInt32();
+            if (promptTokens == 0 && outputTokens == 0) return null;
+            return new GeminiTokenUsage(model, promptTokens, outputTokens);
+        }
+
         // ─── GenerateAnswer (blocking) ─────────────────────────────────────────
-        public async Task<string> GenerateAnswerAsync(string prompt, string? modelName = null, int maxRetries = 4)
+        public async Task<string> GenerateAnswerAsync(string prompt, string? modelName = null, int maxRetries = 4, Action<GeminiTokenUsage>? onUsage = null)
         {
             modelName = string.IsNullOrWhiteSpace(modelName) ? _defaultModel : modelName;
             var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
@@ -186,6 +201,8 @@ namespace BussinessLayer.Services
                 {
                     var responseString = await response.Content.ReadAsStringAsync();
                     using var result = JsonDocument.Parse(responseString);
+                    var usage = ParseUsageMetadata(result.RootElement, model);
+                    if (usage != null) onUsage?.Invoke(usage);
                     var cands = result.RootElement.GetProperty("candidates");
                     if (cands.GetArrayLength() == 0) return string.Empty;
                     var parts = cands[0].GetProperty("content").GetProperty("parts");
@@ -211,7 +228,8 @@ namespace BussinessLayer.Services
         public async IAsyncEnumerable<string> GenerateStreamingAnswerAsync(
             string prompt,
             string? modelName = null,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+            [EnumeratorCancellation] CancellationToken cancellationToken = default,
+            Action<GeminiTokenUsage>? onUsage = null)
         {
             modelName = string.IsNullOrWhiteSpace(modelName) ? _defaultModel : modelName;
             var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
@@ -221,6 +239,7 @@ namespace BussinessLayer.Services
             // chuyển ngay khi gặp 429/503/500/404 (không chờ backoff trên model đã hết quota).
             var models = BuildModelChain(modelName);
             HttpResponseMessage? response = null;
+            var activeModel = modelName;
 
             foreach (var model in models)
             {
@@ -230,7 +249,7 @@ namespace BussinessLayer.Services
                     var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = new StringContent(jsonBody, Encoding.UTF8, "application/json") };
                     response = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-                    if (response.IsSuccessStatusCode) break;
+                    if (response.IsSuccessStatusCode) { activeModel = model; break; }
 
                     var sc = (int)response.StatusCode;
                     if (sc == 429 || sc == 503 || sc == 500 || sc == 404)
@@ -256,6 +275,9 @@ namespace BussinessLayer.Services
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             using var reader = new System.IO.StreamReader(stream);
 
+            // usageMetadata xuất hiện dồn tích trong các chunk SSE; chunk cuối chứa tổng chính thức → giữ giá trị cuối cùng
+            GeminiTokenUsage? lastUsage = null;
+
             while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
             {
                 string? line;
@@ -272,6 +294,7 @@ namespace BussinessLayer.Services
                 {
                     using var doc = JsonDocument.Parse(jsonStr);
                     var root = doc.RootElement;
+                    lastUsage = ParseUsageMetadata(root, activeModel) ?? lastUsage;
                     if (root.TryGetProperty("candidates", out var cands) &&
                         cands.GetArrayLength() > 0 &&
                         cands[0].TryGetProperty("content", out var content) &&
@@ -285,6 +308,8 @@ namespace BussinessLayer.Services
                 if (!string.IsNullOrEmpty(chunkText))
                     yield return chunkText;
             }
+
+            if (lastUsage != null) onUsage?.Invoke(lastUsage);
         }
 
         // ─── GetAvailableModels ───────────────────────────────────────────────

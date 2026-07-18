@@ -105,7 +105,7 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700;">
                         <span style="color: #555;">Số lượng:</span>
-                        <span style="font-size: 16px; color: var(--black);">+@Model.Addon.QuotaAmount câu hỏi</span>
+                        <span style="font-size: 16px; color: var(--black);">+@Model.Addon.QuotaAmount.ToString("N0") token</span>
                     </div>
                     <hr style="border-top: 2px dashed #cbd5e1; margin: 15px 0;">
                     <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px;">
@@ -131,10 +131,10 @@
                                 <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> @feature
                             </div>
                         }
-                        var realLimit = BussinessLayer.Services.ChatService.GetMonthlyLimit(Model.Plan.Name);
-                        string displayFeature = realLimit == int.MaxValue || realLimit == -1 
-                            ? "Không giới hạn câu hỏi / tháng" 
-                            : $"Tối đa {realLimit:N0} câu hỏi / tháng";
+                        var realLimit = BussinessLayer.Services.TokenQuota.GetMonthlyTokenLimit(Model.Plan.Name);
+                        string displayFeature = realLimit == long.MaxValue
+                            ? "Không giới hạn token / tháng"
+                            : $"Tối đa {realLimit:N0} token / tháng";
                         
                         <div style="font-size: 13px; font-weight: 700; color: #555;">
                             <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> @displayFeature
@@ -143,10 +143,10 @@
                     else if (Model.Addon != null)
                     {
                         <div style="font-size: 13px; font-weight: 700; color: #555;">
-                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Cộng thêm <b>@Model.Addon.QuotaAmount</b> lượt hỏi dự phòng.
+                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Cộng thêm <b>@Model.Addon.QuotaAmount.ToString("N0")</b> token dự phòng.
                         </div>
                         <div style="font-size: 13px; font-weight: 700; color: #555;">
-                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Lượt hỏi <b>KHÔNG BAO GIỜ</b> hết hạn.
+                            <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Token dự phòng <b>KHÔNG BAO GIỜ</b> hết hạn.
                         </div>
                         <div style="font-size: 13px; font-weight: 700; color: #555;">
                             <i class="fa-solid fa-check" style="color: var(--green); margin-right: 6px;"></i> Không bị ảnh hưởng bởi chu kỳ của gói Hội viên.

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using BussinessLayer.DTOs;
 using BussinessLayer.IServices;
 using DataAccessLayer.Entities;
 using DataAccessLayer.IRepositories;
@@ -19,11 +21,21 @@ namespace BussinessLayer.Services
             _repository = repository;
         }
 
-        public async Task<(IEnumerable<QuestionBankActivityLog> Logs, int TotalCount)> GetPagedLogsAsync(int page, int pageSize)
+        public async Task<(IEnumerable<QuestionBankActivityLogDto> Logs, int TotalCount)> GetPagedLogsAsync(int page, int pageSize)
         {
             var logs = await _repository.GetPagedLogsAsync(page, pageSize);
             var count = await _repository.CountLogsAsync();
-            return (logs, count);
+            var dtos = logs.Select(l => new QuestionBankActivityLogDto
+            {
+                Id = l.Id,
+                QuestionBankId = l.QuestionBankId,
+                UserName = l.User?.Username ?? string.Empty,
+                Action = l.Action,
+                QuestionSnippet = l.QuestionSnippet,
+                OldContentJson = l.OldContentJson,
+                Timestamp = l.Timestamp
+            }).ToList();
+            return (dtos, count);
         }
 
         public async Task LogActivityAsync(int? questionBankId, int userId, string action, string snippet, string? oldContentJson = null)

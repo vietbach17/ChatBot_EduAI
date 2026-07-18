@@ -8,6 +8,7 @@ using DataAccessLayer.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http.Features;
 
 Env.Load("../.env");
 
@@ -18,6 +19,16 @@ builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddMemoryCache(); // IMemoryCache cho ChatService cache document chunks
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 1024L * 1024L * 1024L;
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+});
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 1024L * 1024L * 1024L;
+});
 
 
 // DbContext setup
@@ -40,6 +51,7 @@ builder.Services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
 builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
 builder.Services.AddScoped<IAddonPackageRepository, AddonPackageRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<ITokenUsageLogRepository, TokenUsageLogRepository>();
 
 // Services
 builder.Services.AddHttpClient();
@@ -55,8 +67,12 @@ builder.Services.AddScoped<IQuizActivityLogService, QuizActivityLogService>();
 builder.Services.AddScoped<IQuestionBankActivityLogService, QuestionBankActivityLogService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddSingleton<IFileTextExtractorService, FileTextExtractorService>();
+// Cấu hình chunk file (Admin → Cấu hình Chunk) — lưu JSON trong App_Data để giữ qua các lần restart
+builder.Services.AddSingleton<IChunkSettingsService>(_ =>
+    new ChunkSettingsService(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "chunksettings.json")));
 builder.Services.AddScoped<IQuestionBankService, QuestionBankService>();
 builder.Services.AddScoped<IAIQuizGeneratorService, AIQuizGeneratorService>();
 builder.Services.AddScoped<IPaymentGateway, VNPayGateway>();
@@ -90,6 +106,16 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Tài liệu upload lưu ngoài wwwroot (App_Data/files) để tránh dev browser-refresh
+// reload trang mỗi khi có file mới; vẫn phục vụ qua URL /files/...
+var uploadFilesDir = Path.Combine(app.Environment.ContentRootPath, "App_Data", "files");
+Directory.CreateDirectory(uploadFilesDir);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadFilesDir),
+    RequestPath = "/files"
+});
 
 app.UseRouting();
 

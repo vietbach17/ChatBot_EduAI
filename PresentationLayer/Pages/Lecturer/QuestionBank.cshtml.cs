@@ -19,12 +19,14 @@ namespace PresentationLayer.Pages.Lecturer
         private readonly IQuestionBankService _questionService;
         private readonly IUserService _userService;
         private readonly IAIQuizGeneratorService _aiQuizService;
+        private readonly ISubjectService _subjectService;
 
-        public QuestionBankModel(IQuestionBankService questionService, IUserService userService, IAIQuizGeneratorService aiQuizService)
+        public QuestionBankModel(IQuestionBankService questionService, IUserService userService, IAIQuizGeneratorService aiQuizService, ISubjectService subjectService)
         {
             _questionService = questionService;
             _userService = userService;
             _aiQuizService = aiQuizService;
+            _subjectService = subjectService;
         }
 
         // Filters and paging
@@ -50,6 +52,7 @@ namespace PresentationLayer.Pages.Lecturer
         // Data lists
         public IEnumerable<QuestionBankDto> Questions { get; set; } = new List<QuestionBankDto>();
         public IEnumerable<SubjectDto> Subjects { get; set; } = new List<SubjectDto>();
+        public SubjectDto CurrentSubject { get; set; } = default!;
 
         // Forms and actions
         public CreateQuestionDto NewQuestion { get; set; } = new CreateQuestionDto();
@@ -61,15 +64,41 @@ namespace PresentationLayer.Pages.Lecturer
 
         public async Task<IActionResult> OnGetAsync()
         {
-            Subjects = await _questionService.GetAllSubjectsAsync();
-            
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Challenge();
+            var user = await _userService.GetUserByUsernameAsync(username);
+            if (user == null) return Challenge();
+
+            // Chỉ thao tác trên các môn giảng viên phụ trách; phải chọn môn trước khi vào ngân hàng
+            Subjects = (await _subjectService.GetSubjectsByLecturerIdAsync(user.Id)).Where(s => !s.IsDeleted).ToList();
+
+            if (SubjectId <= 0)
+            {
+                return RedirectToPage("/Lecturer/QuestionBankSubjects");
+            }
+
+            var currentSubject = Subjects.FirstOrDefault(s => s.Id == SubjectId);
+            if (currentSubject == null)
+            {
+                StatusMessage = "Error: Bạn không phụ trách môn học này nên không thể xem ngân hàng câu hỏi của môn.";
+                return RedirectToPage("/Lecturer/QuestionBankSubjects");
+            }
+            CurrentSubject = currentSubject;
+            NewQuestion.SubjectId = SubjectId;
+
             var result = await _questionService.GetPagedQuestionsAsync(
                 SubjectId, Difficulty, Type, Search, CurrentPage, PageSize);
-            
+
             Questions = result.Items;
             TotalCount = result.TotalCount;
 
             return Page();
+        }
+
+        private async Task<bool> LecturerOwnsSubjectAsync(int userId, int subjectId)
+        {
+            var owned = await _subjectService.GetSubjectsByLecturerIdAsync(userId);
+            return owned.Any(s => s.Id == subjectId && !s.IsDeleted);
         }
 
         public async Task<IActionResult> OnPostAddAsync(CreateQuestionDto NewQuestion)
@@ -88,6 +117,12 @@ namespace PresentationLayer.Pages.Lecturer
 
             var user = await _userService.GetUserByUsernameAsync(username);
             if (user == null) return Challenge();
+
+            if (!await LecturerOwnsSubjectAsync(user.Id, NewQuestion.SubjectId))
+            {
+                StatusMessage = "Error: Bạn không phụ trách môn học này nên không thể thêm câu hỏi.";
+                return RedirectToPage(new { SubjectId, Difficulty, Type, Search, CurrentPage });
+            }
 
             // Set default JSON structure for True/False if not Multiple Choice
             if (NewQuestion.QuestionType == "TrueFalse")
@@ -128,6 +163,12 @@ namespace PresentationLayer.Pages.Lecturer
             if (string.IsNullOrEmpty(username)) return Challenge();
             var user = await _userService.GetUserByUsernameAsync(username);
             if (user == null) return Challenge();
+
+            if (!await LecturerOwnsSubjectAsync(user.Id, EditQuestion.SubjectId))
+            {
+                StatusMessage = "Error: Bạn không phụ trách môn học này nên không thể cập nhật câu hỏi.";
+                return RedirectToPage(new { SubjectId, Difficulty, Type, Search, CurrentPage });
+            }
 
             var success = await _questionService.UpdateQuestionAsync(EditQuestionId, EditQuestion, user.Id);
             if (success)

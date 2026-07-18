@@ -4,47 +4,60 @@
     ViewData["Title"] = "Quản lý Lịch sử Ngân hàng Câu hỏi";
     Layout = "_Layout";
 }
-
 <style>
-    .admin-container {
-        padding: 30px;
-        background-color: var(--white);
-        border: 4px solid var(--black);
-        box-shadow: 6px 6px 0px var(--black);
-        margin: 20px;
-    }
-
-    .admin-title {
-        font-size: 28px;
-        font-weight: 900;
-        text-transform: uppercase;
-        color: var(--pink);
+    .nav-tabs {
+        display: flex;
+        gap: 15px;
         margin-bottom: 20px;
-        border-bottom: 4px solid var(--black);
-        padding-bottom: 10px;
     }
-
-    .admin-table {
-        width: 100%;
-        border-collapse: collapse;
-        border: 3px solid var(--black);
-        background: var(--white);
-        margin-bottom: 30px;
-    }
-
-    .admin-table th {
-        background: var(--black);
-        color: var(--white);
-        padding: 15px;
+    .nav-tab {
+        padding: 10px 20px;
         font-weight: 900;
-        text-align: left;
+        border: 3px solid var(--black);
+        cursor: pointer;
+        background: var(--white);
+        color: var(--black);
+        box-shadow: 4px 4px 0px var(--black);
+        transition: 0.1s;
         text-transform: uppercase;
+        font-size: 14px;
+    }
+    .nav-tab:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0px var(--black);
+    }
+    .nav-tab:active {
+        transform: translate(2px, 2px);
+        box-shadow: 0px 0px 0px var(--black);
+    }
+    .nav-tab.active {
+        background: var(--pink);
+        color: var(--white);
     }
 
-    .admin-table td {
-        padding: 15px;
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+
+    .btn-view {
+        background-color: var(--blue);
+        color: var(--white);
         border: 2px solid var(--black);
-        font-weight: 600;
+        padding: 6px 12px;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 2px 2px 0px var(--black);
+        text-decoration: none;
+        font-size: 12px;
+        display: inline-block;
+        transition: 0.1s;
+    }
+    .btn-view:active {
+        transform: translate(2px, 2px);
+        box-shadow: 0px 0px 0px var(--black);
     }
 
     .action-badge {
@@ -62,48 +75,6 @@
     .action-restored { background-color: var(--blue); color: var(--white); }
     .action-harddeleted { background-color: #555; color: var(--white); }
 
-    .nav-tabs {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-    .nav-tab {
-        padding: 10px 20px;
-        font-weight: 800;
-        border: 3px solid var(--black);
-        cursor: pointer;
-        background: #eee;
-        transition: 0.2s;
-    }
-    .nav-tab.active {
-        background: var(--pink);
-        color: var(--white);
-        box-shadow: 4px 4px 0px var(--black);
-        transform: translate(-2px, -2px);
-    }
-    
-    .tab-content {
-        display: none;
-    }
-    .tab-content.active {
-        display: block;
-    }
-
-    .btn-view {
-        background-color: var(--blue);
-        color: var(--white);
-        border: 2px solid var(--black);
-        padding: 6px 12px;
-        font-weight: 800;
-        cursor: pointer;
-        box-shadow: 2px 2px 0px var(--black);
-        text-decoration: none;
-        font-size: 14px;
-    }
-    .btn-view:hover {
-        background-color: #0056b3;
-    }
-
     /* Modal Style */
     .modal {
         display: none;
@@ -112,11 +83,11 @@
         left: 0; top: 0;
         width: 100%; height: 100%;
         background-color: rgba(0,0,0,0.6);
+        align-items: center; justify-content: center;
     }
     .modal-content {
         background-color: var(--white);
-        margin: 5% auto;
-        padding: 20px;
+        padding: 30px;
         border: 4px solid var(--black);
         box-shadow: 8px 8px 0px var(--black);
         width: 80%;
@@ -125,7 +96,7 @@
     }
     .close-modal {
         position: absolute;
-        top: 10px; right: 15px;
+        top: 15px; right: 20px;
         font-size: 24px;
         font-weight: 900;
         cursor: pointer;
@@ -141,109 +112,125 @@
     }
 </style>
 
-<div class="admin-container">
-    <h2 class="admin-title"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Ngân Hàng Câu Hỏi</h2>
+<div class="main-wrapper">
+    <div style="padding: 30px;">
+        <h1 style="color: var(--pink); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 20px;">
+            <i class="fa-solid fa-clock-rotate-left"></i> LỊCH SỬ NGÂN HÀNG CÂU HỎI
+        </h1>
 
-    <div class="nav-tabs">
-        <div class="nav-tab active" onclick="switchTab('manual')">Hoạt động cá nhân</div>
-        <div class="nav-tab" onclick="switchTab('ai')">Tạo tự động bằng AI</div>
-    </div>
-
-    <!-- Tab 1: Hoạt động thủ công -->
-    <div id="manual" class="tab-content active">
-        <div style="overflow-x: auto;">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th style="min-width: 130px;">Thời gian</th>
-                        <th style="min-width: 150px;">Người thực hiện</th>
-                        <th style="min-width: 120px;">Hành động</th>
-                        <th style="min-width: 100px;">ID Câu hỏi</th>
-                        <th style="min-width: 250px;">Trích đoạn nội dung</th>
-                        <th style="min-width: 150px;">Chi tiết</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var log in Model.ManualLogs)
-                    {
-                        <tr>
-                            <td>@log.Timestamp.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@log.User?.Username</td>
-                            <td>
-                                <span class="action-badge action-@log.Action.ToLower()">@log.Action</span>
-                            </td>
-                            <td>@(log.QuestionBankId.HasValue ? log.QuestionBankId.Value.ToString() : "N/A")</td>
-                            <td>@log.QuestionSnippet</td>
-                            <td>
-                                @if (!string.IsNullOrEmpty(log.OldContentJson))
-                                {
-                                    <button class="btn-view" onclick="viewJson(this)" data-json="@log.OldContentJson">
-                                        <i class="fa-solid fa-eye"></i> Xem nội dung cũ
-                                    </button>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTab('manual')">Hoạt động cá nhân</div>
+            <div class="nav-tab" onclick="switchTab('ai')">Tạo tự động bằng AI</div>
         </div>
-        
-        <!-- Pagination cho Manual -->
-        <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800;">
-            <div>Trang @Model.CurrentPage / @Model.TotalPages</div>
-            <div>
-                @if (Model.CurrentPage > 1)
+
+        <div style="background-color: var(--white); border: 3px solid var(--black); box-shadow: 4px 4px 0px var(--black); padding: 20px;">
+            <!-- Tab 1: Hoạt động thủ công -->
+            <div id="manual" class="tab-content active">
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 3px solid var(--black);">
+                                <th style="padding: 10px; text-align: left; font-weight: 900; min-width: 130px;">THỜI GIAN</th>
+                                <th style="padding: 10px; text-align: left; font-weight: 900; min-width: 150px;">NGƯỜI THỰC HIỆN</th>
+                                <th style="padding: 10px; text-align: left; font-weight: 900; min-width: 120px;">HÀNH ĐỘNG</th>
+                                <th style="padding: 10px; text-align: left; font-weight: 900; min-width: 100px;">ID CÂU HỎI</th>
+                                <th style="padding: 10px; text-align: left; font-weight: 900; min-width: 250px;">TRÍCH ĐOẠN NỘI DUNG</th>
+                                <th style="padding: 10px; text-align: center; font-weight: 900; min-width: 150px;">CHI TIẾT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model.ManualLogs)
+                            {
+                                <tr style="border-bottom: 1px dashed #ccc;">
+                                    <td style="padding: 10px; font-weight: 700;">@log.Timestamp.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td style="padding: 10px; font-weight: 800;">@log.UserName</td>
+                                    <td style="padding: 10px;">
+                                        <span class="action-badge action-@log.Action.ToLower()">@log.Action</span>
+                                    </td>
+                                    <td style="padding: 10px; font-weight: 800;">@(log.QuestionBankId.HasValue ? log.QuestionBankId.Value.ToString() : "N/A")</td>
+                                    <td style="padding: 10px; font-weight: 500;">@log.QuestionSnippet</td>
+                                    <td style="padding: 10px; text-align: center;">
+                                        @if (!string.IsNullOrEmpty(log.OldContentJson))
+                                        {
+                                            <button class="btn-view" onclick="viewJson(this)" data-json="@log.OldContentJson">
+                                                <i class="fa-solid fa-eye"></i> XEM NỘI DUNG CŨ
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (!Model.ManualLogs.Any())
                 {
-                    <a href="?page=@(Model.CurrentPage - 1)" class="btn-view" style="margin-right:5px;"><i class="fa-solid fa-angle-left"></i> Trước</a>
+                    <div style="padding: 20px; text-align: center; font-style: italic; color: #777;">Chưa có hoạt động nào.</div>
                 }
-                @if (Model.CurrentPage < Model.TotalPages)
+
+                <!-- Pagination cho Manual -->
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; margin-top: 20px;">
+                    <div>Trang @Model.CurrentPage / @Model.TotalPages</div>
+                    <div>
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <a href="?page=@(Model.CurrentPage - 1)" class="btn-view" style="margin-right:5px;"><i class="fa-solid fa-angle-left"></i> TRƯỚC</a>
+                        }
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <a href="?page=@(Model.CurrentPage + 1)" class="btn-view">SAU <i class="fa-solid fa-angle-right"></i></a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Hoạt động bằng AI -->
+            <div id="ai" class="tab-content">
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 3px solid var(--black);">
+                                <th style="padding: 10px; text-align: left; font-weight: 900; min-width: 130px;">THỜI GIAN</th>
+                                <th style="padding: 10px; text-align: left; font-weight: 900; min-width: 150px;">NGƯỜI THỰC HIỆN</th>
+                                <th style="padding: 10px; text-align: left; font-weight: 900; min-width: 150px;">CHỦ ĐỀ</th>
+                                <th style="padding: 10px; text-align: left; font-weight: 900; min-width: 120px;">LOẠI</th>
+                                <th style="padding: 10px; text-align: left; font-weight: 900; min-width: 100px;">SỐ LƯỢNG</th>
+                                <th style="padding: 10px; text-align: center; font-weight: 900; min-width: 150px;">CHI TIẾT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model.AILogs)
+                            {
+                                <tr style="border-bottom: 1px dashed #ccc;">
+                                    <td style="padding: 10px; font-weight: 700;">@log.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td style="padding: 10px; font-weight: 800;">@log.LecturerUsername</td>
+                                    <td style="padding: 10px; font-weight: 700;">@log.Topic</td>
+                                    <td style="padding: 10px; font-weight: 700;">@log.QuestionType</td>
+                                    <td style="padding: 10px; font-weight: 800;">@log.Quantity câu</td>
+                                    <td style="padding: 10px; text-align: center;">
+                                        <button class="btn-view"
+                                                onclick="viewAiSet(this)"
+                                                data-json="@log.GeneratedQuestionsJson"
+                                                data-subject="@(!string.IsNullOrEmpty(log.SubjectCode) ? $"[{log.SubjectCode}] {log.SubjectName}" : "Không rõ")"
+                                                data-lecturer="@(!string.IsNullOrEmpty(log.LecturerUsername) ? log.LecturerUsername : "Không rõ")"
+                                                data-topic="@log.Topic"
+                                                data-difficulty="@log.Difficulty"
+                                                data-type="@log.QuestionType"
+                                                data-created="@log.CreatedAt.AddHours(7).ToString("dd/MM/yyyy HH:mm")">
+                                            <i class="fa-solid fa-eye"></i> XEM BỘ CÂU HỎI
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (!Model.AILogs.Any())
                 {
-                    <a href="?page=@(Model.CurrentPage + 1)" class="btn-view">Sau <i class="fa-solid fa-angle-right"></i></a>
+                    <div style="padding: 20px; text-align: center; font-style: italic; color: #777;">Chưa có hoạt động nào.</div>
                 }
             </div>
-        </div>
-    </div>
-
-    <!-- Tab 2: Hoạt động bằng AI -->
-    <div id="ai" class="tab-content">
-        <div style="overflow-x: auto;">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th style="min-width: 130px;">Thời gian</th>
-                        <th style="min-width: 150px;">Người thực hiện</th>
-                        <th style="min-width: 150px;">Chủ đề</th>
-                        <th style="min-width: 120px;">Loại</th>
-                        <th style="min-width: 100px;">Số lượng</th>
-                        <th style="min-width: 150px;">Chi tiết</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var log in Model.AILogs)
-                    {
-                        <tr>
-                            <td>@log.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@log.Lecturer?.Username</td>
-                            <td>@log.Topic</td>
-                            <td>@log.QuestionType</td>
-                            <td>@log.Quantity câu</td>
-                            <td>
-                                <button class="btn-view"
-                                        onclick="viewAiSet(this)"
-                                        data-json="@log.GeneratedQuestionsJson"
-                                        data-subject="@(log.Subject != null ? $"[{log.Subject.Code}] {log.Subject.Name}" : "Không rõ")"
-                                        data-lecturer="@(log.Lecturer?.Username ?? "Không rõ")"
-                                        data-topic="@log.Topic"
-                                        data-difficulty="@log.Difficulty"
-                                        data-type="@log.QuestionType"
-                                        data-created="@log.CreatedAt.AddHours(7).ToString("dd/MM/yyyy HH:mm")">
-                                    <i class="fa-solid fa-eye"></i> Xem bộ câu hỏi
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
         </div>
     </div>
 </div>
@@ -284,7 +271,7 @@
     function switchTab(tabId) {
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        
+
         event.target.classList.add('active');
         document.getElementById(tabId).classList.add('active');
     }

@@ -1,7 +1,7 @@
 namespace BussinessLayer.DTOs
 {
     /// <summary>
-    /// DTO hiển thị Gói mua thêm (Addon Package) — gói lượt hỏi dự phòng người dùng có thể mua.
+    /// DTO hiển thị Gói mua thêm (Addon Package) — gói token dự phòng người dùng có thể mua.
     /// </summary>
     public class AddonPackageDto
     {

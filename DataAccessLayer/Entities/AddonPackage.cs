@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations;
 namespace DataAccessLayer.Entities
 {
     /// <summary>
-    /// Thực thể Gói mua thêm (Addon Package) cho phép người dùng mua thêm lượt hỏi dự phòng.
-    /// Mỗi gói có tên, giá tiền, và số lượng câu hỏi bổ sung (QuotaAmount).
+    /// Thực thể Gói mua thêm (Addon Package) cho phép người dùng mua thêm token dự phòng.
+    /// Mỗi gói có tên, giá tiền, và số token bổ sung (QuotaAmount).
     /// </summary>
     public class AddonPackage
     {
@@ -17,7 +17,7 @@ namespace DataAccessLayer.Entities
 
         public decimal Price { get; set; }
 
-        public int QuotaAmount { get; set; } // Số lượng câu hỏi mua thêm
+        public int QuotaAmount { get; set; } // Số token mua thêm
 
         public bool IsActive { get; set; } = true;
     }

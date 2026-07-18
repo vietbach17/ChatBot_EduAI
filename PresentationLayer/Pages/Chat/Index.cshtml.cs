@@ -20,13 +20,15 @@ namespace PresentationLayer.Pages.Chat
         private readonly IChatService _chatService;
         private readonly IGeminiService _geminiService;
         private readonly ISubscriptionService _subscriptionService;
+        private readonly IUserService _userService;
 
-        public IndexModel(IDocumentService documentService, IChatService chatService, IGeminiService geminiService, ISubscriptionService subscriptionService)
+        public IndexModel(IDocumentService documentService, IChatService chatService, IGeminiService geminiService, ISubscriptionService subscriptionService, IUserService userService)
         {
             _documentService = documentService;
             _chatService = chatService;
             _geminiService = geminiService;
             _subscriptionService = subscriptionService;
+            _userService = userService;
         }
 
         public List<DocumentDto> Documents { get; set; } = new List<DocumentDto>();
@@ -72,6 +74,17 @@ namespace PresentationLayer.Pages.Chat
             });
         }
 
+
+        /// <summary>Bat/tat viec su dung luot hoi du phong cua nguoi dung hien tai</summary>
+        public async Task<IActionResult> OnPostToggleExtraQuotaAsync(bool useExtraQuota)
+        {
+            var userId = GetUserId();
+            if (userId <= 0)
+                return new JsonResult(new { success = false, message = "Chua dang nhap." });
+
+            var success = await _userService.UpdateUseExtraQuotaAsync(userId, useExtraQuota);
+            return new JsonResult(new { success });
+        }
 
         /// <summary>Phan trang tin nhan cu - lazy loading khi scroll len tren</summary>
         public async Task<IActionResult> OnGetSessionMessagesAsync(int sessionId, int page = 0, int pageSize = 20)

@@ -18,4 +18,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!-- File do người dùng upload không được trigger dotnet-watch/browser-refresh reload trang -->
+  <ItemGroup>
+    <Content Update="wwwroot\files\**" Watch="false" />
+    <Watch Remove="wwwroot\files\**" />
+    <Watch Remove="App_Data\**" />
+    <Content Remove="App_Data\**" />
+    <None Remove="App_Data\**" />
+  </ItemGroup>
+
 </Project>

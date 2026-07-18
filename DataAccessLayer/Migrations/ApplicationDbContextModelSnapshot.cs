@@ -102,7 +102,7 @@ namespace DataAccessLayer.Migrations
                             IsActive = true,
                             Name = "Gói Mini (Cấp tốc)",
                             Price = 10000m,
-                            QuotaAmount = 15
+                            QuotaAmount = 75000
                         },
                         new
                         {
@@ -110,7 +110,7 @@ namespace DataAccessLayer.Migrations
                             IsActive = true,
                             Name = "Gói Standard (Cứu cánh)",
                             Price = 20000m,
-                            QuotaAmount = 40
+                            QuotaAmount = 200000
                         },
                         new
                         {
@@ -118,7 +118,7 @@ namespace DataAccessLayer.Migrations
                             IsActive = true,
                             Name = "Gói Ultra (Chạy nước rút)",
                             Price = 50000m,
-                            QuotaAmount = 120
+                            QuotaAmount = 600000
                         });
                 });
 
@@ -157,7 +157,7 @@ namespace DataAccessLayer.Migrations
                             IsDeleted = false,
                             OrderIndex = 1,
                             SubjectId = 1,
-                            Title = "Chương 1: .NET Core và C# Nâng cao"
+                            Title = "Chapter 01 - Networking Programming"
                         },
                         new
                         {
@@ -165,7 +165,7 @@ namespace DataAccessLayer.Migrations
                             IsDeleted = false,
                             OrderIndex = 2,
                             SubjectId = 1,
-                            Title = "Chương 2: Entity Framework Core"
+                            Title = "Chapter 02 - Asynchronous and Parallel Programming in .NET"
                         },
                         new
                         {
@@ -174,6 +174,246 @@ namespace DataAccessLayer.Migrations
                             OrderIndex = 1,
                             SubjectId = 2,
                             Title = "Chương 1: Tổng quan AI"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            IsDeleted = false,
+                            OrderIndex = 3,
+                            SubjectId = 1,
+                            Title = "Chapter 03 - Dependency Injection in .NET"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            IsDeleted = false,
+                            OrderIndex = 4,
+                            SubjectId = 1,
+                            Title = "Chapter 04 - Building Web Application using ASP.NET Core MVC"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            IsDeleted = false,
+                            OrderIndex = 5,
+                            SubjectId = 1,
+                            Title = "Chapter 05 - Building Websites Using ASP.NET Core Razor Pages"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            IsDeleted = false,
+                            OrderIndex = 6,
+                            SubjectId = 1,
+                            Title = "Chapter 06 - Building a Web App with Blazor and ASP.NET Core"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            IsDeleted = false,
+                            OrderIndex = 7,
+                            SubjectId = 1,
+                            Title = "Chapter 07 - Real-Time Communication"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            IsDeleted = false,
+                            OrderIndex = 8,
+                            SubjectId = 1,
+                            Title = "Chapter 08 - Background Tasks with Worker Service"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            IsDeleted = false,
+                            OrderIndex = 1,
+                            SubjectId = 3,
+                            Title = "Ch01 - Introduction"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            IsDeleted = false,
+                            OrderIndex = 2,
+                            SubjectId = 3,
+                            Title = "Ch02 - Overview of UML Notation"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            IsDeleted = false,
+                            OrderIndex = 3,
+                            SubjectId = 3,
+                            Title = "Ch03 - Software Life Cycle Models and Processes"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            IsDeleted = false,
+                            OrderIndex = 4,
+                            SubjectId = 3,
+                            Title = "Ch04 - Software Design and Architecture Concepts"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            IsDeleted = false,
+                            OrderIndex = 5,
+                            SubjectId = 3,
+                            Title = "Ch05 - Overview of Software Modeling and Design"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            IsDeleted = false,
+                            OrderIndex = 6,
+                            SubjectId = 3,
+                            Title = "Ch06 - Use Case Modeling"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            IsDeleted = false,
+                            OrderIndex = 7,
+                            SubjectId = 3,
+                            Title = "Ch07 - Static Modeling"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            IsDeleted = false,
+                            OrderIndex = 8,
+                            SubjectId = 3,
+                            Title = "Ch08 - Object and Class Structuring"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            IsDeleted = false,
+                            OrderIndex = 9,
+                            SubjectId = 3,
+                            Title = "Ch09-11 - Dynamic Modeling"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            IsDeleted = false,
+                            OrderIndex = 10,
+                            SubjectId = 3,
+                            Title = "Ch12 - Overview of Software Architecture"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            IsDeleted = false,
+                            OrderIndex = 11,
+                            SubjectId = 3,
+                            Title = "Ch13 - Software Subsystem Architectural Design"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            IsDeleted = false,
+                            OrderIndex = 12,
+                            SubjectId = 3,
+                            Title = "Ch14 - Designing Object-Oriented Software Architecture"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            IsDeleted = false,
+                            OrderIndex = 13,
+                            SubjectId = 3,
+                            Title = "Ch15 - Designing Client Server Software Architecture"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            IsDeleted = false,
+                            OrderIndex = 14,
+                            SubjectId = 3,
+                            Title = "Ch16 - Designing Service-Oriented Architecture"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            IsDeleted = false,
+                            OrderIndex = 15,
+                            SubjectId = 3,
+                            Title = "Ch17 - Designing Component-Based Software Architecture"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            IsDeleted = false,
+                            OrderIndex = 16,
+                            SubjectId = 3,
+                            Title = "Ch18 - Designing Concurrent and Real-Time Software Architecture"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            IsDeleted = false,
+                            OrderIndex = 17,
+                            SubjectId = 3,
+                            Title = "Ch20 - Software Quality Attributes"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            IsDeleted = false,
+                            OrderIndex = 18,
+                            SubjectId = 3,
+                            Title = "Ch21 - Client Server Software Architecture Case Study"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            IsDeleted = false,
+                            OrderIndex = 19,
+                            SubjectId = 3,
+                            Title = "Ch22 - SOA Case Study - Online Shopping System"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            IsDeleted = false,
+                            OrderIndex = 20,
+                            SubjectId = 3,
+                            Title = "Ch23 - Component-Based Software Architecture Case Study"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            IsDeleted = false,
+                            OrderIndex = 21,
+                            SubjectId = 3,
+                            Title = "Ch24 - Real-Time Software Architecture Case Study"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            IsDeleted = false,
+                            OrderIndex = 22,
+                            SubjectId = 3,
+                            Title = "SWD392 - Design Pattern"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            IsDeleted = false,
+                            OrderIndex = 23,
+                            SubjectId = 3,
+                            Title = "SWD392 - GenAI"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            IsDeleted = false,
+                            OrderIndex = 24,
+                            SubjectId = 3,
+                            Title = "SWD392 - RDS Document Case Study"
                         });
                 });
 
@@ -1155,6 +1395,14 @@ namespace DataAccessLayer.Migrations
                             IsDeleted = false,
                             LecturerId = 2,
                             Name = "Nhập môn AI"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "SWD392",
+                            IsDeleted = false,
+                            LecturerId = 2,
+                            Name = "Software Architecture and Design"
                         });
                 });
 
@@ -1205,7 +1453,7 @@ namespace DataAccessLayer.Migrations
                             Id = 1,
                             Description = "Gói cơ bản miễn phí",
                             DurationDays = 30,
-                            Features = "[\"Hỏi đáp AI cơ bản\", \"Độ trễ phản hồi bình thường\", \"Giới hạn 5 câu hỏi / 5 giờ\"]",
+                            Features = "[\"Hỏi đáp AI cơ bản\", \"Độ trễ phản hồi bình thường\", \"Giới hạn 50.000 token / 5 giờ\"]",
                             IsActive = true,
                             MonthlyQuestionLimit = 5,
                             Name = "Basic",
@@ -1217,7 +1465,7 @@ namespace DataAccessLayer.Migrations
                             Id = 2,
                             Description = "Gói nâng cao nhiều tính năng",
                             DurationDays = 30,
-                            Features = "[\"Ưu tiên xử lý câu hỏi\", \"Tốc độ phản hồi AI nhanh hơn\", \"Giới hạn 20 câu hỏi / 5 giờ\", \"Hỗ trợ tài liệu đính kèm\"]",
+                            Features = "[\"Ưu tiên xử lý câu hỏi\", \"Tốc độ phản hồi AI nhanh hơn\", \"Giới hạn 100.000 token / 5 giờ\", \"Hỗ trợ tài liệu đính kèm\"]",
                             IsActive = true,
                             MonthlyQuestionLimit = 20,
                             Name = "Pro",
@@ -1229,13 +1477,55 @@ namespace DataAccessLayer.Migrations
                             Id = 3,
                             Description = "Gói cao cấp không giới hạn",
                             DurationDays = 30,
-                            Features = "[\"Không giới hạn số câu hỏi\", \"AI phản hồi tức thì\", \"Mô hình AI cao cấp nhất\", \"Hỗ trợ ưu tiên 24/7\"]",
+                            Features = "[\"Không giới hạn token\", \"AI phản hồi tức thì\", \"Mô hình AI cao cấp nhất\", \"Hỗ trợ ưu tiên 24/7\"]",
                             IsActive = true,
                             MonthlyQuestionLimit = -1,
                             Name = "Ultra",
                             Price = 100000m,
                             SortOrder = 3
                         });
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.TokenUsageLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Feature")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<bool>("IsEstimated")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Model")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<int>("OutputTokens")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PromptTokens")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalTokens")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.ToTable("TokenUsageLogs");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.User", b =>
@@ -1249,14 +1539,14 @@ namespace DataAccessLayer.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<int>("ExtraQuestionQuota")
-                        .HasColumnType("integer");
+                    b.Property<long>("ExtraTokenQuota")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("MonthlyQuestionCount")
-                        .HasColumnType("integer");
+                    b.Property<long>("MonthlyTokensUsed")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -1277,11 +1567,11 @@ namespace DataAccessLayer.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<int>("ShortTermQuestionCount")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime?>("ShortTermResetDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("ShortTermTokensUsed")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("SubscriptionExpiry")
                         .HasColumnType("timestamp with time zone");
@@ -1307,12 +1597,12 @@ namespace DataAccessLayer.Migrations
                         new
                         {
                             Id = 1,
-                            ExtraQuestionQuota = 0,
+                            ExtraTokenQuota = 0L,
                             IsDeleted = false,
-                            MonthlyQuestionCount = 0,
+                            MonthlyTokensUsed = 0L,
                             PasswordHash = "student123",
                             Role = "Student",
-                            ShortTermQuestionCount = 0,
+                            ShortTermTokensUsed = 0L,
                             SubscriptionPlan = "Basic",
                             UseExtraQuota = false,
                             Username = "student"
@@ -1320,12 +1610,12 @@ namespace DataAccessLayer.Migrations
                         new
                         {
                             Id = 2,
-                            ExtraQuestionQuota = 0,
+                            ExtraTokenQuota = 0L,
                             IsDeleted = false,
-                            MonthlyQuestionCount = 0,
+                            MonthlyTokensUsed = 0L,
                             PasswordHash = "lecturer123",
                             Role = "Lecturer",
-                            ShortTermQuestionCount = 0,
+                            ShortTermTokensUsed = 0L,
                             SubscriptionPlan = "Basic",
                             UseExtraQuota = false,
                             Username = "lecturer"
@@ -1333,12 +1623,12 @@ namespace DataAccessLayer.Migrations
                         new
                         {
                             Id = 3,
-                            ExtraQuestionQuota = 0,
+                            ExtraTokenQuota = 0L,
                             IsDeleted = false,
-                            MonthlyQuestionCount = 0,
+                            MonthlyTokensUsed = 0L,
                             PasswordHash = "admin123",
                             Role = "Admin",
-                            ShortTermQuestionCount = 0,
+                            ShortTermTokensUsed = 0L,
                             SubscriptionPlan = "Basic",
                             UseExtraQuota = false,
                             Username = "admin"
@@ -1635,6 +1925,17 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Lecturer");
+                });
+
+            modelBuilder.Entity("DataAccessLayer.Entities.TokenUsageLog", b =>
+                {
+                    b.HasOne("DataAccessLayer.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entities.Chapter", b =>

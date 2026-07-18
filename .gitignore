@@ -6,6 +6,10 @@
 # dotenv files
 .env
 
+# Uploaded documents (runtime data, not source)
+PresentationLayer/App_Data/
+PresentationLayer/wwwroot/files/
+
 # User-specific files
 *.rsuser
 *.suo

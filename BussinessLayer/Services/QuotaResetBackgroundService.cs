@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace BussinessLayer.Services
 {
     /// <summary>
-    /// Dịch vụ chạy ngầm (Background Service) tự động reset hạn mức câu hỏi. Chạy định kỳ để kiểm tra và đặt lại ShortTermQuestionCount (chu kỳ 5h) và MonthlyQuestionCount (hàng tháng).
+    /// Dịch vụ chạy ngầm (Background Service) tự động reset hạn mức token AI. Chạy định kỳ để kiểm tra và đặt lại ShortTermTokensUsed (chu kỳ 5h) và MonthlyTokensUsed (hàng tháng).
     /// </summary>
     public class QuotaResetBackgroundService : BackgroundService
     {
@@ -44,7 +44,7 @@ namespace BussinessLayer.Services
                         {
                             foreach (var user in expiredMonthlyUsers)
                             {
-                                user.MonthlyQuestionCount = 0;
+                                user.MonthlyTokensUsed = 0;
                                 user.QuotaResetDate = null; // Đặt về null, chờ câu hỏi tiếp theo kích hoạt lại
                             }
                             await context.SaveChangesAsync(stoppingToken);
@@ -60,7 +60,7 @@ namespace BussinessLayer.Services
                         {
                             foreach (var user in expiredShortTermUsers)
                             {
-                                user.ShortTermQuestionCount = 0;
+                                user.ShortTermTokensUsed = 0;
                                 user.ShortTermResetDate = null; // Đặt về null, chờ câu hỏi tiếp theo kích hoạt lại
                             }
                             await context.SaveChangesAsync(stoppingToken);

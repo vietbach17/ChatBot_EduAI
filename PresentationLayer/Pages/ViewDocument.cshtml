@@ -72,6 +72,23 @@
 
             <!-- TAB: NỘI DUNG FILE (hiển thị ngay, không cần chunk trước) -->
             <div id="panel-content" style="display: block;">
+                @if (Model.HighlightChunkIndex.HasValue)
+                {
+                    @if (Model.HighlightFound)
+                    {
+                        <div style="background:#fef9c3; border:3px solid var(--black); box-shadow:3px 3px 0 var(--black); padding:10px 16px; font-weight:800; font-size:13px; margin-bottom:14px;">
+                            <i class="fa-solid fa-location-crosshairs" style="color:#d97706;"></i>
+                            Đang xem vị trí trích dẫn từ Chat AI — <strong>Đoạn #@Model.HighlightChunkIndex</strong> được tô vàng bên dưới.
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="background:#fee2e2; border:3px solid var(--black); box-shadow:3px 3px 0 var(--black); padding:10px 16px; font-weight:800; font-size:13px; margin-bottom:14px;">
+                            <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i>
+                            Không định vị được chính xác Đoạn #@Model.HighlightChunkIndex trong nội dung hiển thị (tài liệu có thể đã được tải lại). Bạn vẫn có thể đọc toàn bộ nội dung bên dưới.
+                        </div>
+                    }
+                }
                 @if (hasContent)
                 {
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
@@ -82,7 +99,10 @@
                             @Model.TextContent.Length.ToString("N0") ký tự
                         </span>
                     </div>
-                    <div style="background: #1e1e1e; border: 2px solid var(--black); padding: 20px; max-height: 600px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; color: #d4d4d4; white-space: pre-wrap; word-wrap: break-word;">@Model.TextContent</div>
+                    <div id="docContentBox" style="background: #1e1e1e; border: 2px solid var(--black); padding: 20px; max-height: 600px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; color: #d4d4d4; white-space: pre-wrap; word-wrap: break-word;">@if (Model.HighlightFound)
+                    {<text>@Model.TextContent[..Model.HighlightStart]<mark id="chunkHighlight" style="background:#fde047; color:#111; padding:1px 0; outline:3px solid #f59e0b;">@Model.TextContent.Substring(Model.HighlightStart, Model.HighlightLength)</mark>@Model.TextContent[(Model.HighlightStart + Model.HighlightLength)..]</text>}
+                    else
+                    {@Model.TextContent}</div>
                 }
                 else
                 {
@@ -174,6 +194,14 @@
 </div>
 
 <script>
+    // Tự cuộn đến vị trí trích dẫn khi mở từ Chat AI (?chunk=N)
+    window.addEventListener('DOMContentLoaded', function () {
+        var mark = document.getElementById('chunkHighlight');
+        if (mark) {
+            setTimeout(function () { mark.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 150);
+        }
+    });
+
     function switchTab(tab) {
         var panelContent = document.getElementById('panel-content');
         var panelChunks = document.getElementById('panel-chunks');
