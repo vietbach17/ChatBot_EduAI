@@ -115,11 +115,10 @@ namespace BussinessLayer.Services
         }
 
         // ─── PostWithRetry ────────────────────────────────────────────────────
-        private async Task<HttpResponseMessage> PostWithRetryAsync(string url, string requestBody, int maxRetries = 4)
+        private async Task<HttpResponseMessage> PostWithRetryAsync(string url, string requestBody, int maxRetries = 2)
         {
             HttpResponseMessage? response = null;
-            // Exponential backoff: 5s, 15s, 45s
-            int[] backoffSeconds = { 5, 15, 45 };
+            int[] backoffSeconds = { 1, 2 };
             for (int i = 0; i < maxRetries; i++)
             {
                 var req = new HttpRequestMessage(HttpMethod.Post, url)
@@ -131,22 +130,13 @@ namespace BussinessLayer.Services
                 if (response.IsSuccessStatusCode) return response;
 
                 var sc = (int)response.StatusCode;
+                // Nếu lỗi 404 (Không tồn tại), 401 (Lỗi Key) hoặc 400 (Lỗi định dạng), lập tức bỏ qua không chờ retry
+                if (sc == 404 || sc == 401 || sc == 400) return response;
+
                 bool isRetryable = sc == 429 || sc == 503 || sc == 500;
                 if (isRetryable && i < maxRetries - 1)
                 {
-                    int waitMs;
-                    // Respect Retry-After header if present
-                    if (response.Headers.TryGetValues("Retry-After", out var retryAfterValues) &&
-                        int.TryParse(retryAfterValues.FirstOrDefault(), out int retryAfterSec))
-                    {
-                        // Cap 30s: nếu hết quota theo NGÀY thì Retry-After rất lớn, chờ cũng vô ích
-                        waitMs = Math.Min(retryAfterSec + 1, 30) * 1000;
-                    }
-                    else
-                    {
-                        waitMs = backoffSeconds[Math.Min(i, backoffSeconds.Length - 1)] * 1000;
-                    }
-                    await Task.Delay(waitMs);
+                    await Task.Delay(backoffSeconds[i] * 1000);
                     continue;
                 }
                 break;

@@ -61,7 +61,10 @@ namespace BussinessLayer.Services
                 var doc = await _context.Documents.FindAsync(request.DocumentId.Value);
                 if (doc != null && !string.IsNullOrWhiteSpace(doc.Content))
                 {
-                    documentContext = $"\n\nTÀI LIỆU THAM KHẢO NGUỒN:\n---\n{doc.Content}\n---\n\nYêu cầu quan trọng nhất: Bạn phải tạo câu hỏi dựa trên nội dung tài liệu tham khảo nguồn ở trên. Không được tạo câu hỏi bằng các kiến thức khác nằm ngoài tài liệu này.";
+                    var contentSnippet = doc.Content.Length > 6000 
+                        ? doc.Content.Substring(0, 6000) + "\n... [Tài liệu đã được cắt trích đoạn để tối ưu tốc độ sinh câu hỏi]" 
+                        : doc.Content;
+                    documentContext = $"\n\nTÀI LIỆU THAM KHẢO NGUỒN:\n---\n{contentSnippet}\n---\n\nYêu cầu quan trọng nhất: Bạn phải tạo câu hỏi dựa trên nội dung tài liệu tham khảo nguồn ở trên. Không được tạo câu hỏi bằng các kiến thức khác nằm ngoài tài liệu này.";
                 }
             }
 
