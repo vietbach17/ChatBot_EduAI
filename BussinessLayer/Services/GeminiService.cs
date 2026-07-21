@@ -30,7 +30,7 @@ namespace BussinessLayer.Services
             "gemini-1.5-flash",
             "gemini-2.0-flash",
             "gemini-1.5-pro",
-            "gemini-2.0-flash-lite"
+            "gemini-1.5-flash-8b"
         };
 
         public GeminiService(HttpClient httpClient, IConfiguration configuration)
@@ -130,10 +130,11 @@ namespace BussinessLayer.Services
                 if (response.IsSuccessStatusCode) return response;
 
                 var sc = (int)response.StatusCode;
-                // Nếu lỗi 404 (Không tồn tại), 401 (Lỗi Key) hoặc 400 (Lỗi định dạng), lập tức bỏ qua không chờ retry
-                if (sc == 404 || sc == 401 || sc == 400) return response;
+                // Nếu lỗi 404 (Không tồn tại), 401 (Lỗi Key), 400 (Lỗi tham số) hoặc 429 (Hết Quota model này),
+                // lập tức return để caller chuyển ngay sang model dự phòng tiếp theo không chờ đợi
+                if (sc == 404 || sc == 401 || sc == 400 || sc == 429) return response;
 
-                bool isRetryable = sc == 429 || sc == 503 || sc == 500;
+                bool isRetryable = sc == 503 || sc == 500;
                 if (isRetryable && i < maxRetries - 1)
                 {
                     await Task.Delay(backoffSeconds[i] * 1000);
