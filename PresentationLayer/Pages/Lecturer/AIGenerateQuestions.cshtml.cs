@@ -21,17 +21,20 @@ namespace PresentationLayer.Pages.Lecturer
         private readonly IQuestionBankService _questionService;
         private readonly IUserService _userService;
         private readonly IDocumentService _documentService;
+        private readonly ISubjectService _subjectService;
 
         public AIGenerateQuestionsModel(
             IAIQuizGeneratorService aiGeneratorService,
             IQuestionBankService questionService,
             IUserService userService,
-            IDocumentService documentService)
+            IDocumentService documentService,
+            ISubjectService subjectService)
         {
             _aiGeneratorService = aiGeneratorService;
             _questionService = questionService;
             _userService = userService;
             _documentService = documentService;
+            _subjectService = subjectService;
         }
 
         [BindProperty]
@@ -174,12 +177,36 @@ namespace PresentationLayer.Pages.Lecturer
             });
         }
 
-        public async Task<IActionResult> OnGetSubjectDocumentsAsync(int subjectId)
+        public async Task<IActionResult> OnGetSubjectChaptersAsync(int subjectId)
         {
             var user = await GetLecturerAsync();
             if (user == null) return new JsonResult(new { success = false, message = "Unauthorized" });
 
-            var docs = await _documentService.GetDocumentsBySubjectAsync(subjectId);
+            var subject = await _subjectService.GetSubjectByIdAsync(subjectId);
+            if (subject == null) return new JsonResult(new { success = false, chapters = new List<object>() });
+
+            var chapters = subject.Chapters
+                .Select(c => new { id = c.Id, title = c.Title })
+                .ToList();
+
+            return new JsonResult(new { success = true, chapters = chapters });
+        }
+
+        public async Task<IActionResult> OnGetSubjectDocumentsAsync(int subjectId, int? chapterId)
+        {
+            var user = await GetLecturerAsync();
+            if (user == null) return new JsonResult(new { success = false, message = "Unauthorized" });
+
+            IEnumerable<DocumentDto> docs;
+            if (chapterId.HasValue && chapterId.Value > 0)
+            {
+                docs = await _documentService.GetDocumentsByChapterAsync(chapterId.Value);
+            }
+            else
+            {
+                docs = await _documentService.GetDocumentsBySubjectAsync(subjectId);
+            }
+
             var result = docs
                 .Where(d => d.Status.ToString() == "Indexed")
                 .Select(d => new { id = d.Id, title = d.Title })

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace BussinessLayer.DTOs
 {
@@ -24,5 +24,7 @@ namespace BussinessLayer.DTOs
         public string QuestionType { get; set; } = "All"; // "All", "MultipleChoice", "TrueFalse"
 
         public int? DocumentId { get; set; }
+
+        public int? ChapterId { get; set; }
     }
 }
