@@ -29,7 +29,7 @@ namespace BussinessLayer.Services
         {
             "gemini-1.5-flash",
             "gemini-2.0-flash",
-            "gemini-1.5-pro"
+            "gemini-1.5-flash-latest"
         };
 
         public GeminiService(HttpClient httpClient, IConfiguration configuration)
@@ -110,7 +110,17 @@ namespace BussinessLayer.Services
                 break;
             }
 
-            throw new HttpRequestException($"Gemini API error: {response?.StatusCode} - {lastError}");
+            var finalStatus = response != null ? (int)response.StatusCode : 500;
+            if (finalStatus == 429)
+            {
+                throw new HttpRequestException("Khóa API Gemini (Free Tier) của bạn đã tạm thời hết lượt tạo trong phút/ngày này. Vui lòng đợi 1 - 2 phút rồi bấm lại, hoặc tạo API Key mới tại https://aistudio.google.com/app/apikey.");
+            }
+            if (finalStatus == 404)
+            {
+                throw new HttpRequestException("Mô hình AI hiện tại không khả dụng. Vui lòng kiểm tra lại cài đặt GEMINI_MODEL trong tệp .env.");
+            }
+
+            throw new HttpRequestException($"Lỗi gọi Gemini API ({response?.StatusCode}): {lastError}");
         }
 
         // ─── PostWithRetry ────────────────────────────────────────────────────
