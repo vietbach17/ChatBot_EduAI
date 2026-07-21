@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -45,13 +45,26 @@ namespace BussinessLayer.Services
                 typeConstraint = "Bạn có thể tự do tạo kết hợp cả hai loại câu hỏi 'MultipleChoice' và 'TrueFalse' theo tỉ lệ ngẫu nhiên.";
             }
 
+            string chapterContext = "";
+            if (request.ChapterId.HasValue)
+            {
+                var chapter = await _context.Chapters.FindAsync(request.ChapterId.Value);
+                if (chapter != null)
+                {
+                    chapterContext = $"\n\nPHẠM VI CHƯƠNG HỌC: '{chapter.Title}'\nYêu cầu: Các câu hỏi phải tập trung bám sát vào kiến thức thuộc Chương '{chapter.Title}'.";
+                }
+            }
+
             string documentContext = "";
             if (request.DocumentId.HasValue)
             {
                 var doc = await _context.Documents.FindAsync(request.DocumentId.Value);
                 if (doc != null && !string.IsNullOrWhiteSpace(doc.Content))
                 {
-                    documentContext = $"\n\nTÀI LIỆU THAM KHẢO NGUỒN:\n---\n{doc.Content}\n---\n\nYêu cầu quan trọng nhất: Bạn phải tạo câu hỏi dựa trên nội dung tài liệu tham khảo nguồn ở trên. Không được tạo câu hỏi bằng các kiến thức khác nằm ngoài tài liệu này.";
+                    var contentSnippet = doc.Content.Length > 6000 
+                        ? doc.Content.Substring(0, 6000) + "\n... [Tài liệu đã được cắt trích đoạn để tối ưu tốc độ sinh câu hỏi]" 
+                        : doc.Content;
+                    documentContext = $"\n\nTÀI LIỆU THAM KHẢO NGUỒN:\n---\n{contentSnippet}\n---\n\nYêu cầu quan trọng nhất: Bạn phải tạo câu hỏi dựa trên nội dung tài liệu tham khảo nguồn ở trên. Không được tạo câu hỏi bằng các kiến thức khác nằm ngoài tài liệu này.";
                 }
             }
 
@@ -72,7 +85,7 @@ Yêu cầu chi tiết:
    - Đáp án đúng 'correctAnswer' phải là chuỗi 'True' hoặc 'False'.
 3. Nội dung câu hỏi phải thực tế, mang tính học thuật cao, không mơ hồ. Tiếng Việt phải chuẩn xác, có dấu rõ ràng.
 4. Trường 'tags' chứa các từ khóa ngăn cách bởi dấu phẩy liên quan đến nội dung câu hỏi.
-5. Trường 'difficulty' phải là giá trị '{request.Difficulty}'.{documentContext}
+5. Trường 'difficulty' phải là giá trị '{request.Difficulty}'.{chapterContext}{documentContext}
 ";
 
             // Định nghĩa JSON Schema để Gemini trả về định dạng chuẩn 100%

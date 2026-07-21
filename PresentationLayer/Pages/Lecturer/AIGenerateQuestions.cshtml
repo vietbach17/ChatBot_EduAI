@@ -340,6 +340,13 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Chương học (Tùy chọn)</label>
+                        <select asp-for="GenerateRequest.ChapterId" id="chapterSelect" class="brutal-select" disabled>
+                            <option value="">-- Tất cả các chương / Không chọn --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label>Tài liệu nguồn (Tùy chọn)</label>
                         <select asp-for="GenerateRequest.DocumentId" id="documentSelect" class="brutal-select" disabled>
                             <option value="">-- Dùng kiến thức chung / Không chọn --</option>
@@ -705,46 +712,104 @@
             document.getElementById(`correctAnswer-${idx}`).value = val;
         }
 
-        // Tải tài liệu động khi thay đổi môn học hoặc khi tải trang
+        // Tải Chương học và Tài liệu động khi thay đổi Môn học hoặc Chương học
         const subjectSelect = document.getElementById('subjectSelect');
+        const chapterSelect = document.getElementById('chapterSelect');
         const documentSelect = document.getElementById('documentSelect');
+
+        async function loadChapters(subjectId) {
+            if (!subjectId || !chapterSelect) return;
+            chapterSelect.innerHTML = '<option value="">Đang tải danh sách chương...</option>';
+            chapterSelect.disabled = true;
+
+            try {
+                const response = await fetch(`?handler=SubjectChapters&subjectId=${subjectId}`);
+                const data = await response.json();
+                if (data.success && data.chapters && data.chapters.length > 0) {
+                    let html = '<option value="">-- Tất cả các chương / Không chọn --</option>';
+                    data.chapters.forEach(ch => {
+                        html += `<option value="${ch.id}">${escapeHtml(ch.title)}</option>`;
+                    });
+                    chapterSelect.innerHTML = html;
+                    chapterSelect.disabled = false;
+
+                    const prevChapter = "@Model.GenerateRequest.ChapterId";
+                    if (prevChapter && chapterSelect.querySelector(`option[value="${prevChapter}"]`)) {
+                        chapterSelect.value = prevChapter;
+                    }
+                } else {
+                    chapterSelect.innerHTML = '<option value="">-- Không có chương nào --</option>';
+                    chapterSelect.disabled = true;
+                }
+            } catch (err) {
+                console.error('Error fetching chapters:', err);
+                chapterSelect.innerHTML = '<option value="">Lỗi tải chương</option>';
+                chapterSelect.disabled = true;
+            }
+        }
+
+        async function loadDocuments(subjectId, chapterId = null) {
+            if (!subjectId || !documentSelect) return;
+            documentSelect.innerHTML = '<option value="">Đang tải danh sách tài liệu...</option>';
+            documentSelect.disabled = true;
+
+            try {
+                let url = `?handler=SubjectDocuments&subjectId=${subjectId}`;
+                if (chapterId) {
+                    url += `&chapterId=${chapterId}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.success && data.documents && data.documents.length > 0) {
+                    let html = '<option value="">-- Dùng kiến thức chung / Không chọn --</option>';
+                    data.documents.forEach(doc => {
+                        html += `<option value="${doc.id}">${escapeHtml(doc.title)}</option>`;
+                    });
+                    documentSelect.innerHTML = html;
+                    documentSelect.disabled = false;
+
+                    const prevValue = "@Model.GenerateRequest.DocumentId";
+                    if (prevValue && documentSelect.querySelector(`option[value="${prevValue}"]`)) {
+                        documentSelect.value = prevValue;
+                    }
+                } else {
+                    documentSelect.innerHTML = '<option value="">-- Không có tài liệu nào --</option>';
+                    documentSelect.disabled = true;
+                }
+            } catch (err) {
+                console.error('Error fetching documents:', err);
+                documentSelect.innerHTML = '<option value="">Lỗi tải tài liệu</option>';
+                documentSelect.disabled = true;
+            }
+        }
 
         if (subjectSelect) {
             subjectSelect.addEventListener('change', async function() {
                 const subjectId = this.value;
                 if (!subjectId) {
-                    documentSelect.innerHTML = '<option value="">-- Dùng kiến thức chung / Không chọn --</option>';
-                    documentSelect.disabled = true;
+                    if (chapterSelect) {
+                        chapterSelect.innerHTML = '<option value="">-- Tất cả các chương / Không chọn --</option>';
+                        chapterSelect.disabled = true;
+                    }
+                    if (documentSelect) {
+                        documentSelect.innerHTML = '<option value="">-- Dùng kiến thức chung / Không chọn --</option>';
+                        documentSelect.disabled = true;
+                    }
                     return;
                 }
 
-                documentSelect.innerHTML = '<option value="">Đang tải danh sách tài liệu...</option>';
-                documentSelect.disabled = true;
+                await loadChapters(subjectId);
+                await loadDocuments(subjectId, chapterSelect ? chapterSelect.value : null);
+            });
+        }
 
-                try {
-                    const response = await fetch(`?handler=SubjectDocuments&subjectId=${subjectId}`);
-                    const data = await response.json();
-                    if (data.success && data.documents && data.documents.length > 0) {
-                        let html = '<option value="">-- Dùng kiến thức chung / Không chọn --</option>';
-                        data.documents.forEach(doc => {
-                            html += `<option value="${doc.id}">${escapeHtml(doc.title)}</option>`;
-                        });
-                        documentSelect.innerHTML = html;
-                        documentSelect.disabled = false;
-                        
-                        // Giữ lại tài liệu đã chọn trước đó nếu có (khi submit lỗi)
-                        const prevValue = "@Model.GenerateRequest.DocumentId";
-                        if (prevValue && documentSelect.querySelector(`option[value="${prevValue}"]`)) {
-                            documentSelect.value = prevValue;
-                        }
-                    } else {
-                        documentSelect.innerHTML = '<option value="">-- Không có tài liệu nào --</option>';
-                        documentSelect.disabled = true;
-                    }
-                } catch (err) {
-                    console.error('Error fetching documents:', err);
-                    documentSelect.innerHTML = '<option value="">Lỗi tải tài liệu</option>';
-                    documentSelect.disabled = true;
+        if (chapterSelect) {
+            chapterSelect.addEventListener('change', async function() {
+                const subjectId = subjectSelect ? subjectSelect.value : null;
+                const chapterId = this.value;
+                if (subjectId) {
+                    await loadDocuments(subjectId, chapterId);
                 }
             });
         }

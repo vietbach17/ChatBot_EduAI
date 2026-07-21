@@ -42,7 +42,7 @@ namespace DataAccessLayer.Entities
         public bool IsAIGenerated { get; set; } = false;
 
         public bool IsDeleted { get; set; } = false;
-
+ 
         [Required]
         public int LecturerId { get; set; }
 

@@ -27,9 +27,9 @@ namespace BussinessLayer.Services
         /// </summary>
         private static readonly string[] FallbackModels =
         {
-            "gemini-flash-lite-latest",
-            "gemini-3.5-flash",
+            "gemini-1.5-flash",
             "gemini-2.0-flash",
+            "gemini-1.5-flash-latest"
         };
 
         public GeminiService(HttpClient httpClient, IConfiguration configuration)
@@ -37,10 +37,13 @@ namespace BussinessLayer.Services
             _httpClient = httpClient;
             var key = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
                       ?? configuration["GeminiAI:ApiKey"];
-            _apiKey = key?.Trim() ?? throw new ArgumentNullException("GEMINI_API_KEY is not configured");
+            _apiKey = key?.Trim().Trim('"').Trim('\'') ?? throw new ArgumentNullException("GEMINI_API_KEY is not configured");
             _defaultModel = Environment.GetEnvironmentVariable("GEMINI_MODEL")
                             ?? configuration["GeminiAI:Model"]
-                            ?? "gemini-3.1-flash-lite";
+                            ?? "gemini-1.5-flash";
+            
+            // Xóa Authorization header mặc định của HttpClient (nếu có) để tránh làm hỏng xác thực query parameter key=
+            _httpClient.DefaultRequestHeaders.Authorization = null;
         }
 
         /// <summary>
@@ -58,8 +61,9 @@ namespace BussinessLayer.Services
         // ─── GenerateJsonContent ───────────────────────────────────────────────
         public async Task<string> GenerateJsonContentAsync(string prompt, string? responseSchemaJson = null)
         {
-            var model = _defaultModel;
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={_apiKey}";
+            var models = BuildModelChain(_defaultModel);
+            HttpResponseMessage? response = null;
+            string lastError = string.Empty;
 
             object? schemaObj = null;
             if (!string.IsNullOrEmpty(responseSchemaJson))
@@ -78,56 +82,71 @@ namespace BussinessLayer.Services
             };
 
             var requestBody = JsonSerializer.Serialize(payload, jsonOptions);
-            var response = await PostWithRetryAsync(url, requestBody);
-            if (!response.IsSuccessStatusCode)
+
+            foreach (var model in models)
             {
-                var errorText = await response.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Gemini API error: {response.StatusCode} - {errorText}");
+                var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={_apiKey}";
+                response = await PostWithRetryAsync(url, requestBody);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(responseBody);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("candidates", out var candidates) &&
+                        candidates.GetArrayLength() > 0 &&
+                        candidates[0].TryGetProperty("content", out var cc) &&
+                        cc.TryGetProperty("parts", out var pp) &&
+                        pp.GetArrayLength() > 0 &&
+                        pp[0].TryGetProperty("text", out var textEl))
+                        return textEl.GetString() ?? string.Empty;
+                }
+
+                lastError = await response.Content.ReadAsStringAsync();
+                var sc = (int)response.StatusCode;
+                if (sc == 404 || sc == 429 || sc == 503 || sc == 500)
+                {
+                    continue; // Thử model kế tiếp trong chuỗi fallback
+                }
+                break;
             }
 
-            var responseBody = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(responseBody);
-            var root = doc.RootElement;
-            if (root.TryGetProperty("candidates", out var candidates) &&
-                candidates.GetArrayLength() > 0 &&
-                candidates[0].TryGetProperty("content", out var cc) &&
-                cc.TryGetProperty("parts", out var pp) &&
-                pp.GetArrayLength() > 0 &&
-                pp[0].TryGetProperty("text", out var textEl))
-                return textEl.GetString() ?? string.Empty;
+            var finalStatus = response != null ? (int)response.StatusCode : 500;
+            if (finalStatus == 429)
+            {
+                throw new HttpRequestException("Khóa API Gemini (Free Tier) của bạn đã tạm thời hết lượt tạo trong phút/ngày này. Vui lòng đợi 1 - 2 phút rồi bấm lại, hoặc tạo API Key mới tại https://aistudio.google.com/app/apikey.");
+            }
+            if (finalStatus == 404)
+            {
+                throw new HttpRequestException("Mô hình AI hiện tại không khả dụng. Vui lòng kiểm tra lại cài đặt GEMINI_MODEL trong tệp .env.");
+            }
 
-            throw new InvalidOperationException($"Cannot parse Gemini response: {responseBody}");
+            throw new HttpRequestException($"Lỗi gọi Gemini API ({response?.StatusCode}): {lastError}");
         }
 
         // ─── PostWithRetry ────────────────────────────────────────────────────
-        private async Task<HttpResponseMessage> PostWithRetryAsync(string url, string requestBody, int maxRetries = 4)
+        private async Task<HttpResponseMessage> PostWithRetryAsync(string url, string requestBody, int maxRetries = 2)
         {
             HttpResponseMessage? response = null;
-            // Exponential backoff: 5s, 15s, 45s
-            int[] backoffSeconds = { 5, 15, 45 };
+            int[] backoffSeconds = { 1, 2 };
             for (int i = 0; i < maxRetries; i++)
             {
-                var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-                response = await _httpClient.PostAsync(url, content);
+                var req = new HttpRequestMessage(HttpMethod.Post, url)
+                {
+                    Content = new StringContent(requestBody, Encoding.UTF8, "application/json")
+                };
+                req.Headers.Authorization = null;
+                response = await _httpClient.SendAsync(req);
                 if (response.IsSuccessStatusCode) return response;
 
                 var sc = (int)response.StatusCode;
-                bool isRetryable = sc == 429 || sc == 503 || sc == 500;
+                // Nếu lỗi 404 (Không tồn tại), 401 (Lỗi Key), 400 (Lỗi tham số) hoặc 429 (Hết Quota model này),
+                // lập tức return để caller chuyển ngay sang model dự phòng tiếp theo không chờ đợi
+                if (sc == 404 || sc == 401 || sc == 400 || sc == 429) return response;
+
+                bool isRetryable = sc == 503 || sc == 500;
                 if (isRetryable && i < maxRetries - 1)
                 {
-                    int waitMs;
-                    // Respect Retry-After header if present
-                    if (response.Headers.TryGetValues("Retry-After", out var retryAfterValues) &&
-                        int.TryParse(retryAfterValues.FirstOrDefault(), out int retryAfterSec))
-                    {
-                        // Cap 30s: nếu hết quota theo NGÀY thì Retry-After rất lớn, chờ cũng vô ích
-                        waitMs = Math.Min(retryAfterSec + 1, 30) * 1000;
-                    }
-                    else
-                    {
-                        waitMs = backoffSeconds[Math.Min(i, backoffSeconds.Length - 1)] * 1000;
-                    }
-                    await Task.Delay(waitMs);
+                    await Task.Delay(backoffSeconds[i] * 1000);
                     continue;
                 }
                 break;
@@ -247,6 +266,7 @@ namespace BussinessLayer.Services
                 try
                 {
                     var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = new StringContent(jsonBody, Encoding.UTF8, "application/json") };
+                    req.Headers.Authorization = null;
                     response = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
                     if (response.IsSuccessStatusCode) { activeModel = model; break; }
