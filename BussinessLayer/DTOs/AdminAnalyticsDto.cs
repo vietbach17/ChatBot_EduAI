@@ -6,6 +6,7 @@ namespace BussinessLayer.DTOs
     {
         public int Year { get; set; }
         public int Month { get; set; }
+        public int Day { get; set; }
         public int TotalTokens { get; set; }
     }
 
@@ -13,6 +14,7 @@ namespace BussinessLayer.DTOs
     {
         public int Year { get; set; }
         public int Month { get; set; }
+        public int Day { get; set; }
         public decimal TotalAmount { get; set; }
     }
 

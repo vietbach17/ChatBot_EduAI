@@ -12,6 +12,8 @@ namespace BussinessLayer.DTOs
         public string FileType { get; set; } = string.Empty;
         public DocumentStatus Status { get; set; }
         public string? FileUrl { get; set; }
+        /// <summary>Đường dẫn bản PDF để xem chuẩn (viewer PDF.js). Null nếu chỉ xem được dạng text.</summary>
+        public string? ViewUrl { get; set; }
         public int? SubjectId { get; set; }
         public int? ChapterId { get; set; }
         public string? SubjectName { get; set; }

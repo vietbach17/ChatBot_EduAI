@@ -22,7 +22,11 @@ namespace BussinessLayer.IServices
         Task<int> AddDocumentAsync(string title, string fileType, string fileUrl, int? subjectId, int? chapterId, int? uploaderId, string? extractedContent);
         Task<bool> ProcessDocumentAsync(int documentId, string extractedContent);
         Task<bool> ProcessDocumentEmbeddingAsync(int documentId, System.Func<int, int, Task>? progressCallback = null);
+        /// <summary>Xóa chunk cũ và băm/nhúng lại tài liệu theo cấu hình chunk hiện hành của môn.</summary>
+        Task<bool> ReprocessDocumentEmbeddingAsync(int documentId, System.Func<int, int, Task>? progressCallback = null);
         Task<bool> UpdateDocumentChapterAsync(int documentId, int? chapterId);
+        /// <summary>Cập nhật đường dẫn bản PDF dùng để xem chuẩn (sau khi convert office → PDF).</summary>
+        Task<bool> UpdateViewUrlAsync(int documentId, string? viewUrl);
         Task<IEnumerable<string>> GetDocumentChunksAsync(int id);
         /// <summary>Lấy nội dung một chunk theo OrderIndex (dùng cho deep-link trích dẫn từ Chat).</summary>
         Task<string?> GetChunkByOrderIndexAsync(int documentId, int orderIndex);

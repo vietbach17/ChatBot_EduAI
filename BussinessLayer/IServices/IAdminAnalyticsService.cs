@@ -9,5 +9,7 @@ namespace BussinessLayer.IServices
         Task<IEnumerable<TokenStatsDto>> GetTokenUsageStatsAsync();
         Task<IEnumerable<RevenueStatsDto>> GetRevenueStatsAsync();
         Task<IEnumerable<UserAnalyticsDto>> GetUserAnalyticsListAsync();
+        Task<IEnumerable<TokenStatsDto>> GetDailyTokenUsageStatsAsync(int year, int month);
+        Task<IEnumerable<RevenueStatsDto>> GetDailyRevenueStatsAsync(int year, int month);
     }
 }

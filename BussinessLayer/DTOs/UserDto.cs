@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace BussinessLayer.DTOs
 {
@@ -11,6 +11,8 @@ namespace BussinessLayer.DTOs
         public string Username { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public string? Email { get; set; }
+        public int? CustomChunkMaxWords { get; set; }
+        public int? CustomChunkOverlapWords { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

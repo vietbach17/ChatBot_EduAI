@@ -17,6 +17,8 @@ namespace DataAccessLayer.IRepositories
         Task UpdateDocumentAsync(Document document);
         Task AddDocumentChunksAsync(IEnumerable<DocumentChunk> chunks);
         Task<List<DocumentChunk>> GetDocumentChunksAsync(int documentId);
+        /// <summary>Xóa toàn bộ chunk của một tài liệu (dùng khi xử lý lại embedding với cấu hình chunk mới).</summary>
+        Task DeleteDocumentChunksAsync(int documentId);
         Task<List<DocumentChunk>> SearchSimilarChunksAsync(Vector embedding, int? subjectId = null, int topK = 5);
         Task<bool> DeleteDocumentAsync(int id);
         Task<Document?> GetDocumentByIdWithUploaderAsync(int id);

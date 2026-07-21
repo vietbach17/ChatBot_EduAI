@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
 using DataAccessLayer.Entities;
@@ -17,6 +17,7 @@ namespace BussinessLayer.IServices
         Task<bool> CreateUserAsync(string username, string password, string role, string? email);
         Task<bool> UpdateUserAsync(int id, string username, string role, string? email, string? password);
         Task<bool> UpdateUseExtraQuotaAsync(int userId, bool useExtraQuota);
+        Task<bool> UpdateChunkSettingsAsync(int userId, int? maxWords);
         Task<bool> ChangePasswordAsync(string username, string currentPassword, string newPassword);
         Task<bool> SoftDeleteUserAsync(int id);
         Task<bool> RestoreUserAsync(int id);

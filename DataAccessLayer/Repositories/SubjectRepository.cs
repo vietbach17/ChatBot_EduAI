@@ -205,5 +205,27 @@ namespace DataAccessLayer.Repositories
         {
             return await _context.Chapters.FindAsync(id);
         }
+
+        public async Task<(int? MaxWords, int? OverlapWords)> GetChunkSettingsAsync(int subjectId)
+        {
+            // Truy vấn nhẹ, không kéo theo Chapters/Documents như GetSubjectByIdAsync
+            var row = await _context.Subjects
+                .Where(s => s.Id == subjectId)
+                .Select(s => new { s.ChunkMaxWords, s.ChunkOverlapWords })
+                .FirstOrDefaultAsync();
+
+            return row == null ? (null, null) : (row.ChunkMaxWords, row.ChunkOverlapWords);
+        }
+
+        public async Task<bool> UpdateChunkSettingsAsync(int subjectId, int? maxWords, int? overlapWords)
+        {
+            var subject = await _context.Subjects.FindAsync(subjectId);
+            if (subject == null) return false;
+
+            subject.ChunkMaxWords = maxWords;
+            subject.ChunkOverlapWords = overlapWords;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

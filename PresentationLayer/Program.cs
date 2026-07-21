@@ -70,6 +70,7 @@ builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddSingleton<IFileTextExtractorService, FileTextExtractorService>();
+builder.Services.AddSingleton<IPdfConversionService, PdfConversionService>();
 // Cấu hình chunk file (Admin → Cấu hình Chunk) — lưu JSON trong App_Data để giữ qua các lần restart
 builder.Services.AddSingleton<IChunkSettingsService>(_ =>
     new ChunkSettingsService(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "chunksettings.json")));

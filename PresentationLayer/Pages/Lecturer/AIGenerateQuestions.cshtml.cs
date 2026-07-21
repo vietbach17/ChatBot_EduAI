@@ -60,7 +60,8 @@ namespace PresentationLayer.Pages.Lecturer
 
         private async Task LoadDataAsync(int lecturerId)
         {
-            Subjects = await _questionService.GetAllSubjectsAsync();
+            var lecturerSubjects = await _subjectService.GetSubjectsByLecturerIdAsync(lecturerId);
+            Subjects = lecturerSubjects.Where(s => !s.IsDeleted).ToList();
             GenerationLogs = await _aiGeneratorService.GetGenerationLogsAsync(lecturerId);
         }
 
@@ -82,6 +83,14 @@ namespace PresentationLayer.Pages.Lecturer
             {
                 await LoadDataAsync(user.Id);
                 StatusMessage = "Error: Dữ liệu cấu hình yêu cầu không hợp lệ.";
+                return Page();
+            }
+
+            var ownedSubjects = await _subjectService.GetSubjectsByLecturerIdAsync(user.Id);
+            if (!ownedSubjects.Any(s => s.Id == GenerateRequest.SubjectId && !s.IsDeleted))
+            {
+                await LoadDataAsync(user.Id);
+                StatusMessage = "Error: Bạn không được phép tạo câu hỏi cho môn học này vì bạn không phụ trách môn học này.";
                 return Page();
             }
 
@@ -126,6 +135,16 @@ namespace PresentationLayer.Pages.Lecturer
                 await LoadDataAsync(user.Id);
                 StatusMessage = "Error: Bạn chưa chọn câu hỏi nào để lưu.";
                 HasGenerated = true; // keep showing the generated questions list
+                return Page();
+            }
+
+            var ownedSubjects = await _subjectService.GetSubjectsByLecturerIdAsync(user.Id);
+            var subjectId = selectedQuestions.First().SubjectId;
+            if (!ownedSubjects.Any(s => s.Id == subjectId && !s.IsDeleted))
+            {
+                await LoadDataAsync(user.Id);
+                StatusMessage = "Error: Bạn không được phép lưu câu hỏi cho môn học này vì bạn không phụ trách môn học này.";
+                HasGenerated = true;
                 return Page();
             }
 

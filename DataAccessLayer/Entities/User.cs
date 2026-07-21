@@ -55,7 +55,11 @@ namespace DataAccessLayer.Entities
         public DateTime? ResetOtpExpiry { get; set; }
         // ===========================
 
-        
+        // ===== CHUNK CONFIG (Lecturer Override) =====
+        public int? CustomChunkMaxWords { get; set; }
+        public int? CustomChunkOverlapWords { get; set; }
+        // ============================================
+
         public ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
         public ICollection<Subject> AssignedSubjects { get; set; } = new List<Subject>();
         public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();

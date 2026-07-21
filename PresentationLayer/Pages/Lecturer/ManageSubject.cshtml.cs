@@ -52,6 +52,8 @@ namespace PresentationLayer.Pages.Lecturer
         public bool IsOwner { get; set; } = false;
         public bool IsAdmin { get; set; } = false;
 
+
+
         public List<ActivityLogItemViewModel> ActivityLogs { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(int id)
@@ -75,6 +77,8 @@ namespace PresentationLayer.Pages.Lecturer
             }
 
             Quizzes = await _quizService.GetQuizzesBySubjectAsync(id);
+
+
 
             if (IsOwner || IsAdmin)
             {
@@ -361,6 +365,46 @@ namespace PresentationLayer.Pages.Lecturer
                 }
             }
             return RedirectToPage(new { id = id });
+        }
+
+
+
+        public async Task<IActionResult> OnPostReprocessDocumentAsync(int id, int docId)
+        {
+            if (!await CanConfigureAsync(id)) return Forbid();
+
+            try
+            {
+                var doc = await _documentService.GetDocumentByIdAsync(docId);
+                await _documentService.ReprocessDocumentEmbeddingAsync(docId);
+                TempData["SuccessMessage"] = $"Đã xử lý lại tài liệu '{doc?.Title}' theo cấu hình chunk hiện tại.";
+
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (doc != null && userIdClaim != null && int.TryParse(userIdClaim, out var uId))
+                {
+                    await _activityLogService.LogActivityAsync(id, docId, doc.Title, uId, "Reindexed");
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Xử lý lại tài liệu thất bại: {ex.Message}";
+            }
+
+            return RedirectToPage(new { id = id });
+        }
+
+
+
+        /// <summary>Chỉ Giảng viên phụ trách môn hoặc Admin được đổi cấu hình chunk / xử lý lại tài liệu.</summary>
+        private async Task<bool> CanConfigureAsync(int subjectId)
+        {
+            if (User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value == "Admin") return true;
+
+            var subject = await _subjectService.GetSubjectByIdAsync(subjectId);
+            if (subject == null) return false;
+
+            var userIdStr = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(userIdStr, out int userId) && subject.LecturerId == userId;
         }
     }
 }

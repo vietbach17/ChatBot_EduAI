@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BussinessLayer.DTOs;
@@ -52,7 +52,15 @@ namespace BussinessLayer.Services
         {
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null) return null;
-            return new UserDto { Id = user.Id, Username = user.Username, Role = user.Role, Email = user.Email, IsDeleted = user.IsDeleted };
+            return new UserDto { 
+                Id = user.Id, 
+                Username = user.Username, 
+                Role = user.Role, 
+                Email = user.Email, 
+                IsDeleted = user.IsDeleted,
+                CustomChunkMaxWords = user.CustomChunkMaxWords,
+                CustomChunkOverlapWords = user.CustomChunkOverlapWords
+            };
         }
 
         public async Task<bool> CreateUserAsync(string username, string password, string role, string? email)
@@ -94,6 +102,17 @@ namespace BussinessLayer.Services
             if (user == null) return false;
 
             user.UseExtraQuota = useExtraQuota;
+            await _userRepository.UpdateUserAsync(user);
+            return true;
+        }
+
+        public async Task<bool> UpdateChunkSettingsAsync(int userId, int? maxWords)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return false;
+
+            user.CustomChunkMaxWords = maxWords;
+            user.CustomChunkOverlapWords = null; // Always null out overlap words so it uses default
             await _userRepository.UpdateUserAsync(user);
             return true;
         }

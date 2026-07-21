@@ -4,17 +4,27 @@ using BussinessLayer.DTOs;
 namespace BussinessLayer.IServices
 {
     /// <summary>
-    /// Quản lý cấu hình chunk file (kích thước chunk, số từ chồng lấn) dùng khi xử lý tài liệu.
+    /// Quản lý chính sách chunk file do Admin thiết lập: template mặc định toàn hệ thống
+    /// và khoảng giá trị Giảng viên được phép tự cấu hình cho môn mình phụ trách.
     /// </summary>
     public interface IChunkSettingsService
     {
-        /// <summary>Lấy cấu hình chunk hiện tại.</summary>
+        /// <summary>Lấy template chunk mặc định (áp dụng cho môn không có cấu hình riêng).</summary>
         ChunkSettingsDto GetSettings();
 
-        /// <summary>Cập nhật cấu hình chunk. Trả về (thành công, thông báo lỗi nếu có).</summary>
-        Task<(bool Success, string? Error)> UpdateAsync(ChunkSettingsDto settings);
+        /// <summary>Lấy toàn bộ chính sách chunk hiện tại (template + quyền và khoảng cho Giảng viên).</summary>
+        ChunkPolicyDto GetPolicy();
 
-        /// <summary>Khôi phục cấu hình chunk về giá trị mặc định.</summary>
+        /// <summary>Cập nhật chính sách chunk. Trả về (thành công, thông báo lỗi nếu có).</summary>
+        Task<(bool Success, string? Error)> UpdateAsync(ChunkPolicyDto policy);
+
+        /// <summary>Khôi phục chính sách chunk về giá trị mặc định.</summary>
         Task<(bool Success, string? Error)> ResetToDefaultAsync();
+
+        /// <summary>
+        /// Kiểm tra cấu hình riêng của Giảng viên có nằm trong khoảng Admin cho phép không.
+        /// Trả về null nếu hợp lệ, ngược lại là thông báo lỗi.
+        /// </summary>
+        string? ValidateLecturerSettings(ChunkSettingsDto settings);
     }
 }

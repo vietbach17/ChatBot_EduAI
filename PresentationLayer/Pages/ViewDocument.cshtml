@@ -7,6 +7,8 @@
     var fileType = Model.Document?.FileType?.ToLower() ?? "";
     var isViewable = new[] { "txt", "md", "csv", "pdf", "docx", "doc", "pptx", "log" }.Contains(fileType);
     var isStudent = User.IsInRole("Student");
+    var isPdfView = Model.IsPdfView;
+    var isOfficeType = new[] { "docx", "doc", "pptx", "ppt" }.Contains(fileType);
 }
 
 <div class="main-wrapper">
@@ -72,57 +74,91 @@
 
             <!-- TAB: NỘI DUNG FILE (hiển thị ngay, không cần chunk trước) -->
             <div id="panel-content" style="display: block;">
-                @if (Model.HighlightChunkIndex.HasValue)
+                @if (isPdfView)
                 {
-                    @if (Model.HighlightFound)
+                    @* ─── Xem "chuẩn như lúc up": render bản PDF bằng PDF.js ─── *@
+                    @if (Model.HighlightChunkIndex.HasValue)
                     {
-                        <div style="background:#fef9c3; border:3px solid var(--black); box-shadow:3px 3px 0 var(--black); padding:10px 16px; font-weight:800; font-size:13px; margin-bottom:14px;">
+                        <div id="pdfHlBanner" style="background:#fef9c3; border:3px solid var(--black); box-shadow:3px 3px 0 var(--black); padding:10px 16px; font-weight:800; font-size:13px; margin-bottom:14px;">
                             <i class="fa-solid fa-location-crosshairs" style="color:#d97706;"></i>
-                            Đang xem vị trí trích dẫn từ Chat AI — <strong>Đoạn #@Model.HighlightChunkIndex</strong> được tô vàng bên dưới.
+                            Đang xem vị trí trích dẫn từ Chat AI — <strong>Đoạn #@Model.HighlightChunkIndex</strong> sẽ được tô vàng trên bản tài liệu bên dưới.
                         </div>
                     }
-                    else
-                    {
-                        <div style="background:#fee2e2; border:3px solid var(--black); box-shadow:3px 3px 0 var(--black); padding:10px 16px; font-weight:800; font-size:13px; margin-bottom:14px;">
-                            <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i>
-                            Không định vị được chính xác Đoạn #@Model.HighlightChunkIndex trong nội dung hiển thị (tài liệu có thể đã được tải lại). Bạn vẫn có thể đọc toàn bộ nội dung bên dưới.
-                        </div>
-                    }
-                }
-                @if (hasContent)
-                {
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                         <p style="font-style: italic; color: #555; font-weight: 600; margin: 0;">
-                            Nội dung văn bản trích xuất từ file <strong>@fileType.ToUpper()</strong>.
+                            Bản tài liệu gốc <strong>@fileType.ToUpper()</strong> hiển thị đúng định dạng như lúc tải lên.
                         </p>
-                        <span style="font-size: 12px; color: #888; font-weight: 700;">
-                            @Model.TextContent.Length.ToString("N0") ký tự
-                        </span>
                     </div>
-                    <div id="docContentBox" style="background: #1e1e1e; border: 2px solid var(--black); padding: 20px; max-height: 600px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; color: #d4d4d4; white-space: pre-wrap; word-wrap: break-word;">@if (Model.HighlightFound)
-                    {<text>@Model.TextContent[..Model.HighlightStart]<mark id="chunkHighlight" style="background:#fde047; color:#111; padding:1px 0; outline:3px solid #f59e0b;">@Model.TextContent.Substring(Model.HighlightStart, Model.HighlightLength)</mark>@Model.TextContent[(Model.HighlightStart + Model.HighlightLength)..]</text>}
-                    else
-                    {@Model.TextContent}</div>
+                    <div id="pdfViewer" data-pdf-url="@Model.PdfUrl"
+                         style="background: #525659; border: 2px solid var(--black); padding: 16px; max-height: 760px; overflow-y: auto;">
+                        <div id="pdfStatus" style="text-align:center; color:#eee; font-weight:800; padding:40px 10px;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Đang tải bản xem tài liệu…
+                        </div>
+                        <div id="pdfPages"></div>
+                    </div>
                 }
                 else
                 {
-                    <div style="padding: 40px; text-align: center; border: 2px dashed #000; background: var(--bg);">
-                        <i class="fa-solid fa-file-circle-question" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
-                        <p style="font-weight: 800; font-size: 16px; margin-bottom: 10px;">Không thể hiển thị nội dung</p>
-                        <p style="color: #777; font-size: 14px;">
-                            @if (!isViewable)
-                            {
-                                <text>File <strong>@fileType.ToUpper()</strong> chưa được hỗ trợ trích xuất text.</text>
-                            }
-                            else
-                            {
-                                <text>File chưa có nội dung. Hãy tải lại file để hệ thống trích xuất text.</text>
-                            }
-                        </p>
-                        <a href="@Model.Document?.FileUrl" target="_blank" style="color: var(--blue); font-weight: 800;">
-                            <i class="fa-solid fa-external-link-alt"></i> Mở file gốc
-                        </a>
-                    </div>
+                    @* ─── Không có bản PDF: rơi về chế độ xem text (vẫn highlight reference) ─── *@
+                    @if (Model.HighlightChunkIndex.HasValue)
+                    {
+                        @if (Model.HighlightFound)
+                        {
+                            <div style="background:#fef9c3; border:3px solid var(--black); box-shadow:3px 3px 0 var(--black); padding:10px 16px; font-weight:800; font-size:13px; margin-bottom:14px;">
+                                <i class="fa-solid fa-location-crosshairs" style="color:#d97706;"></i>
+                                Đang xem vị trí trích dẫn từ Chat AI — <strong>Đoạn #@Model.HighlightChunkIndex</strong> được tô vàng bên dưới.
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="background:#fee2e2; border:3px solid var(--black); box-shadow:3px 3px 0 var(--black); padding:10px 16px; font-weight:800; font-size:13px; margin-bottom:14px;">
+                                <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i>
+                                Không định vị được chính xác Đoạn #@Model.HighlightChunkIndex trong nội dung hiển thị (tài liệu có thể đã được tải lại). Bạn vẫn có thể đọc toàn bộ nội dung bên dưới.
+                            </div>
+                        }
+                    }
+                    @if (isOfficeType)
+                    {
+                        <div style="background:#e8f4fd; border:2px solid var(--blue); padding:10px 16px; font-weight:700; font-size:12.5px; margin-bottom:14px; color:#0b4f77;">
+                            <i class="fa-solid fa-circle-info"></i>
+                            File @fileType.ToUpper() chưa hiển thị được đúng định dạng gốc vì máy chủ chưa cài LibreOffice để convert sang PDF. Đang hiển thị nội dung dạng text.
+                        </div>
+                    }
+                    @if (hasContent)
+                    {
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                            <p style="font-style: italic; color: #555; font-weight: 600; margin: 0;">
+                                Nội dung văn bản trích xuất từ file <strong>@fileType.ToUpper()</strong>.
+                            </p>
+                            <span style="font-size: 12px; color: #888; font-weight: 700;">
+                                @Model.TextContent.Length.ToString("N0") ký tự
+                            </span>
+                        </div>
+                        <div id="docContentBox" style="background: #1e1e1e; border: 2px solid var(--black); padding: 20px; max-height: 600px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; color: #d4d4d4; white-space: pre-wrap; word-wrap: break-word;">@if (Model.HighlightFound)
+                        {<text>@Model.TextContent[..Model.HighlightStart]<mark id="chunkHighlight" style="background:#fde047; color:#111; padding:1px 0; outline:3px solid #f59e0b;">@Model.TextContent.Substring(Model.HighlightStart, Model.HighlightLength)</mark>@Model.TextContent[(Model.HighlightStart + Model.HighlightLength)..]</text>}
+                        else
+                        {@Model.TextContent}</div>
+                    }
+                    else
+                    {
+                        <div style="padding: 40px; text-align: center; border: 2px dashed #000; background: var(--bg);">
+                            <i class="fa-solid fa-file-circle-question" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+                            <p style="font-weight: 800; font-size: 16px; margin-bottom: 10px;">Không thể hiển thị nội dung</p>
+                            <p style="color: #777; font-size: 14px;">
+                                @if (!isViewable)
+                                {
+                                    <text>File <strong>@fileType.ToUpper()</strong> chưa được hỗ trợ trích xuất text.</text>
+                                }
+                                else
+                                {
+                                    <text>File chưa có nội dung. Hãy tải lại file để hệ thống trích xuất text.</text>
+                                }
+                            </p>
+                            <a href="@Model.Document?.FileUrl" target="_blank" style="color: var(--blue); font-weight: 800;">
+                                <i class="fa-solid fa-external-link-alt"></i> Mở file gốc
+                            </a>
+                        </div>
+                    }
                 }
             </div>
 
@@ -221,3 +257,170 @@
         }
     }
 </script>
+
+@if (isPdfView)
+{
+    <style>
+        #pdfPages .pdf-page { position: relative; margin: 0 auto 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); background: #fff; }
+        #pdfPages .pdf-page:last-child { margin-bottom: 0; }
+        #pdfPages canvas { display: block; }
+        .pdf-hl-layer { position: absolute; top: 0; left: 0; pointer-events: none; }
+        .pdf-hl-box { position: absolute; background: rgba(253,224,71,0.45); outline: 2px solid #f59e0b; border-radius: 2px; mix-blend-mode: multiply; }
+    </style>
+    <script src="/lib/pdfjs/pdf.min.js"></script>
+    <script>
+        window.__pdfHighlightText = @Json.Serialize(Model.HighlightChunkText ?? "");
+        (function () {
+            var viewerEl = document.getElementById('pdfViewer');
+            if (!viewerEl) return;
+            var url = viewerEl.getAttribute('data-pdf-url');
+            var pagesEl = document.getElementById('pdfPages');
+            var statusEl = document.getElementById('pdfStatus');
+            var bannerEl = document.getElementById('pdfHlBanner');
+
+            if (typeof pdfjsLib === 'undefined') {
+                if (statusEl) statusEl.innerHTML = 'Không tải được thư viện xem PDF.';
+                return;
+            }
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '/lib/pdfjs/pdf.worker.min.js';
+
+            // Chuẩn hoá mạnh để so khớp giữa 2 bộ trích xuất text khác nhau (PdfPig vs PDF.js):
+            // CHỈ GIỮ LẠI CHỮ VÀ SỐ, BỎ QUA MỌI DẤU CÁCH VÀ KÝ TỰ ĐẶC BIỆT.
+            // Quan trọng: bỏ luôn dấu tiếng Việt — hai bộ trích xuất có thể trả NFC ("ế")
+            // hoặc NFD ("e" + dấu tổ hợp), nếu không sẽ lệch ở mọi từ có dấu.
+            function norm(s) {
+                return (s || '')
+                    .normalize('NFD')
+                    .replace(/\p{M}+/gu, '')    // bỏ dấu tổ hợp
+                    .toLowerCase()
+                    .replace(/đ/g, 'd')                 // đ không tách được bằng NFD
+                    .replace(/[^\p{L}\p{N}]+/gu, '');
+            }
+
+            var targetNorm = norm(window.__pdfHighlightText);
+            var wantHighlight = targetNorm.length >= 12;
+            var firstHighlightEl = null;
+            var pageRefs = [];   // {viewport, hlLayer} theo thứ tự trang
+            var globalText = ''; // text đã chuẩn hoá của TOÀN BỘ tài liệu
+            var globalMap = [];  // {start, end, item, pageIdx}
+
+            pdfjsLib.getDocument(url).promise.then(function (pdf) {
+                if (statusEl) statusEl.style.display = 'none';
+                var chain = Promise.resolve();
+                for (var p = 1; p <= pdf.numPages; p++) {
+                    (function (pageNum) {
+                        chain = chain.then(function () { return renderPage(pdf, pageNum); });
+                    })(p);
+                }
+                return chain;
+            }).then(function () {
+                if (wantHighlight) locateAndHighlight();
+                if (firstHighlightEl) {
+                    firstHighlightEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (wantHighlight && bannerEl) {
+                    bannerEl.style.background = '#fee2e2';
+                    bannerEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> '
+                        + 'Không định vị được chính xác đoạn trích dẫn trên bản tài liệu. Bạn vẫn có thể đọc toàn bộ nội dung bên dưới.';
+                }
+            }).catch(function (err) {
+                if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = 'Không tải được bản xem PDF: ' + (err && err.message ? err.message : err); }
+            });
+
+            function renderPage(pdf, pageNum) {
+                return pdf.getPage(pageNum).then(function (page) {
+                    var scale = 1.5;
+                    var viewport = page.getViewport({ scale: scale });
+
+                    var pageContainer = document.createElement('div');
+                    pageContainer.className = 'pdf-page';
+                    pageContainer.style.width = viewport.width + 'px';
+                    pageContainer.style.height = viewport.height + 'px';
+
+                    var canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    pageContainer.appendChild(canvas);
+
+                    var hlLayer = document.createElement('div');
+                    hlLayer.className = 'pdf-hl-layer';
+                    hlLayer.style.width = viewport.width + 'px';
+                    hlLayer.style.height = viewport.height + 'px';
+                    pageContainer.appendChild(hlLayer);
+
+                    pagesEl.appendChild(pageContainer);
+
+                    var pageIdx = pageRefs.length;
+                    pageRefs.push({ viewport: viewport, hlLayer: hlLayer });
+
+                    var renderTask = page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport });
+                    return renderTask.promise.then(function () {
+                        if (!wantHighlight) return;
+                        // Gom text của MỌI trang vào một chuỗi chung: chunk có thể nằm vắt qua
+                        // ranh giới trang, khớp riêng từng trang sẽ không bao giờ tìm thấy.
+                        return page.getTextContent().then(function (tc) {
+                            collectPageText(tc, pageIdx);
+                        });
+                    });
+                });
+            }
+
+            function collectPageText(textContent, pageIdx) {
+                var items = textContent.items;
+                for (var i = 0; i < items.length; i++) {
+                    var t = norm(items[i].str);
+                    if (!t) continue;
+                    var start = globalText.length;
+                    globalText += t;
+                    globalMap.push({ start: start, end: globalText.length, item: items[i], pageIdx: pageIdx });
+                }
+            }
+
+            /// Tìm chunk trong text toàn tài liệu rồi tô vàng.
+            /// Thử nhiều độ dài cửa sổ, và với mỗi độ dài thì trượt vị trí bắt đầu dọc chunk —
+            /// PDF.js có thể đảo thứ tự đọc ở đầu chunk (header/footer, 2 cột, bảng) khiến
+            /// cách khớp prefix cũ hỏng dù phần giữa chunk vẫn khớp được.
+            function locateAndHighlight() {
+                var lengths = [targetNorm.length, 300, 200, 120, 80, 50, 30];
+                for (var li = 0; li < lengths.length; li++) {
+                    var len = Math.min(lengths[li], targetNorm.length);
+                    if (len < 20) continue;
+                    var step = Math.max(1, Math.floor(len / 2));
+                    for (var s = 0; s + len <= targetNorm.length; s += step) {
+                        var idx = globalText.indexOf(targetNorm.substr(s, len));
+                        if (idx < 0) continue;
+                        // Nới highlight ra cả chunk, không chỉ phần cửa sổ khớp được.
+                        markRange(Math.max(0, idx - s), Math.min(globalText.length, idx - s + targetNorm.length));
+                        return;
+                    }
+                }
+            }
+
+            function markRange(mStart, mEnd) {
+                for (var k = 0; k < globalMap.length; k++) {
+                    var m = globalMap[k];
+                    if (m.end <= mStart || m.start >= mEnd) continue; // không giao nhau
+                    var ref = pageRefs[m.pageIdx];
+                    if (ref) drawBox(m.item, ref.viewport, ref.hlLayer);
+                }
+            }
+
+            function drawBox(item, viewport, hlLayer) {
+                var tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+                var fontHeight = Math.hypot(tx[2], tx[3]) || Math.abs(tx[3]) || 10;
+                var left = tx[4];
+                var top = tx[5] - fontHeight;
+                var width = (item.width || 0) * viewport.scale;
+                if (width <= 0) return;
+
+                var box = document.createElement('div');
+                box.className = 'pdf-hl-box';
+                box.style.left = left + 'px';
+                box.style.top = top + 'px';
+                box.style.width = width + 'px';
+                box.style.height = (fontHeight * 1.15) + 'px';
+                hlLayer.appendChild(box);
+                if (!firstHighlightEl) firstHighlightEl = box;
+            }
+        })();
+    </script>
+}

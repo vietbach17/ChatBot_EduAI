@@ -107,6 +107,19 @@ namespace DataAccessLayer.Repositories
                 .ToListAsync();
         }
 
+        public async Task DeleteDocumentChunksAsync(int documentId)
+        {
+            var chunks = await _context.DocumentChunks
+                .Where(c => c.DocumentId == documentId)
+                .ToListAsync();
+
+            if (chunks.Any())
+            {
+                _context.DocumentChunks.RemoveRange(chunks);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         public async Task<List<DocumentChunk>> SearchSimilarChunksAsync(Vector embedding, int? subjectId = null, int topK = 5)
         {
             var chunkQuery = _context.DocumentChunks

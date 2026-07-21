@@ -27,7 +27,12 @@ namespace DataAccessLayer.Entities
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
         
         public string? FileUrl { get; set; } // Đường dẫn file để tải/xem
-        
+
+        // Đường dẫn bản PDF dùng để xem "chuẩn như lúc up" (viewer PDF.js).
+        // Với file PDF: trùng FileUrl. Với DOCX/PPTX/DOC: bản PDF convert phía server.
+        // Null nếu chưa/không convert được (rơi về chế độ xem text).
+        public string? ViewUrl { get; set; }
+
         public int? UploaderId { get; set; }
         public User? Uploader { get; set; }
         

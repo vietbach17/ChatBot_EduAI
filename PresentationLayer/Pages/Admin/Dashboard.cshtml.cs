@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
 using BussinessLayer.Services;
@@ -67,6 +68,18 @@ namespace PresentationLayer.Pages.Admin
             TokenStats = await _analyticsService.GetTokenUsageStatsAsync();
             RevenueStats = await _analyticsService.GetRevenueStatsAsync();
             UserAnalytics = await _analyticsService.GetUserAnalyticsListAsync();
+        }
+
+        public async Task<IActionResult> OnGetDailyTokenStatsAsync(int year, int month)
+        {
+            var data = await _analyticsService.GetDailyTokenUsageStatsAsync(year, month);
+            return new JsonResult(new { success = true, data });
+        }
+
+        public async Task<IActionResult> OnGetDailyRevenueStatsAsync(int year, int month)
+        {
+            var data = await _analyticsService.GetDailyRevenueStatsAsync(year, month);
+            return new JsonResult(new { success = true, data });
         }
     }
 }

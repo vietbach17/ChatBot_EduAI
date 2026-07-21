@@ -69,5 +69,37 @@ namespace BussinessLayer.Services
                 })
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<TokenStatsDto>> GetDailyTokenUsageStatsAsync(int year, int month)
+        {
+            return await _context.ChatMessages
+                .Where(m => m.TokenCount != null && m.Timestamp.Year == year && m.Timestamp.Month == month)
+                .GroupBy(m => m.Timestamp.Day)
+                .Select(g => new TokenStatsDto
+                {
+                    Year = year,
+                    Month = month,
+                    Day = g.Key,
+                    TotalTokens = g.Sum(m => m.TokenCount ?? 0)
+                })
+                .OrderBy(s => s.Day)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<RevenueStatsDto>> GetDailyRevenueStatsAsync(int year, int month)
+        {
+            return await _context.PaymentTransactions
+                .Where(t => t.Status == "Success" && t.CreatedAt.Year == year && t.CreatedAt.Month == month)
+                .GroupBy(t => t.CreatedAt.Day)
+                .Select(g => new RevenueStatsDto
+                {
+                    Year = year,
+                    Month = month,
+                    Day = g.Key,
+                    TotalAmount = g.Sum(t => t.Amount)
+                })
+                .OrderBy(s => s.Day)
+                .ToListAsync();
+        }
     }
 }

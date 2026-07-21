@@ -10,8 +10,9 @@ namespace PresentationLayer.Pages.Admin
 {
     [Authorize(Roles = "Admin")]
     /// <summary>
-    /// PageModel trang Cấu hình Chunk File của Admin. Cho phép admin điều chỉnh số từ tối đa mỗi chunk
-    /// và số từ chồng lấn giữa các chunk khi xử lý tài liệu tạo Embedding AI.
+    /// PageModel trang Cấu hình Chunk File của Admin. Admin đặt template mặc định (số từ tối đa mỗi chunk,
+    /// số từ chồng lấn) cho toàn hệ thống, đồng thời quyết định Giảng viên có được tự cấu hình chunk
+    /// cho môn mình phụ trách hay không và trong khoảng giá trị nào.
     /// </summary>
     public class ChunkSettingsModel : PageModel
     {
@@ -25,6 +26,7 @@ namespace PresentationLayer.Pages.Admin
         [BindProperty] public int MaxWords { get; set; }
         [BindProperty] public int OverlapWords { get; set; }
 
+
         public int DefaultMaxWords => ChunkSettingsService.DefaultMaxWords;
         public int DefaultOverlapWords => ChunkSettingsService.DefaultOverlapWords;
         public int MinMaxWords => ChunkSettingsService.MinMaxWords;
@@ -33,17 +35,23 @@ namespace PresentationLayer.Pages.Admin
 
         public void OnGet()
         {
-            var settings = _chunkSettingsService.GetSettings();
-            MaxWords = settings.MaxWords;
-            OverlapWords = settings.OverlapWords;
+            var policy = _chunkSettingsService.GetPolicy();
+            MaxWords = policy.MaxWords;
+            OverlapWords = policy.OverlapWords;
+
         }
 
         public async Task<IActionResult> OnPostSaveAsync()
         {
-            var (ok, err) = await _chunkSettingsService.UpdateAsync(new ChunkSettingsDto
+            var (ok, err) = await _chunkSettingsService.UpdateAsync(new ChunkPolicyDto
             {
                 MaxWords = MaxWords,
-                OverlapWords = OverlapWords
+                OverlapWords = OverlapWords,
+                // These are ignored now since we removed UI, but keep old values or defaults
+                AllowLecturerOverride = true,
+                LecturerMinWords = ChunkSettingsService.MinMaxWords,
+                LecturerMaxWords = ChunkSettingsService.MaxMaxWords,
+                LecturerMaxOverlapWords = ChunkSettingsService.MaxOverlapWords
             });
 
             TempData[ok ? "SuccessMessage" : "ErrorMessage"] = ok ? "Đã lưu cấu hình chunk!" : err;

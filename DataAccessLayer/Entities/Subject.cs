@@ -25,7 +25,12 @@ namespace DataAccessLayer.Entities
         
         public int? LecturerId { get; set; }
         public User? Lecturer { get; set; }
-        
+
+        // Cấu hình chunk riêng do Giảng viên phụ trách đặt cho môn này.
+        // Null = dùng template mặc định của Admin (Admin → Cấu hình Chunk).
+        public int? ChunkMaxWords { get; set; }
+        public int? ChunkOverlapWords { get; set; }
+
         public ICollection<Chapter> Chapters { get; set; } = new List<Chapter>();
         public ICollection<Document> Documents { get; set; } = new List<Document>();
     }

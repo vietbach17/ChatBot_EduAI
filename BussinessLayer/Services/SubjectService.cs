@@ -16,10 +16,12 @@ namespace BussinessLayer.Services
     public class SubjectService : ISubjectService
     {
         private readonly ISubjectRepository _subjectRepository;
+        private readonly IChunkSettingsService _chunkSettingsService;
 
-        public SubjectService(ISubjectRepository subjectRepository)
+        public SubjectService(ISubjectRepository subjectRepository, IChunkSettingsService chunkSettingsService)
         {
             _subjectRepository = subjectRepository;
+            _chunkSettingsService = chunkSettingsService;
         }
 
         public async Task<IEnumerable<SubjectDto>> GetAllSubjectsAsync(bool includeDeleted = false)
@@ -194,6 +196,42 @@ namespace BussinessLayer.Services
 
             await _subjectRepository.DeleteChapterWithOptionsAsync(chapterId, keepDocuments);
             return true;
+        }
+
+        public async Task<SubjectChunkSettingsDto> GetChunkSettingsAsync(int subjectId)
+        {
+            var policy = _chunkSettingsService.GetPolicy();
+            var (maxWords, overlapWords) = await _subjectRepository.GetChunkSettingsAsync(subjectId);
+            // Admin tắt quyền → môn hiển thị và chạy theo template, dù cấu hình riêng vẫn còn lưu
+            var useCustom = policy.AllowLecturerOverride && maxWords.HasValue && overlapWords.HasValue;
+
+            return new SubjectChunkSettingsDto
+            {
+                SubjectId = subjectId,
+                UseCustom = useCustom,
+                MaxWords = useCustom ? maxWords!.Value : policy.MaxWords,
+                OverlapWords = useCustom ? overlapWords!.Value : policy.OverlapWords,
+                Policy = policy
+            };
+        }
+
+        public async Task<(bool Success, string? Error)> UpdateChunkSettingsAsync(int subjectId, bool useCustom, int maxWords, int overlapWords)
+        {
+            if (!useCustom)
+            {
+                var cleared = await _subjectRepository.UpdateChunkSettingsAsync(subjectId, null, null);
+                return cleared ? (true, null) : (false, "Không tìm thấy môn học.");
+            }
+
+            var error = _chunkSettingsService.ValidateLecturerSettings(new ChunkSettingsDto
+            {
+                MaxWords = maxWords,
+                OverlapWords = overlapWords
+            });
+            if (error != null) return (false, error);
+
+            var updated = await _subjectRepository.UpdateChunkSettingsAsync(subjectId, maxWords, overlapWords);
+            return updated ? (true, null) : (false, "Không tìm thấy môn học.");
         }
     }
 }

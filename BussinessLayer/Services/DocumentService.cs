@@ -1,4 +1,4 @@
-﻿using BussinessLayer.IServices;
+using BussinessLayer.IServices;
 using BussinessLayer.IGateways;
 using BussinessLayer.Gateways;
 using BussinessLayer.DTOs;
@@ -21,12 +21,14 @@ namespace BussinessLayer.Services
          private readonly IDocumentRepository _documentRepository;
         private readonly IGeminiService _geminiService;
         private readonly IChunkSettingsService _chunkSettingsService;
+        private readonly ISubjectRepository _subjectRepository;
 
-        public DocumentService(IDocumentRepository documentRepository, IGeminiService geminiService, IChunkSettingsService chunkSettingsService)
+        public DocumentService(IDocumentRepository documentRepository, IGeminiService geminiService, IChunkSettingsService chunkSettingsService, ISubjectRepository subjectRepository)
         {
             _documentRepository = documentRepository;
             _geminiService = geminiService;
             _chunkSettingsService = chunkSettingsService;
+            _subjectRepository = subjectRepository;
         }
 
         public async Task<IEnumerable<DocumentDto>> GetAllDocumentsAsync()
@@ -117,6 +119,7 @@ namespace BussinessLayer.Services
                 Title = doc.Title,
                 FileType = doc.FileType,
                 FileUrl = doc.FileUrl,
+                ViewUrl = doc.ViewUrl,
                 Content = doc.Content,
                 Status = Enum.Parse<DocumentStatus>(doc.Status),
                 UploadedAt = doc.UploadedAt,
@@ -136,6 +139,16 @@ namespace BussinessLayer.Services
             return doc?.Content ?? string.Empty;
         }
 
+
+        public async Task<bool> UpdateViewUrlAsync(int documentId, string? viewUrl)
+        {
+            var document = await _documentRepository.GetDocumentByIdAsync(documentId);
+            if (document == null) return false;
+
+            document.ViewUrl = viewUrl;
+            await _documentRepository.UpdateDocumentAsync(document);
+            return true;
+        }
 
         public async Task<bool> UpdateDocumentChapterAsync(int documentId, int? chapterId)
         {
@@ -182,13 +195,22 @@ namespace BussinessLayer.Services
 
         public async Task<bool> ProcessDocumentEmbeddingAsync(int documentId, System.Func<int, int, Task>? progressCallback = null)
         {
-            var doc = await _documentRepository.GetDocumentByIdAsync(documentId);
+            var doc = await _documentRepository.GetDocumentByIdWithUploaderAsync(documentId);
             if (doc == null || string.IsNullOrWhiteSpace(doc.Content)) return false;
 
-            // Context-Aware Chunking Strategy: split by semantics and maintain overlap
-            // Thông số chunk lấy từ cấu hình admin (Admin → Cấu hình Chunk)
-            var chunkSettings = _chunkSettingsService.GetSettings();
-            var textChunks = SplitTextByContext(doc.Content, maxWords: chunkSettings.MaxWords, overlapWords: chunkSettings.OverlapWords);
+            // Lấy cấu hình admin (mặc định)
+            var adminSettings = _chunkSettingsService.GetSettings();
+            int maxWords = adminSettings.MaxWords;
+            int overlapWords = adminSettings.OverlapWords;
+
+            // Ưu tiên ghi đè từ cấu hình cá nhân của người upload nếu có
+            if (doc.Uploader != null && doc.Uploader.CustomChunkMaxWords.HasValue)
+            {
+                maxWords = doc.Uploader.CustomChunkMaxWords.Value;
+                // Overlap words now always uses the Admin default
+            }
+
+            var textChunks = SplitTextByContext(doc.Content, maxWords: maxWords, overlapWords: overlapWords);
             
             var chunks = new List<DataAccessLayer.Entities.DocumentChunk>();
             int orderIndex = 1;
@@ -224,6 +246,34 @@ namespace BussinessLayer.Services
             }
             
             return true;
+        }
+
+        public async Task<bool> ReprocessDocumentEmbeddingAsync(int documentId, System.Func<int, int, Task>? progressCallback = null)
+        {
+            // Xóa chunk cũ trước khi băm lại theo cấu hình chunk hiện hành của môn
+            await _documentRepository.DeleteDocumentChunksAsync(documentId);
+            return await ProcessDocumentEmbeddingAsync(documentId, progressCallback);
+        }
+
+        /// <summary>
+        /// Xác định thông số chunk có hiệu lực cho một tài liệu: cấu hình riêng của môn (nếu có),
+        /// ngược lại lấy template mặc định do Admin thiết lập.
+        /// </summary>
+        private async Task<ChunkSettingsDto> ResolveChunkSettingsAsync(int? subjectId)
+        {
+            var policy = _chunkSettingsService.GetPolicy();
+            var template = policy.ToSettings();
+            // Admin tắt quyền → bỏ qua cấu hình riêng của môn, dùng template
+            if (subjectId == null || !policy.AllowLecturerOverride) return template;
+
+            var (maxWords, overlapWords) = await _subjectRepository.GetChunkSettingsAsync(subjectId.Value);
+            if (maxWords == null || overlapWords == null) return template;
+
+            return new ChunkSettingsDto
+            {
+                MaxWords = maxWords.Value,
+                OverlapWords = overlapWords.Value
+            };
         }
 
         private List<string> SplitTextByContext(string content, int maxWords = 300, int overlapWords = 50)

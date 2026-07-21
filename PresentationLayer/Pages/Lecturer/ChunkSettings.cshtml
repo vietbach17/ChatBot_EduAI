@@ -1,0 +1,101 @@
+@page
+@model PresentationLayer.Pages.Lecturer.ChunkSettingsModel
+@{
+    ViewData["Title"] = "Cấu hình Chunk File Cá Nhân";
+    ViewBag.ActiveMenu = "LecturerChunkSettings";
+}
+
+@section Styles {
+<style>
+    .form-group { margin-bottom: 14px; display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-weight: 800; font-size: 12px; text-transform: uppercase; }
+    .form-group input {
+        border: 2px solid var(--black); padding: 10px; font-weight: 700;
+        outline: none; font-family: inherit;
+    }
+    .form-group .hint { font-size: 12px; font-weight: 700; color: #777; }
+    .setting-card {
+        background: var(--white); border: var(--border); box-shadow: var(--shadow);
+        padding: 24px;
+    }
+    .info-table td { padding: 8px 10px; font-size: 13px; font-weight: 700; border-bottom: 1px dashed #ccc; vertical-align: top; }
+    .info-table td:first-child { font-weight: 900; white-space: nowrap; }
+</style>
+}
+
+<div class="main-wrapper">
+<div style="padding: 30px;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1 style="color:var(--pink); font-weight:900; font-size:28px; text-transform:uppercase;">
+            <i class="fa-solid fa-scissors"></i> CẤU HÌNH CHUNK CÁ NHÂN
+        </h1>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div style="background:#d4edda; border:2px solid #28a745; color:#155724; padding:12px 16px; font-weight:800; margin-bottom:16px; font-size:13px;">
+            <i class="fa-solid fa-circle-check"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div style="background:#f8d7da; border:2px solid var(--pink); color:#721c24; padding:12px 16px; font-weight:800; margin-bottom:16px; font-size:13px;">
+            <i class="fa-solid fa-circle-xmark"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; align-items:start;">
+
+        <!-- Form cấu hình -->
+        <div class="setting-card">
+            <h2 style="font-weight:900; margin-bottom:20px; color:var(--blue); font-size:18px;">
+                <i class="fa-solid fa-sliders"></i> THÔNG SỐ CỦA BẠN
+            </h2>
+            <form method="post" asp-page-handler="Save">
+                <div class="form-group">
+                    <label asp-for="CustomChunkMaxWords">Số từ tối đa mỗi chunk</label>
+                    <input type="number" asp-for="CustomChunkMaxWords" min="50" max="2000" placeholder="VD: @Model.DefaultMaxWords" required />
+                    <span class="hint">Nếu để trống, hệ thống sẽ dùng mức @Model.DefaultMaxWords từ.</span>
+                </div>
+
+
+                <div style="display:flex; gap:10px; margin-top:16px;">
+                    <button type="submit" class="brutal-btn"
+                            style="flex:1; background:var(--pink); color:white; border:2px solid var(--black); padding:12px; font-weight:900; box-shadow:2px 2px 0 var(--black);">
+                        <i class="fa-solid fa-save"></i> LƯU CẤU HÌNH
+                    </button>
+                </div>
+            </form>
+
+            <form method="post" asp-page-handler="Reset" style="margin-top:10px;"
+                  data-confirm="Bạn có chắc muốn xóa cấu hình cá nhân và quay về dùng cấu hình mặc định của hệ thống?">
+                <button type="submit" class="brutal-btn"
+                        style="width:100%; background:var(--white); color:var(--black); border:2px solid var(--black); padding:10px; font-weight:900; box-shadow:2px 2px 0 var(--black);">
+                    <i class="fa-solid fa-rotate-left"></i> XÓA CẤU HÌNH RIÊNG
+                </button>
+            </form>
+        </div>
+
+
+
+    </div>
+
+</div>
+</div>
+
+<!-- Form ẩn để gọi hàm cập nhật tất cả tài liệu -->
+<form id="frmUpdateAllDocs" method="post" asp-page-handler="UpdateAllDocs" style="display:none;"></form>
+
+@section Scripts {
+    @if (TempData["PromptUpdateDocs"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                brutalConfirm('Cấu hình đã được lưu thành công!\n\nBạn có muốn TỰ ĐỘNG CẬP NHẬT (xử lý lại chunk) cho toàn bộ các tài liệu bạn đã tải lên trước đó theo cấu hình mới này không? (Quá trình này sẽ chạy ngầm và có thể mất vài phút)', function() {
+                    document.getElementById('frmUpdateAllDocs').submit();
+                });
+            });
+        </script>
+    }
+}

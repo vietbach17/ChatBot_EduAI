@@ -20,7 +20,7 @@ namespace PresentationLayer.Pages.Payment
         public string BankId { get; set; } = string.Empty;
         public string AccountNo { get; set; } = string.Empty;
         public string Amount { get; set; } = string.Empty;
-        public string Content { get; set; } = string.Empty;
+        public string TransferContent { get; set; } = string.Empty;
         public string ReturnUrl { get; set; } = string.Empty;
         public string QrCodeUrl { get; set; } = string.Empty;
         public int TransactionId { get; set; }
@@ -35,12 +35,12 @@ namespace PresentationLayer.Pages.Payment
             BankId = bankId;
             AccountNo = accountNo;
             Amount = amount;
-            Content = content;
+            TransferContent = content;
             ReturnUrl = returnUrl;
             TransactionId = transactionId;
 
             // Generate VietQR URL
-            QrCodeUrl = $"https://img.vietqr.io/image/{BankId}-{AccountNo}-compact2.png?amount={Amount}&addInfo={Content}&accountName=CHATEDU";
+            QrCodeUrl = $"https://img.vietqr.io/image/{BankId}-{AccountNo}-compact2.png?amount={Amount}&addInfo={TransferContent}&accountName=CHATEDU";
 
             return Page();
         }

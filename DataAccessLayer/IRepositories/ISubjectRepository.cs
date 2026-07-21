@@ -20,5 +20,11 @@ namespace DataAccessLayer.IRepositories
         Task UpdateChapterAsync(Chapter chapter);
         Task DeleteChapterWithOptionsAsync(int chapterId, bool keepDocuments);
         Task<Chapter?> GetChapterByIdAsync(int id);
+
+        /// <summary>Lấy cấu hình chunk riêng của môn (null nếu môn đang dùng template của Admin).</summary>
+        Task<(int? MaxWords, int? OverlapWords)> GetChunkSettingsAsync(int subjectId);
+
+        /// <summary>Đặt cấu hình chunk riêng cho môn. Truyền null cho cả hai để quay về template của Admin.</summary>
+        Task<bool> UpdateChunkSettingsAsync(int subjectId, int? maxWords, int? overlapWords);
     }
 }
