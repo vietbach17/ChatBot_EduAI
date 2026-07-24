@@ -92,6 +92,20 @@ namespace BussinessLayer.Services
             return null;
         }
 
+        public string? ValidateLecturerMaxWords(int? maxWords)
+        {
+            // Không đặt riêng → theo template của Admin, luôn hợp lệ.
+            if (maxWords == null) return null;
+
+            var policy = GetPolicy();
+
+            if (!policy.AllowLecturerOverride)
+                return "Quản trị viên hiện không cho phép Giảng viên tự cấu hình chunk.";
+            if (maxWords < policy.LecturerMinWords || maxWords > policy.LecturerMaxWords)
+                return $"Số từ tối đa mỗi chunk phải từ {policy.LecturerMinWords} đến {policy.LecturerMaxWords} theo giới hạn Quản trị viên đặt.";
+            return null;
+        }
+
         private static string? Validate(ChunkPolicyDto policy)
         {
             if (policy.MaxWords < MinMaxWords || policy.MaxWords > MaxMaxWords)

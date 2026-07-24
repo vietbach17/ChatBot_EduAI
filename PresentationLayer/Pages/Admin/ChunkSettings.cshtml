@@ -113,10 +113,28 @@
                     <input type="number" asp-for="MaxWords" min="@Model.MinMaxWords" max="@Model.MaxMaxWordsLimit" required />
                     <span class="hint"><i class="fa-solid fa-circle-info"></i> Giới hạn từ @Model.MinMaxWords đến @Model.MaxMaxWordsLimit từ. Mặc định: <strong>@Model.DefaultMaxWords</strong>.</span>
                 </div>
-                <div class="form-group" style="margin-bottom: 30px;">
+                <div class="form-group">
                     <label asp-for="OverlapWords">Số từ chồng lấn (overlap) *</label>
                     <input type="number" asp-for="OverlapWords" min="0" max="@Model.MaxOverlapWordsLimit" required />
                     <span class="hint"><i class="fa-solid fa-circle-info"></i> Từ 0 đến @Model.MaxOverlapWordsLimit từ và phải nhỏ hơn số từ tối đa mỗi chunk. Mặc định: <strong>@Model.DefaultOverlapWords</strong>.</span>
+                </div>
+
+                <h2 style="font-weight:900; margin:35px 0 25px; color:var(--blue); font-size:24px; text-transform:uppercase; border-bottom: 3px solid var(--black); padding-bottom: 15px;">
+                    <i class="fa-solid fa-lock"></i> GIỚI HẠN CHO GIẢNG VIÊN
+                </h2>
+                <p style="font-weight:700; font-size:13px; color:#666; margin-bottom:20px; line-height:1.6;">
+                    Giảng viên tự cấu hình số từ mỗi chunk cho tài liệu của mình, nhưng không được vượt ra ngoài khoảng dưới đây.
+                </p>
+
+                <div class="form-group">
+                    <label asp-for="LecturerMinWords">Giới hạn dưới (min) *</label>
+                    <input type="number" asp-for="LecturerMinWords" min="@Model.MinMaxWords" max="@Model.MaxMaxWordsLimit" required />
+                    <span class="hint"><i class="fa-solid fa-circle-info"></i> Số từ mỗi chunk nhỏ nhất Giảng viên được đặt. Mặc định: <strong>@Model.DefaultLecturerMinWords</strong>.</span>
+                </div>
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <label asp-for="LecturerMaxWords">Giới hạn trên (max) *</label>
+                    <input type="number" asp-for="LecturerMaxWords" min="@Model.MinMaxWords" max="@Model.MaxMaxWordsLimit" required />
+                    <span class="hint"><i class="fa-solid fa-circle-info"></i> Số từ mỗi chunk lớn nhất Giảng viên được đặt, phải lớn hơn hoặc bằng giới hạn dưới. Mặc định: <strong>@Model.DefaultLecturerMaxWords</strong>.</span>
                 </div>
 
                 <button type="submit" class="btn-brutal-primary">

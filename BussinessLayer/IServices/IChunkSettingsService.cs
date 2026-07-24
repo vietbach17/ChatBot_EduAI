@@ -26,5 +26,12 @@ namespace BussinessLayer.IServices
         /// Trả về null nếu hợp lệ, ngược lại là thông báo lỗi.
         /// </summary>
         string? ValidateLecturerSettings(ChunkSettingsDto settings);
+
+        /// <summary>
+        /// Kiểm tra số từ tối đa mỗi chunk mà Giảng viên tự đặt có nằm trong khoảng Admin cho phép không.
+        /// Truyền null nghĩa là Giảng viên dùng template của Admin (luôn hợp lệ).
+        /// Trả về null nếu hợp lệ, ngược lại là thông báo lỗi.
+        /// </summary>
+        string? ValidateLecturerMaxWords(int? maxWords);
     }
 }

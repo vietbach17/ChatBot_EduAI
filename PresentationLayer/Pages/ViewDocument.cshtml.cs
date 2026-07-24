@@ -322,5 +322,43 @@ namespace PresentationLayer.Pages
             }
             return RedirectToPage(new { id = id });
         }
+
+        public async Task<IActionResult> OnPostReprocessEmbeddingAsync(int id)
+        {
+            var doc = await _documentService.GetDocumentByIdAsync(id);
+            if (doc == null) return NotFound();
+
+            var role = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
+            
+            bool canProcess = false;
+            if (role == "Admin")
+            {
+                canProcess = true;
+            }
+            else if (role == "Lecturer" && doc.SubjectId.HasValue)
+            {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+                if (int.TryParse(userIdClaim, out int userId))
+                {
+                    var subject = await _subjectService.GetSubjectByIdAsync(doc.SubjectId.Value);
+                    if (subject != null && subject.LecturerId == userId)
+                    {
+                        canProcess = true;
+                    }
+                }
+            }
+
+            if (!canProcess)
+            {
+                return Forbid();
+            }
+
+            var result = await _documentService.ReprocessDocumentEmbeddingAsync(id);
+            if (result)
+            {
+                SuccessMessage = "Băm và Nhúng Vector lại thành công!";
+            }
+            return RedirectToPage(new { id = id });
+        }
     }
 }

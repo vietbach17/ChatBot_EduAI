@@ -29,6 +29,10 @@ namespace PresentationLayer.Pages.Lecturer
 
         public int DefaultMaxWords { get; set; }
 
+        /// <summary>Khoảng số từ mỗi chunk Admin cho phép Giảng viên tự đặt.</summary>
+        public int LecturerMinWords { get; set; }
+        public int LecturerMaxWords { get; set; }
+
         public async Task<IActionResult> OnGetAsync()
         {
             var userIdStr = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -41,14 +45,24 @@ namespace PresentationLayer.Pages.Lecturer
                 }
             }
 
-            var adminSettings = _chunkSettingsService.GetSettings();
-            DefaultMaxWords = adminSettings.MaxWords;
+            var policy = _chunkSettingsService.GetPolicy();
+            DefaultMaxWords = policy.MaxWords;
+            LecturerMinWords = policy.LecturerMinWords;
+            LecturerMaxWords = policy.LecturerMaxWords;
 
             return Page();
         }
 
         public async Task<IActionResult> OnPostSaveAsync()
         {
+            // Chặn phía server: min/max trong input HTML chỉ là gợi ý, POST trực tiếp vẫn vượt được.
+            var validationError = _chunkSettingsService.ValidateLecturerMaxWords(CustomChunkMaxWords);
+            if (validationError != null)
+            {
+                TempData["ErrorMessage"] = validationError;
+                return RedirectToPage();
+            }
+
             var userIdStr = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (int.TryParse(userIdStr, out int userId))
             {

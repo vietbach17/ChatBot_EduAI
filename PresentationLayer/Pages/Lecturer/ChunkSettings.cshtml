@@ -55,8 +55,8 @@
             <form method="post" asp-page-handler="Save">
                 <div class="form-group">
                     <label asp-for="CustomChunkMaxWords">Số từ tối đa mỗi chunk</label>
-                    <input type="number" asp-for="CustomChunkMaxWords" min="50" max="2000" placeholder="VD: @Model.DefaultMaxWords" required />
-                    <span class="hint">Nếu để trống, hệ thống sẽ dùng mức @Model.DefaultMaxWords từ.</span>
+                    <input type="number" asp-for="CustomChunkMaxWords" min="@Model.LecturerMinWords" max="@Model.LecturerMaxWords" placeholder="VD: @Model.DefaultMaxWords" required />
+                    <span class="hint">Quản trị viên cho phép đặt từ <strong>@Model.LecturerMinWords</strong> đến <strong>@Model.LecturerMaxWords</strong> từ. Nếu để trống, hệ thống sẽ dùng mức @Model.DefaultMaxWords từ.</span>
                 </div>
 
 

@@ -254,12 +254,7 @@
                                         <button type="button" onclick="openMoveDocModal(@doc.Id, '@doc.Title')" class="doc-action-link" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: var(--green); padding: 0;">
                                             <i class="fa-solid fa-arrows-up-down-left-right"></i> Chuyển
                                         </button>
-                                        <form method="post" asp-page-handler="ReprocessDocument" asp-route-id="@Model.Subject.Id" asp-route-docId="@doc.Id"
-                                              data-confirm="Xử lý lại tài liệu '@doc.Title' theo cấu hình chunk hiện tại?" style="display:inline;">
-                                            <button type="submit" class="doc-action-link" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: #b45309; padding: 0;">
-                                                <i class="fa-solid fa-rotate"></i> Xử lý lại
-                                            </button>
-                                        </form>
+
                                         <form method="post" asp-page-handler="DeleteDocument" asp-route-id="@Model.Subject.Id" asp-route-docId="@doc.Id"
                                               data-confirm="Bạn có chắc chắn muốn xóa tài liệu này?" style="display:inline;">
                                             <button type="submit" class="doc-action-link" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: #dc2626; padding: 0;">
@@ -342,12 +337,7 @@
                                             <button type="button" onclick="openMoveDocModal(@doc.Id, '@doc.Title')" class="doc-action-link" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: var(--green); padding: 0;">
                                                 <i class="fa-solid fa-arrows-up-down-left-right"></i> Chuyển
                                             </button>
-                                            <form method="post" asp-page-handler="ReprocessDocument" asp-route-id="@Model.Subject.Id" asp-route-docId="@doc.Id"
-                                                  data-confirm="Xử lý lại tài liệu '@doc.Title' theo cấu hình chunk hiện tại?" style="display:inline;">
-                                                <button type="submit" class="doc-action-link" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: #b45309; padding: 0;">
-                                                    <i class="fa-solid fa-rotate"></i> Xử lý lại
-                                                </button>
-                                            </form>
+
                                             <form method="post" asp-page-handler="DeleteDocument" asp-route-id="@Model.Subject.Id" asp-route-docId="@doc.Id"
                                                   data-confirm="Xóa tài liệu '@doc.Title'? Hành động này không thể hoàn tác!" style="display:inline;">
                                                 <button type="submit" class="doc-action-link" style="background: none; border: none; cursor: pointer; font-weight: 800; font-size: 12px; color: #dc2626; padding: 0;">
